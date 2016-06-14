@@ -1,0 +1,164 @@
+<body>
+  {{>setCompletionDate}}
+</body>
+
+<template name = 'standardsList'> 
+  <div id="standardsListTitle">
+    <h4>standards</h4>
+    <span class="progress-bar-warning"> should be mastered </span>
+    <span class="progress-bar-info"> you have mastered </span>
+    <i class="fa fa-question-circle" data-toggle = "tooltip" title="Click title to select category.  Ctrl-click another to view two categories side-by-side."></i>
+  </div>
+  <ul id='categories' class="nav nav-pills">
+    {{#sortable1c items=categories options=sortableOpts}}
+      {{> categoryTitle}}
+    {{/sortable1c}}
+    {{#if editingMainPage}}
+      {{>newCategory}}
+    {{/if}}
+  </ul>
+  {{#with activeCategory}}
+    {{> standardListHeader}}
+    {{> standardList}}
+  {{/with}}
+</template>
+
+<template name="categoryTitle">
+  <li class="categorytitle {{active}} {{active2}} col-md-2">
+    {{#if editingMainPage}}
+      <div>
+        <a class="glyphicon glyphicon-move sortCategory" title="Drag to reorder."></a>
+        {{>showHide collection='Categories' itemName='category' item=this}}
+      </div>
+    {{else}}
+      <div class="progress" title="should be mastered">
+        <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
+      </div>
+      <div class="progress"  title="you have mastered">
+        <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
+      </div>
+    {{/if}}
+    <a class='displayTitle' lang="en" href="#" title="{{longname}}">      
+      {{{title}}}
+    </a>
+    {{#if editingMainPage}}
+      <div class='editTitle' {{hidden}}>
+        {{>plaintexteditor collection='Categories' field='title' _id=_id editable='true'}}
+        {{>plaintexteditor collection='Categories' field='longname' _id=_id placeholder = 'add hover text' editable='true'}}
+      </div>
+    {{/if}}
+  </li>
+</template>
+
+<template name="newCategory">
+  <li class="disabled col-md-2">
+    <a href="#"  class="newcategory">
+      Add new category
+    </a>
+    <div class="editTitle">
+      {{>plaintexteditor collection='Categories' field='title' editable='true' placeholder='type title here' clearOnSave=true}}
+    </div>
+  </li>
+</template>
+
+<template name='standardListHeader'>
+  <div id='standardListHeader' class="row">
+    <div class='standardColumn column {{colWidth}} {{bgprimary}}'>
+      <h2 class='text-center'>{{{title}}}</h2>
+      <div class="progress"  title="should be completed">
+        <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
+      </div>
+      <div class="progress" title="you have completed">
+        <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
+      </div>
+    </div>
+    {{#with activeCategory2}}
+      <div class='standardColumn column col-md-6 {{bgsuccess}}'>
+        <h2 class='text-center'>{{{title}}}</h2>
+        <div class="progress" title="should be completed">
+          <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
+        </div>
+        <div class="progress" title="you have completed">
+          <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
+        </div>
+      </div>
+    {{/with}}
+  </div>
+</template>
+
+<template name='standardList'>
+  <div id='standardList' class="row">
+    <div class = 'standardColumn column {{colWidth}} {{bgprimary}}'>
+      {{#sortable1c items=standards0 options=sortableOpts}}
+        {{> standardItem}}
+      {{/sortable1c}}
+      {{#if editingMainPage}}
+        {{>newStandard}}
+      {{/if}}
+    </div>
+    {{#with activeCategory2}}
+      <div class = 'standardColumn column col-md-6 {{bgsuccess}}'>
+        {{#sortable1c items=standards2 options=sortableOpts2}}
+          {{> standardItem}}
+        {{/sortable1c}}
+        {{#if editingMainPage}}
+          {{>newStandard}}
+        {{/if}}
+      </div>
+    {{/with}}
+  </div>
+</template>
+
+<template name = 'standardItem'>
+    <p class="sItem">
+      {{#if editingMainPage}}
+        <a href="#setCompletionDate" class="standardSetCompletionDate pull-right {{dateset}}"  data-toggle="modal" data-backdrop=false>
+          <span class="glyphicon glyphicon-calendar"></span>
+        </a>
+        <a class="glyphicon glyphicon-move sortStandard" title="Drag to reorder or move to another category (in side-by-side view).">
+        </a>
+        {{>showHide collection='Standards' itemName='standard' item=this}}
+        {{>plaintexteditor collection='Standards' field='title' _id=_id editable=editingMainPageTFtext}} 
+      {{else}}
+        {{#with latestLoM}}
+          {{>LoMbadgeForStandardItem}}
+        {{/with}}
+        <a  href="{{pathFor 'standardPage' _id=_id}}" data-toggle="tooltip" title="<div class='text-left'>{{description}}</div>" data-html=true>
+        {{{title}}} 
+        </a>        
+      {{/if}}
+    </p>
+</template>
+
+<template name='LoMbadgeForStandardItem'>
+  <span class='badge badge-inverse {{LoMAveragecolorcode}}' data-original-title="{{latestComment}}" data-toggle="tooltip" data-html=true data-placement="right">{{LoMAveragetext}}</span>
+</template>
+
+<template name='setCompletionDate'>
+  <div id="setCompletionDate" class="popover popover-default">
+    <div class="popover-title">
+      <span class="close" data-dismiss="modal">&times;</span>
+      <div class="text-center">
+        <h4>{{{title}}}</h4>
+      </div>
+    </div>
+    <div class="popover-content">
+      <div style="overflow:hidden;">
+        <div class="form-group">
+          <div class="row">
+              <div class="col-md-12">
+                <div id="completionDatePicker">
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name='newStandard'>
+  <p class='newItem'>
+    {{>plaintexteditor collection='Standards' field='title' editable='true' placeholder='To add a new standard, type the title here, then click outside the blue box to save.' clearOnSave=true fixedFields=fixedFields}}
+  </p>
+</template>

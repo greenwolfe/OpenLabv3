@@ -1,0 +1,12 @@
+<template name = "calendarPage">
+  {{#unless studentSubscriptionLoaded}}
+    <p class='bg-info'> Loading data for {{getname impersonatedOrUserId 'full'}}</p>
+  {{/unless}}
+  <div class='container-fluid'>
+    <div class="row">
+      {{>calendar}}
+    </div>
+  </div>
+</template>
+
+

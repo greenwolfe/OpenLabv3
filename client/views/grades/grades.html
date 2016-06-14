@@ -1,0 +1,19 @@
+<template name = "grades">
+  {{#unless studentSubscriptionLoaded}}
+    <p class='bg-info'> Loading data for {{getname impersonatedOrUserId 'full'}}</p>
+  {{/unless}}
+  <div class='container-fluid'>
+    <div class="row"> <!-- class="modal-body row" to scroll -->
+      <div class='col-md-5'>
+        <div class='col-md-12'>
+          <h2>space for assessment block</h2>
+        </div>
+      </div>
+      <div class='col-md-7'>
+        {{> standardsList}}
+      </div>
+    </div>
+  </div>
+</template>
+
+

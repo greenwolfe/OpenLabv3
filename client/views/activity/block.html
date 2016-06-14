@@ -1,0 +1,326 @@
+<Template name='block'>
+  <!--<div class="raiseHands avoidwrap {{raiseHand}}">
+      <i class="{{virtualWorkStatus}}"></i>
+  </div>-->
+  {{#with subactivity}}
+    <div class="block">
+      <div class="subactivityItemInHeader">
+        {{> subactivityItem}}
+      </div>
+    </div>
+  {{/with}}  
+  <div class="block block-{{type}} panel panel-default row">
+    <!--<div class="panel-heading" assessment={{isAssessmentBlock}}> -->
+    <div class="panel-heading">
+      <div>
+        {{#if editingBlock}}  <!-- in edited wall AND have permissions to edit it -->
+          <div class="pull-right">
+            <a class="glyphicon glyphicon-copy copyBlock" title='Copy to clipboard.  Holding "Ctrl" adds to existing list.'></a>
+            {{>showHide collection='Blocks' itemName='block' item=this}}
+            {{#unless fileCount}}
+              {{#unless LoMcount}}
+                <a class="glyphicon glyphicon-remove deleteBlock" title="Delete Block"></a>
+              {{/unless}}
+            {{/unless}}
+            <!--<i class="icon-raise-virtual-hand-small buttonRaiseVirtualHand"></i>-->
+          </div>
+          <div>&nbsp;</div>
+        {{/if}}
+        {{#if inEditedWall}} <!-- have permissions to move block, even if you can't edit it -->
+          <div>
+            <a class="glyphicon glyphicon-move blockSortableHandle {{editingActivity}}" title="move block"></a>
+          </div>
+        {{/if}}
+        {{#unless editingBlock}}
+          <!--<div class="pull-right">
+            <i class="transparentBox buttonRaiseVirtualHand"></i>
+          </div>-->
+          <!--{{#unless isAssessmentBlock}}-->
+            <div class="blockTitle">{{{title}}}</div>
+          <!--{{/unless}}-->
+        {{/unless}}
+      </div>
+      <div>
+       <!-- {{#if isAssessmentBlock}}
+          {{#with subactivity}}
+            <div class="subactivityItemInHeader">
+              {{> subactivityItem}}
+            </div>
+          {{/with}}
+        {{else}} -->
+          {{#if editingBlock}}
+            {{>summernote collection='Blocks' field='title' _id=_id enabled=inEditedWall options=summernoteTitleOptions}}
+          {{/if}}
+       <!-- {{/if}} -->
+      </div>
+    </div>
+    {{#if canView}}
+      <div class="panel-body fullwidth"> <!-- fullwidth corrects mysterious bug that only seems to affect workSubmitBlock and not other -->
+
+          {{>Template.dynamic template=blockType }}
+
+      </div>
+    {{/if}}
+    <div class="panel-footer">
+      {{#if inEditedWall}}
+        <span class="avoidwrap">Created for {{{createdForName}}} by {{getname createdBy 'full'}} {{formatDateTime createdOn}}. Last modified by {{getname modifiedBy 'full'}} {{formatDateTime modifiedOn}}.</span>
+      {{/if}}
+    </div>
+  </div>
+</Template>
+
+<Template name="textBlock">
+  {{#if Template.subscriptionsReady}}
+    {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
+  {{else}}
+    <p> Loading text and images ... </p>
+  {{/if}}
+</Template>
+
+<Template name="embedBlock">
+  {{#if editingBlock}}
+    Paste/edit embed code.
+    {{>codemirror }}
+  {{else}}
+    <div class="embed-responsive embed-responsive-4by3">
+      {{{embedCodeIframe}}} <!-- just the iframe -->
+    </div>
+    <div>
+      {{{embedCodeAfterIframe}}}
+    </div>
+  {{/if}}
+  {{#if editingBlock}}
+    Add/edit a description.
+  {{/if}}
+  <p>
+    {{#if blockTextSubscriptionLoaded}}
+      {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
+    {{else}}
+      <p> Loading text and images ... </p>
+    {{/if}}
+  </p>
+</Template>
+
+<Template name="codemirror">
+  <i class="codeexample fa fa-question-circle" title="insert simple example"></i>
+  <p>
+    <textarea class="codemirror">{{embedCode}}</textarea>
+  </p>
+</Template>
+
+<Template name="fileBlock">
+  <p>
+    {{#if Template.subscriptionsReady}}
+      {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
+    {{else}}
+      <p> Loading text and images ... </p>
+    {{/if}}
+  </p>
+  {{#sortable1c items=files  options=sortableOpts}} 
+    {{>fileLink}}
+  {{/sortable1c}}
+  {{#if editingBlock}}
+    <p>
+      {{>upload_bootstrap formData=formData callbacks=processUpload}}
+    </p> 
+  {{/if}}
+</Template>
+
+<Template name="fileLink">
+  <p class="file">
+    {{#if editingBlock}}
+      <a class="glyphicon glyphicon-move moveFile" title="move file (within this list only)"></a>
+      {{>showHide collection='Files' itemName='file' item=this}}
+      <a class="glyphicon glyphicon-remove deleteFile" title="delete file"></a>
+    {{/if}}
+    {{#if inTeacherWall}}
+      <a href="/upload{{path}}" target="_blank">{{name}}</a> 
+    {{else}}
+      {{#if isInRole 'parentOrAdvisor'}}
+        <a href="" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">{{name}}</a>
+      {{else}}
+        <a href="/upload{{path}}" target="_blank" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">{{name}}</a> 
+      {{/if}}
+    {{/if}}
+  </p> 
+</Template>
+
+<Template name='subactivitiesBlock'>
+  {{#if inEditedWall}}
+    {{>helpBannerNavPills messages=helpMessages}}
+  {{/if}}
+  <div id='subactivityList' class='row'>
+    <div class = 'activityColumn column col-md-12'>
+      {{#sortable1c items=subactivities options=sortableOpts}}
+        {{> subactivityItem}}
+      {{/sortable1c}}
+      {{#if inEditedWall}}
+        {{>newSubactivity}}
+      {{/if}}
+    </div>
+  </div>
+</Template>
+
+<template name = 'subactivityItem'>
+    <p class="aItem">
+      {{#if inBlockHeader}}
+        {{#if isInRole 'teacher'}}
+          <div class="dropdown">
+            <a class="glyphicon glyphicon-triangle-bottom assessmentAssociateSubactivity pull-right dropdown-toggle" data-toggle="dropdown" title="Associate this assessment with a different subactivity."></a>
+            <ul class="dropdown-menu">
+              {{#each subactivities}}
+                <li class="subactivityChoice"><a href="#">{{{title}}}{{#if tag}} ({{{tag}}}){{/if}}</a></li>
+              {{/each}}
+              <li class="chooseNoSubactivity"><a href="#">None</a></li>
+            </ul>
+          </div> 
+        {{/if}}    
+        {{#if _id}}
+          {{> workPeriodButton workPeriod}}
+          <!--<i class="activityProgress {{progress}}" title="{{progressTitle}}"></i>-->
+          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+          <i class="activityPunctual {{late}}" title="late"></i>
+          {{#if isInRole 'teacher'}}
+            {{#if inEditedWall ../wallID}}
+              <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
+            {{/if}}
+          {{/if}}
+        {{/if}}
+        <a  href="{{pathFor 'activityPage' _id=pointsTo}}">
+          {{{title}}}{{{tags}}}
+        </a>           
+      {{else}}
+        {{#if currentlyEditing}}
+          {{#if inEditedWall ../wallID}}
+            <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder."></a>
+          {{/if}}
+          {{>showHide collection='Activities' itemName='activity' item=this}}
+          {{#if canDelete}}
+            <a class="glyphicon glyphicon-remove deleteActivity" title="Delete Activity"></a>
+          {{/if}}
+          {{#if isInRole 'teacher'}}
+            <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
+          {{/if}}
+          <a>{{{tags}}}</a>
+          {{>plaintexteditor collection='Activities' field='title' _id=_id editable='true'}}      
+        {{else}}
+          {{> workPeriodButton workPeriod}}
+          <!--<i class="activityProgress {{progress}}" title="{{progressTitle}}"></i>-->
+          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+          <i class="activityPunctual {{late}}" title="late"></i>
+          <a  href="{{pathFor 'activityPage' _id=pointsTo query=studentOrSectionID}}">
+            {{{title}}}{{{tags}}}
+          </a>        
+        {{/if}}
+      {{/if}}
+    </p>
+</template>
+
+<template name='newSubactivity'>
+  <p class='newItem'>
+    {{>plaintexteditor collection='Activities' field='title' editable='true' placeholder='Add new subactivity.  Type title here.' clearOnSave=true fixedFields=fixedFields}}
+  </p>
+</template>
+
+<template name='assessmentBlock'>
+  {{#if isInRole 'teacher'}}
+    <p>
+      {{#if Template.subscriptionsReady}}
+        {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
+      {{else}}
+        <p> Loading text and images ... </p>
+      {{/if}}
+    </p>
+    <div class="assessmentBlockButtons text-center">
+      <div class="btn-group">
+        <button href="#chooseStandardsModal" class="assessmentAddStandards btn btn-default" data-toggle="modal">Add Standards</button>
+        <button class="gradeAssessment btn btn-default">Grade</button>
+      </div>
+    </div>
+  {{else}}
+    <p>{{{text}}}</p>
+  {{/if}}
+  {{#each standards}}
+    <p class='assessment standard'>
+      <a  href="{{pathFor 'standardPage' _id=_id}}" data-toggle="tooltip" title="{{description}}" data-html=true>{{title}}</a>
+      {{#if LoMAveragetext}}
+        <span class='badge badge-inverse {{LoMAveragecolorcode}}' data-toggle="tooltip" title= "Current score from all assessments.">
+          {{LoMAveragetext}}
+        </span>
+      {{/if}}
+      <div class="LoMlist">
+        {{#each LoMs}}
+          {{>LoMitem}}
+        {{/each}}
+      </div>
+    </p>
+  {{/each}}
+</template>
+
+<!--
+<Template name="workSubmitBlock">
+  {{#if inEditedWall}}
+    {{>helpBannerNavPills messages=helpMessages}}
+  {{/if}}
+  <p class="bg-success">
+    Student Name (date)
+    <p>
+      {{>summernote collection='Blocks' field='studentText' _id=_id enabled=inEditedWall options=summernoteOptions}}
+    </p>
+    <!--{{#sortable1c items=studentFiles  options=sortableOpts}} right now sortable cannot handle a more complicated selector involving two fields->
+    <p>
+      {{#each studentFiles}}
+        {{>workSubmitLink}}
+      {{/each}}
+    </p>
+    <!--{{/sortable1c}}->
+    {{#if inEditedWall}}
+      <p>
+        {{>upload_bootstrap formData=studentFormData callbacks=processStudentUpload}}
+      </p> 
+    {{/if}}
+  </p>
+  <p class="teacherResponse bg-warning">
+    Teacher Name (date)
+    <p>
+      {{>summernote collection='Blocks' field='teacherText' _id=_id enabled=inEditedWall options=summernoteOptions}}
+    </p>
+    <!--{{#sortable1c items=teacherFiles  options=sortableOpts}} ->
+    {{#each teacherFiles}}
+      {{>teacherResponseLink}}
+    {{/each}}
+    <!--{{/sortable1c}}->
+    {{#if inEditedWall}}
+      <p>
+        {{>upload_bootstrap formData=teacherFormData callbacks=processTeacherUpload}}
+      </p> 
+    {{/if}} 
+  </p>
+</Template>
+
+<Template name="workSubmitLink">
+  <p class="file">
+    {{#if inEditedWall}}
+      <!-- <a class="glyphicon glyphicon-move moveFile" title="move file (within this list only)"></a>->
+      {{>showHide collection='Files' itemName='file' item=this}}
+      <!--if is teacher->
+      <a class="glyphicon glyphicon-remove deleteFile" title="delete file (only available for teacher)"></a>
+      <!--<i class="fa fa-download checkoutFile" title="download and checkout file for automatic return (only available for teacher)"></i>
+      checkout for review button, ghost appears in teacher files with button to return?-->
+      <!-- /if ->
+    {{/if}}
+    <a href="/upload{{path}}" title="download file (for teacher - without checking out)">{{name}}</a> 
+  </p> 
+</Template>
+
+<Template name="teacherResponseLink">
+  <p class="file">
+    {{#if inEditedWall}} <!-- and if is teacher->
+      <!--<a class="glyphicon glyphicon-move moveFile" title="move file (within this list only)"></a>->
+      {{>showHide collection='Files' itemName='file' item=this}}
+      <a class="glyphicon glyphicon-remove deleteFile" title="delete file"></a>
+    {{/if}}
+    <a href="/upload{{path}}">{{name}}</a> 
+  </p> 
+</Template>
+-->

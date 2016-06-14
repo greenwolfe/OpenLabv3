@@ -1,0 +1,35 @@
+<template name="openlabHeader">
+  <div class="navbar navbar-default" role="navigation">
+      <div class="navbar-header">
+          <p  class="navbar-brand">{{title}}</p>
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+      </div>
+      <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="{{pathFor 'openlab'}}">activities</a></li>
+            <li><a href="{{pathFor 'grades'}}">grades</a></li>
+            <li><a href="{{pathFor 'calendarPage'}}">calendar</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {{> loginButtons}} 
+          </ul>
+          <ul class="nav navbar-nav">
+            {{#if isInRole 'teacher'}}
+              <li class="{{activeIfEditingMainPage}} {{hiddenIfNotTeacher}}">
+                <a href="#" id='editButton'>{{edit}}</a>
+              </li>
+            {{/if}}
+            {{>viewAs}}
+            {{>groups}}
+          </ul>
+      </div>
+  </div>
+</template>
+
+
+

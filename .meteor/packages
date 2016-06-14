@@ -1,0 +1,34 @@
+# Meteor packages used by this project, one per line.
+#
+# 'meteor add' and 'meteor remove' will edit this file for you,
+# but you can also edit it by hand.
+
+meteor-platform
+underscore
+wizonesolutions:underscore-string
+accounts-password
+alanning:roles
+linto:fontawesome
+
+twbs:bootstrap
+rubaxa:sortable
+tomi:upload-server
+tomi:upload-jquery
+audit-argument-checks
+perak:codemirror
+summernote:summernote@=0.6.5
+stylus
+email
+momentjs:moment
+zuuk:stale-session
+reactive-dict
+tsega:bootstrap3-datetimepicker
+clubfest:raphael
+reactive-var
+meteorhacks:fast-render
+arillo:flow-router-helpers
+matb33:collection-hooks
+kadira:flow-router
+kadira:blaze-layout
+aldeed:template-extension
+mizzao:bootboxjs

@@ -1,0 +1,114 @@
+body {
+  background: #efefef;
+}
+body div.container {
+    margin-bottom: 25px;
+}
+.placeholder {
+  color: #e6e6e6; /* color from ui-state-default provided by /packages/jquery-ui-bootstrap/css/jquery-ui-1.9.2.custom.css*/
+}
+i.remove:hover, i.fa-check-square-o, i.fa-square-o {
+    cursor: default;
+}
+.bottom12 {
+  margin-bottom: 12px;
+}
+a.glyphicon.glyphicon-remove, a.glyphicon.glyphicon-asterisk, a.glyphicon.glyphicon-move {
+    color: black;
+}
+a.glyphicon.glyphicon-remove:hover, a.glyphicon.glyphicon-asterisk:hover, a.glyphicon.glyphicon-copy:hover, a.glyphicon.glyphicon-paste:hover, a.glyphicon.glyphicon-move:hover, a.glyphicon.glyphicon-edit:hover,
+i.fa.fa-download:hover, i.fa.fa-upload:hover {
+    cursor: pointer;
+    cursor: hand;
+}
+a.glyphicon.glyphicon-asterisk.yellow{
+    color: yellow;
+}
+a.glyphicon.glyphicon-move:hover {
+    cursor: move;
+    text-decoration: none;
+}
+i.fa.fa-question-circle:hover {
+  cursor: help;
+}
+.avoidwrap {
+    display: inline-block;
+}
+.fullwidth {
+    width: 100%;
+}
+hr.no-margin {
+  margin: 0;
+},
+hr.no-padding {
+  padding: 0;
+}
+.marginLR0 {
+  margin-left: 0;
+  margin-right: 0;
+}
+.nav > li > a.paddingR3 {
+  padding-right: 3px;
+}
+.nav > li > a.paddingL3 {
+  padding-left: 3px;
+}
+.text-white {
+  color: white;
+}
+.text-black {
+  color: black;
+}
+.dropdown-menu > .disabled.text-black > a {
+  color: black;
+}
+.text-grey {
+  color: #333;
+}
+
+.panel-heading .dropdown-menu:before {
+   position: absolute;
+   top: -7px;
+   left: 9px;
+   display: inline-block;
+   border-right: 7px solid transparent;
+   border-bottom: 7px solid #CCC;
+   border-left: 7px solid transparent;
+   border-bottom-color: rgba(0, 0, 0, 0.2);
+   content: '';
+ }
+
+.panel-heading .dropdown-menu:after {
+  position: absolute;
+  top: -6px;
+  left: 10px;
+  display: inline-block;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid white;
+  border-left: 6px solid transparent;
+  content: '';
+}
+
+.hr.centered {
+  overflow: hidden;
+  text-align: center;
+}
+.hr.centered > span{
+  position: relative;
+  display: inline-block;
+}
+.hr.centered > span:before, .hr.centered > span:after{
+    content: '';
+    position: absolute;
+    top: 50%;
+    border-bottom: 2px solid;
+    width: 1000px; /* half of limiter */
+    margin: 0 20px;
+}
+.hr.centered > span:before{
+    right: 100%;
+}
+.hr.centered > span:after{
+    left: 100%;
+}
+

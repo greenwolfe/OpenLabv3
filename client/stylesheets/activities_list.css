@@ -1,0 +1,148 @@
+#activitiesListTitle h4 {
+  display: inline-block;
+}
+#activitiesListTitle span {
+  margin-right: 4px;
+  font-size: small;
+  border-radius: 5px;
+}
+p.aItem a.deleteActivity {
+  font-size: small;
+}
+
+#units { /* makes bootstrap nav-pills equal height so they wrap in distinct rows */
+  display: flex;
+  flex-wrap: wrap;
+}
+#units li {
+  margin-bottom: 10px;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 3px;
+  padding-right: 3px;
+  user-drag: none;
+}
+#units li > a {
+  color: black;
+  border-style: solid;
+  border-radius: 5px;
+  border-width: thin;
+  border-color: black;
+  text-align: center;
+  word-wrap: break-word;
+  padding-left: 0;
+  padding-right: 0;
+}
+#unittitle div.editTitle {
+  padding-left: 0;
+  padding-right: 0;
+}
+#units li > a.newunit {
+  margin-top: 15pt;
+}
+#units li div.progress {
+  margin-bottom: 0;
+  margin-top: 1.5pt;
+  height: 10px;
+}
+#units > li:nth-child(odd) {
+  background-color: #eaeaea;
+}
+#units > li:nth-child(even) {
+  background-color: #e4e4e4;
+}
+#units li div[contenteditable="true"][class~='plaintexteditor'] {
+  width: 100%;
+  cursor: text;
+  margin-left: 1%;
+  margin-right: 1%;
+}
+
+#activityList, #activityListHeader {
+  outline: 1px solid #AAA;
+}
+#subactivityList {
+  padding-top: 10px;
+}
+li.unittitle.active2 > a {
+  background-color: #DFF0D8;
+  border: thin none;
+  border-radius: 4px;
+}
+#units li.unittitle a.displayTitle {
+  word-break: break-word;
+  -webkit-hyphens: auto;
+     -moz-hyphens: auto;
+      -ms-hyphens: auto;
+          hyphens: auto;
+}
+#units li.unittitle.active > a {
+  background-color: DarkMagenta;
+}
+#units li.unittitle.active > a:hover {
+  background-color: DarkMagenta;
+}
+#activityList div.activityColumn {
+  min-height: 20px;
+}
+#activityList div.activityColumn.bgprimary{
+  /*background-color: #337AB7*/
+  background-color: DarkMagenta;
+}
+#activityList div.activityColumn.bgsuccess {
+  background-color: #DFF0D8;
+}
+#activityListHeader div.activityColumn.bgprimary{
+  /*background-color: #337AB7*/
+  background-color: DarkMagenta;
+}
+#activityListHeader h2 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+#activityListHeader div.activityColumn.bgsuccess {
+  background-color: #DFF0D8;
+}
+#activityListHeader div.activityColumn div.progress {
+  margin-bottom: 4px;
+}
+#activityList p {
+  background-color: #afafaf;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#afafaf));
+  background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: -moz-linear-gradient(top, #ffffff, #ffffff 25%, #afafaf);
+  background-image: -ms-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: -o-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+#subactivityList p {
+  background-color: #9f9f9f;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#efefef), color-stop(25%, #efefef), to(#9f9f9f));
+  background-image: -webkit-linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  background-image: -moz-linear-gradient(top, #efefef, #efefef 25%, #9f9f9f);
+  background-image: -ms-linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  background-image: -o-linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  background-image: linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+#activityList p a, #subactivityList p a {
+    color: #555555;
+    font-size: small;
+}
+#activityList p a.glyphicon, #subactivityList p a.glyphicon {
+  font-size: medium;
+}
+#activityList p div[contenteditable="true"][class~='plaintexteditor'],
+#subactivityList p div[contenteditable="true"][class~='plaintexteditor'] {
+  width: 94%%;
+  cursor: text;
+  background: transparent;
+}
+#activityList p.newItem div[contenteditable="true"][class~='plaintexteditor'], 
+#subactivityList p.newItem div[contenteditable="true"][class~='plaintexteditor'] {
+  width: 100%;
+  margin-bottom: 10px;
+}

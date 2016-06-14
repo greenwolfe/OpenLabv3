@@ -1,0 +1,145 @@
+<Template name='wall'>
+  <div class="wall wall-{{type}} panel panel-default row">
+    <div class="panel-heading text-center clearfix">
+      <div class="col-xs-4"></div>
+      <div class="col-xs-4">
+        {{#if inGroupWall}}
+          {{#if wallIsNotEmpty}}
+            {{{title}}}
+          {{else}}
+            {{#if userIsInRole impersonatedOrUserId 'student'}}
+              <ul class="nav navbar-nav text-center">
+              <li class="dropdown pastGroupsDropdownList">
+                <a class="dropdown-toggle text-grey" data-toggle="dropdown">
+                  {{{title}}}
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  {{#with currentGroup}}
+                    {{> pastGroupSelector}}
+                  {{/with}}
+                  {{#each pastGroups}}
+                    {{> pastGroupSelector}}
+                  {{/each}}
+                </ul>
+              </li>
+              </ul>
+            {{else}}
+              {{{title}}}
+            {{/if}}
+          {{/if}}
+        {{else}}
+          {{{title}}}
+        {{/if}}
+        {{#if isInRole 'teacher'}}
+          {{#if inStudentWall}}
+            {{#if showingStudentWalls}}
+              <span>(Viewing as:</span>
+              <a href="#" class='setViewStudent {{studentActive}}'>{{getname createdFor 'first'}}</a>
+              <span>/</span>
+              <a href="#" class='setViewSection {{sectionActive}}'>{{currentSectionName createdFor}} </a>
+              <span>)</span>
+            {{/if}}
+          {{/if}}
+        {{/if}}
+      </div>
+      <div class="col-xs-4">
+        <div class="pull-right">
+          {{#if isInRole 'teacher'}} {{#if editingActivity}}
+            <div class="pull-right">
+              <a class="glyphicon glyphicon-move wallSortableHandle {{editingActivity}}" title="move wall"></a>
+            </div>
+          {{/if}}{{/if}}
+          {{#if canEditWall}}
+            {{#if wallIsNotEmpty}}
+              <button class="btn btn-default addGroupWall">Add Wall</button>
+            {{/if}}
+            <button class="btn btn-default editColumns"> 
+              {{editColumns}}
+            </button>
+            {{#if inEditedWall}} {{#if isInRole 'teacher'}}
+              {{>showHide collection='Walls' itemName='wall' item=this}}
+            {{/if}}{{/if}}
+          {{/if}}
+          <!--<ul class="nav navbar-nav">
+            {{#if inStudentWall}}
+              {{>viewAs}}
+            {{/if}}
+          </ul>-->
+        </div>
+      </div>
+    </div>
+    {{#if visibleOrEditing}}
+      <div class="panel-body">
+        {{#if inEditedWall}}
+          {{>helpBannerNavPills messages=helpMessages}}
+        {{/if}}
+        {{#each columns}}
+          {{> column}}
+        {{/each}}
+      </div>
+    {{/if}}
+    {{#if isInRole 'teacher'}}
+      <div class="panel-footer">
+        <div class="container-fluid">
+          <div class="row">
+            <span class="showStatus glyphicon glyphicon-triangle-bottom" title="show/edit status for entire section"></span>
+            {{#if showStatus}}
+              <div class="btn-group">
+                <button class="btn btn-primary activityGroups {{activityGroupsSelected}}">Activity Groups</button>
+                <button class="btn btn-primary currentGroups {{currentGroupsSelected}}">Current Groups</button>
+              </div>
+            {{/if}}
+          </div>
+          {{#if showStatus}}
+            <div class="row">
+              {{#each groups}}
+                <div class="col-md-4 groupStatus">
+                  {{#each groupMembers 'current,final' _id}}
+                    {{>studentStatus}}
+                  {{/each}}                  
+                </div>
+              {{/each}}
+              {{#if ungroupedCount}}
+                <div class="col-md-4 groupStatus">
+                  <p class="text-centered">Students without a group</p>
+                  {{#each ungrouped}}
+                    {{>studentStatus}}
+                  {{/each}}
+                </div>
+              {{/if}}
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    {{/if}}
+  </div>
+</Template>
+
+<template name="studentStatus">
+  <p>
+    {{#if isSectionMember}}
+      <a href="#" title = "{{leavingDate ../_id}}" class="studentName {{theImpersonated}} {{leftTheGroup ../_id}}">{{getname _id 'full'}}</a>
+    {{else}}
+      {{getname _id 'full'}}
+    {{/if}}
+    {{#each subactivities}}
+      <span>&nbsp;&nbsp;</span>
+      <span data-toggle="tooltip" title="{{title}} {{#if tag}}({{tag}}){{/if}}">
+        <!--<i class="activityProgress {{progress}}" title = "{{progressTitle}}"></i>-->
+        <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+        <i class="activityPunctual {{late}}" title="late"></i> 
+      </span> 
+    {{/each}}  
+  </p>
+</template>
+
+<template name="pastGroupSelector">
+  {{#if isInGroup}}
+    <li>
+      <a href="#" class="pastGroup">
+        {{{groupMembers}}}
+      </a>
+    </li>
+  {{/if}}
+</template>

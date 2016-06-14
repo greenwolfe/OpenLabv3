@@ -1,0 +1,134 @@
+<template name="activityHeader">
+  <div class="navbar navbar-default" role="navigation">
+      <div class="navbar-header">
+          <a class="navbar-brand" href="{{pathFor 'openlab'}}">{{siteTitle}}</a>
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+      </div>
+      <div class="navbar-collapse collapse">
+        <!--<p class="navbar-text">{{{pageTitle}}}</p>-->
+          <ul class="nav navbar-nav">
+            <!--<li class="{{activeIfEditingMainPage}} {{hiddenIfNotTeacher}}">
+              <a href="#" id='editButton'>Edit</a>
+            </li>-->
+            {{>showWalls}}
+            {{>viewAs}}
+            {{#if sectionOnlySelected}}
+              {{#if showingStudentOrGroupWalls}}
+                {{>filterStudents}}
+              {{/if}}
+            {{else}}
+              {{>groups}}
+            {{/if}}
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {{> loginButtons}} 
+          </ul>
+      </div>
+  </div>
+  {{> subActivitiesList}}
+</template>
+
+<template name="showWalls">
+  <li id="show-walls-dropdown-list" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown">
+      Show walls: {{{showWalls}}}
+      <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      {{#each wallTypes}}
+        {{> wallTypeSelector}}
+      {{/each}}
+    </ul>
+  </li>
+</template>
+
+<template name = 'wallTypeSelector'>
+  <li  class='{{active}}'>
+    <a href="#">{{type}}</a>
+  </li>
+</template>
+
+<template name= 'filterStudents'>
+<span class='navbar-text marginLR0'>Filter students:</span>
+  <li id="status-dropdown-list" class="dropdown">
+    <a class="dropdown-toggle paddingR3 paddingL3" data-toggle="dropdown">
+      <b class="caret"></b>
+      <i class="activityStatus icon-{{statusFilter}}"></i> 
+    </a>
+    <ul class="dropdown-menu">
+      {{#each statusSelectors}}
+        {{>statusSelector}}
+      {{/each}}
+    </ul>
+  </li>
+  <li id="subactivities-dropdown-list" class="dropdown">
+    <a class="dropdown-toggle paddingL3" data-toggle="dropdown">
+      {{#with subactivityFilter}}
+        <span> {{title}}{{#if tag}} ({{{tag}}}){{/if}} </span>
+      {{/with}}
+      <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      {{#each subactivities}}
+        {{> subactivitySelector}}
+      {{/each}}
+    </ul>
+  </li>
+</template>
+
+<template name = 'statusSelector'>
+  <li  class='{{active}}'>
+    <a href="#">
+      <i class="activityStatus {{status}}"></i>
+      <span>{{statusText}}</span>
+    </a>
+  </li>
+</template>
+
+<template name = 'subactivitySelector'>
+  <li  class='{{active}}'>
+    <a href="#">
+      <span>{{title}}{{#if tag}} ({{{tag}}}){{/if}}</span>
+    </a>
+  </li>
+</template>
+
+<template name='subActivitiesList'>
+  <div id='subactivityList' class='row'>
+      <!--{{#sortable1c items=subactivities options=sortableOpts}}-->
+      {{#each subactivities}}
+        <div class = 'activityColumn column col-md-4'>
+          {{> subactivityItem}}
+        </div>
+      {{/each}}
+      <!--{{/sortable1c}} Sorting not working.  Try putting col-md-4 on the p.aItem???-->
+      {{#if editingList}}
+        <div class = 'activityColumn column col-md-4'>
+          {{>newSubactivity}}
+        </div>
+      {{/if}}
+      {{#if isInRole 'teacher'}}
+        <div class='activityColumn column col-md-4'>
+          {{#if editingList}}
+            <p class='aItem stopEditingSubactivities text-center'>
+              <a href="#">Done Adding/Editing</a>
+            </p>
+          {{else}}
+            <p class='aItem editSubactivities text-center' title = "Additional subactivities will be visible on the front page but point to this activity page.">
+              <a href="#">Add/Edit subactivities</a>
+            </p>
+           {{/if}}
+        </div>
+      {{/if}}
+  </div>
+</template>
+
+
+
+
+

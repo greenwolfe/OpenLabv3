@@ -1,0 +1,81 @@
+<template name="groups">
+  {{#if isInRole 'teacher,student'}}
+    {{#if userIsInRole impersonatedOrUserId 'student'}}
+      <li id="groups-dropdown-list" class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown">
+          Current group: {{{groupies 'current'}}}
+          <b class="caret"></b>
+        </a>
+        <div id="groups-dropdown-menu" class="dropdown-menu">
+          <div>
+            {{#with currentGroup}}
+              <button class="btn btn-warning btn-nopad" id="leave-group">Leave Group</button>
+              {{#if groupIsOpen}}
+                 <button class="btn btn-warning btn-nopad" id="close-group" title="Prevent this group from accepting new members.">Close Group</button>
+              {{else}} <!-- group is closed -->
+                {{#if pollIsOpen}}
+                  {{#if voteIsYes}}
+                    <button class="btn btn-warning btn-nopad" id="close-group" title="Prevent this group from accepting new members.">Close Group</button> 
+                  {{else}}
+                    <button class="btn btn-warning btn-nopad" id="open-group" title="Allow this group to accept new members.">Open Group</button> 
+                  {{/if}}
+                {{else}} <!-- poll is closed -->
+                  <button class="btn btn-warning btn-nopad" id="open-group" title="Allow this group to accept new members.">Open Group</button> 
+                {{/if}}
+              {{/if}}
+              <div class="btn-group">
+                <button class="btn btn-warning btn-nopad" id="show-history" >History: Show&nbsp;/</button>
+                <button class="btn btn-warning btn-nopad" id="hide-history">&nbsp;Hide</button> 
+              </div>
+              {{#if formerMembers}}
+                <p>
+                  Past Members:  {{{groupies 'former,final'}}}
+                </p>
+              {{/if}}
+              {{#if groupIsOpen}}
+                 <p> This group is now open to accept new members.</p>
+              {{/if}}
+              {{#if pollIsOpen}}
+                <p> {{{membersWhoVotedToOpen}}} voted to allow this group to accept new members.  Full consensus is required to open the group.</p>
+              {{/if}}
+            {{else}} <!-- no current group -->
+              <div class="btn-group">
+                <button class="btn btn-warning btn-nopad" id="show-history" >History: Show&nbsp;/</button>
+                <button class="btn btn-warning btn-nopad" id="hide-history">&nbsp;Hide</button> 
+              </div>
+              {{#if openGroupsCount}}
+                {{#each openGroups}}
+                  {{>joinGroup}}
+                {{/each}}
+              {{else}}
+                <p> At the present time, there aren't any groups open to receive new members.</p>
+              {{/if}}
+              <button class="btn btn-warning btn-nopad" id="form-new-group">Form a New Group</button> 
+            {{/with}}
+            {{#if showHistory}}
+              <p> My Group History </p>
+              {{#if hasPastGroups}}
+                {{#each pastGroups}}
+                  <p>{{{names}}}</p>
+                {{/each}}
+              {{else}}
+                <p> No past groups. </p>
+              {{/if}}
+            {{/if}}
+          </div>
+        </div>
+      </li>
+    {{/if}}
+  {{else}} <!-- not in student or teacher role -->
+    {{#if isInRole 'parentOrAdvisor'}}
+      <p class="navbar-text">Current group: {{{groupies}}}</p>
+    {{/if}}
+  {{/if}}
+</template>
+
+<template name="joinGroup">
+  <p>
+    <button class="btn btn-warning btn-nopad" id="join-group">Join</button> 
+    {{{groupies 'current' _id}}}
+  </p>
+</template>

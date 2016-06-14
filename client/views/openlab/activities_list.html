@@ -1,0 +1,151 @@
+<template name = 'activitiesList'> 
+  <div id="activitiesListTitle">
+    <h4 >activities</h4>
+    <span class="progress-bar-warning"> should be completed </span>
+    <span class="progress-bar-info"> you have completed </span>
+    <i class="fa fa-question-circle" data-toggle = "tooltip" title="Click title to select unit.  Ctrl-click another to view two units side-by-side."></i>
+  </div>
+  <ul id='units' class="nav nav-pills">
+    {{#sortable1c items=units options=sortableOpts}}
+      {{> unitTitle}}
+    {{/sortable1c}}
+    {{#if editingMainPage}}
+      {{>newUnit}}
+    {{/if}}
+  </ul>
+  {{#with activeUnit}}
+    {{> activityListHeader}}
+    {{> activityList}}
+  {{/with}}
+</template>
+
+<template name="unitTitle">
+  <li class="unittitle {{active}} {{active2}} col-md-2">
+    {{#if editingMainPage}}
+      <div>
+        <a class="glyphicon glyphicon-move sortUnit" title="Drag to reorder."></a>
+        {{>showHide collection='Units' itemName='unit' item=this}}
+      </div>
+    {{else}}
+      <div class="progress" title="should be completed">
+        <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
+      </div>
+      <div class="progress"  title="you have completed">
+        <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
+      </div>
+    {{/if}}
+    <a href="#" class='displayTitle' lang="en" title="{{longname}}">      
+      {{{title}}}
+    </a>
+    {{#if editingMainPage}}
+      <div class='editTitle' {{hidden}}>
+        {{>plaintexteditor collection='Units' field='title' _id=_id editable='true'}}
+        {{>plaintexteditor collection='Units' field='longname' _id=_id placeholder = 'add hover text' editable='true'}}
+      </div>
+    {{/if}}
+  </li>
+</template>
+
+<template name="newUnit">
+  <li class="disabled col-md-2">
+    <a href="#"  class="newunit">
+      Add new unit
+    </a>
+    <div class="editTitle">
+      {{>plaintexteditor collection='Units' field='title' editable='true' placeholder='type title here' clearOnSave=true}}
+    </div>
+  </li>
+</template>
+
+<template name='activityListHeader'>
+  <div id='activityListHeader' class="row">
+    <div class='activityColumn column {{colWidth}} {{bgprimary}}'>
+      <h2 class='text-center'>{{{title}}}</h2>
+      <div class="progress"  title="should be completed">
+        <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
+      </div>
+      <div class="progress" title="you have completed">
+        <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
+      </div>
+    </div>
+    {{#with activeUnit2}}
+      <div class='activityColumn column col-md-6 {{bgsuccess}}'>
+        <h2 class='text-center'>{{{title}}}</h2>
+        <div class="progress" title="should be completed">
+          <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
+        </div>
+        <div class="progress" title="you have completed">
+          <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
+        </div>
+      </div>
+    {{/with}}
+  </div>
+</template>
+
+<template name='activityList'>
+  <div id='activityList' class="row">
+    <div class = 'activityColumn column col-md-6 {{bgprimary}}'>
+      {{#sortable1c items=activities0 options=sortableOpts}}
+        {{> activityItem}}
+      {{/sortable1c}}
+      {{#if editingMainPage}}
+        {{#if activities2}}
+          {{>newActivity}}
+        {{/if}}
+      {{/if}}
+    </div>
+    <div class = 'activityColumn column col-md-6 {{bgsuccess}}'>
+      {{#if activities2}}
+        {{#sortable1c items=activities2 options=sortableOpts2}}
+          {{> activityItem}}
+        {{/sortable1c}}
+        {{#if editingMainPage}}
+          {{#with activeUnit2}}
+            {{>newActivity}}
+          {{/with}}
+        {{/if}}
+      {{else}}
+        {{#sortable1c items=activities1 options=sortableOpts}}
+          {{> activityItem}}
+        {{/sortable1c}}
+        {{#if editingMainPage}}
+          {{>newActivity}}
+        {{/if}}
+      {{/if}}
+    </div>
+  </div>
+</template>
+
+<template name = 'activityItem'>
+    <p class="aItem">
+      {{#if editingMainPage}}
+        <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder or move to another model (in side-by-side view).">
+        </a>
+        {{>showHide collection='Activities' itemName='activity' item=this}}
+        <!--two issues, formatting, and don't have access to blocks to truly check if empty
+        {{#if canDelete}}
+          <a class="glyphicon glyphicon-remove deleteActivity" title="Delete Activity"></a>
+        {{/if}}--> 
+        <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
+        <a>
+        {{{tags}}}
+        </a>
+        {{>plaintexteditor collection='Activities' field='title' _id=_id editable=editingMainPageTFtext}} 
+      {{else}}
+        {{> workPeriodButton workPeriod}}
+        <!--not useful here ... moving to calendar event and linking to todo list<i class="activityProgress {{progress}}" title="{{progressTitle}}"></i>-->
+        <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+        <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
+        <a  href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}"> 
+          {{{title}}}{{{tags}}}
+        </a>        
+      {{/if}}
+    </p>
+</template>
+
+<template name='newActivity'>
+  <p class='newItem'>
+    {{>plaintexteditor collection='Activities' field='title' editable='true' placeholder='To add a new activity, type the title here, then click outside the blue box to save.' clearOnSave=true fixedFields=fixedFields}}
+  </p>
+</template>
+

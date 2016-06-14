@@ -1,0 +1,327 @@
+<body>
+  {{>calendarEventModal}}
+</body>
+
+<template name="calendarEventModal">
+  <div id="calendarEventModal" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          {{#with calendarEvent}}
+            {{formatDate date}} 
+            {{#if title}}
+              <h3>{{{title}}}</h3>
+            {{else}}
+              <h3>Add Calendar Event</h3>
+            {{/if}}
+          {{/with}}
+        </div>
+        <div class="modal-body">
+          {{#with calendarEvent}}
+            <div class="container-fluid">
+
+              <div class="row"><!--linked activity-->
+                <div class="col-xs-12">
+                  <span>Link with: </span>
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                      {{#with activeUnit}}
+                        <span lang="en" title="{{longname}}">{{{title}}}</span>
+                      {{else}}
+                        <span>Select a Unit</span>
+                      {{/with}}
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      {{#each units}}
+                        <li class="unitTitle {{unitBgPrimary}}">
+                          <a class='displayTitle' lang="en" href="#" title="{{longname}}"> 
+                            {{{title}}}
+                          </a>
+                        </li>
+                      {{/each}}                
+                    </ul>
+                  </div>
+                  <div class="btn-group">
+                    {{#if activeUnit}}
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        {{#with selectedActivity}}
+                          <span lang="en" title="{{longname}}">{{{title}}} {{#if tag}}({{{tag}}}){{/if}}</span>
+                        {{else}}
+                          <span>Select an activity</span>
+                        {{/with}}
+                        <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li class="chooseNoActivity">
+                          <a href="#">none</a>
+                        </li>
+                        {{#each activeUnitActivities}}
+                          <li class="activityForChoosing {{activityBgPrimary}}">
+                            <a href="#" class="">{{{title}}} {{#if tag}}({{{tag}}}){{/if}}</a>
+                          </li>
+                        {{/each}}                
+                      </ul>
+                    {{/if}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row"><!--title-->
+                <div class="col-xs-1">
+                  <span>Title:</span>
+                </div>
+                <div class="col-xs-11">
+                  <div id="calEventModalTitle" class='plaintexteditor' contenteditable='true' placeholder='Add a title'></div>
+                </div>
+              </div>
+
+              
+                <!--add namedTimePeriods collection with Mon: {from:Date,to:Date}, Tue: {from:Date,to:Date}, etc -->
+                <!-- make this a dropdown selector with a text entry -->
+                <!-- new text entries added to collection -->
+                <!--show conflicting appointments -->
+              <form class="form-inline"><!--time period-->
+                <div class="input-group">
+                  <input type="text" class="form-control" id="calEventModalTimeperiodName" placeholder="Named time period">
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                      <li><a href="#">A block</a></li>
+                      <li><a href="#">B block</a></li>
+                      <li><a href="#">E block</a></li>
+                    </ul>
+                  </div>
+                </div>
+                {{#if editingTimePeriods}}
+                  <div class="btn-group input-group">
+                    <div class="input-group-btn">
+                      {{#each daysOfTheWeek}}
+                        <button class="btn btn-primary setClearDay">
+                          {{abbreviation}}
+                        </button>
+                      {{/each}}
+                    </div>
+                  </div>
+                  <div class="btn-group input-group">
+                    <div class="input-group-btn">
+                      <button class="btn btn-primary"  id="setTimePeriod">
+                        Set
+                      </button>
+                      <button class="btn btn-primary"  id="clearTimePeriod">
+                        Clear
+                      </button>     
+                      <button class="btn btn-primary"  id="stopEditingTimePeriod">
+                        X
+                      </button>                
+                    </div>
+                  </div>
+                {{else}} {{#if isInRole 'teacher'}}
+                  <a href="#" id="editTimePeriod" class="glyphicon glyphicon-edit"></a>              
+                {{/if}} {{/if}}
+              </form>
+              <div class="row">
+                <div class="col-xs-1">
+                  <span> From: </span>
+                </div>
+                <div class="col-xs-5">
+                  <div class="form-group">
+                    <div class='input-group date' id='calEventModalFrom'>
+                      <input type='text' class="form-control"  {{disabled}}/>
+                      <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xs-1">
+                  <span> To: </span>
+                </div>
+                <div class="col-xs-5">
+                  <div class="form-group">
+                    <div class='input-group date' id='calEventModalTo'>
+                      <input type='text' class="form-control"  {{disabled}}/>
+                      <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--
+              with ... select group or members or section (if teacher)
+              where ... OOC, FTF, HOM and location name
+              -->
+
+              <div class="row"><!-- participants -->
+                {{{participants}}} 
+                {{{invitees}}}
+              </div>
+              <div class="row">
+                <div class="col-xs-12">
+                  <span>Invite Participants</span>
+                  <div class="btn-group"> 
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                      <span>from</span>
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li class="chooseTeachers {{choseTeachersBgPrimary}}">
+                        <a href="#">Teachers</a>
+                      </li>
+                      <!-- parents in calendar events not yet implemented
+                      {{#if isInRole 'teacher'}}
+                        <li class="chooseParents {{choseParentsBgPrimary}}">
+                        <a href="#">Parents or Advisors</a>
+                        </li>
+                      {{/if}}
+                      -->
+                      <li role="separator" class="divider"></li>
+                      <li class="chooseNoSection {{sectionBgPrimary}}">
+                        <a href="#">no section</a>
+                      </li>
+                      {{#each sections}}
+                        <li class="sectionName {{sectionBgPrimary}}">
+                          <a class='displayTitle' lang="en" href="#"> 
+                            {{{name}}}
+                          </a>
+                        </li>
+                      {{/each}}
+                      <li role="separator" class="divider"></li>  
+                      <li class="chooseNoGroup {{groupBgPrimary}}">
+                        <a href="#">no group</a>
+                      </li>
+                      {{#each groups}}
+                        <li class="groupNames {{groupBgPrimary}}">
+                          <a class='displayTitle' lang="en" href="#"> 
+                            {{{names}}}
+                          </a>
+                        </li>
+                      {{/each}}                 
+                    </ul>
+                  </div>
+                  <div class="btn-group"> 
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                      <span>select</span>
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      {{#if isInRole 'teacher'}}
+                        {{#with activeSection}}
+                          <li class="chooseSection {{sectionBg}}">
+                            <a href="#">{{name}}</a>
+                          </li>
+                          <li role="separator" class="divider"></li>
+                        {{/with}}
+                      {{/if}}
+                      <li class="inviteAllParticipants">
+                        <a href="#">invite all</a>
+                      </li> 
+                      {{#if isInRole 'teacher'}}
+                        <li class="chooseAllParticipants">
+                          <a href="#">choose all</a>
+                        </li>                       
+                      {{/if}}
+                      <li class="unselectParticipants">
+                        <a href="#">unselect all</a>
+                      </li>
+                      {{#each potentialParticipants}}
+                        <li class="participantName {{participantBg}} {{participantSelectionDisabled}}">
+                          <a class='displayTitle' lang="en" href="#"> 
+                            {{getname _id 'full'}}
+                          </a>
+                        </li>
+                      {{/each}}                 
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row"><!--todo list-->
+                <h5 class="hr centered"><span>Todo List</span></h5>               
+                {{#sortable1c items=todos options=sortableOpts}}
+                  {{>todoItem}}
+                {{/sortable1c}}
+                {{#if todoCount}}
+                  {{>newTodo}}
+                {{else}}
+                  {{#each temporaryTodos}}
+                    {{>tempTodo}}
+                  {{/each}}
+                  {{>newTempTodo}}
+                {{/if}}
+              </div>
+
+              <div class="row"><!--notes-->
+                <h5 class="hr centered"><span>Notes</span></h5>
+                <div id="calEventModalNote" class="summernote"></div>
+              </div>
+            </div>
+          {{/with}}
+        </div>
+        <div class="modal-footer bg-{{backgroundColor}}">
+          <p class="text-left">{{{message}}}</p>
+          {{#if showSaveButton}}
+            <button class="btn btn-primary"  id="saveCalendarEvent">
+              Save
+            </button>
+          {{/if}}
+          <!--only activite edit fields if user is teacher or a participant in the event ?-->
+          {{#if showAcceptInviteButton}}
+            <button class="btn btn-primary" id="acceptCalendarInvite">
+              Accept Invitation
+            </button>
+            <button class="btn btn-primary" id="declineCalendarInvite">
+              Decline Invitation
+            </button>
+          {{/if}}          
+          {{#if showDeleteButton}}
+            <button class="btn btn-danger" id="deleteCalendarEvent">
+              {{deleteButtonText}}
+            </button>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="tempTodo">
+  <div class="col-xs-2">
+    <span class="glyphicon glyphicon-unchecked"></span>
+  </div>
+  <div class="col-xs-10">
+    <div  class='calEventModalTempTodo plaintexteditor' contenteditable='true' placeholder='Saving now will delete this item.'>{{text}}</div>
+  </div>
+</template>
+
+<template name="newTempTodo">
+  <div class="col-xs-2">
+    <span class="glyphicon glyphicon-unchecked"></span>
+  </div>
+  <div class="col-xs-10">
+    <div id="calEventModalNewTempTodo" class='plaintexteditor' contenteditable='true' placeholder='Enter a new todo item.'></div>
+  </div>
+</template>
+
+<template name="todoItem">
+  <div class="todoItem">
+    <div class="col-xs-2">
+      <span class="glyphicon glyphicon-{{checked}}" title="Click to check/uncheck.  Drag to reorder."></span>
+      <span class="glyphicon glyphicon-move todoSortableHandle"></span>
+    </div>
+    <div class="col-xs-10">
+      {{>plaintexteditor collection='Todos' field='text' _id=_id editable='true'}}
+    </div>
+  </div>
+</template>
+
+<template name="newTodo">
+  <div class="col-xs-2">
+    <span class="glyphicon glyphicon-unchecked"></span>
+  </div>
+  <div class="col-xs-10">
+    <div id="calEventModalNewTodo" class='plaintexteditor' contenteditable='true' placeholder='Enter a new todo item.'></div>
+  </div>
+</template>

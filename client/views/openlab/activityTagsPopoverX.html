@@ -1,0 +1,37 @@
+<body>
+  {{>activityTagsPopoverX}}
+</body>
+
+<template name="activityTagsPopoverX">
+  <div id="activityTagsPopoverX" class="popover popover-default">
+    <div class="arrow"></div>
+    <div class="popover-title">
+      <span class="close" data-dismiss="modal">&times;</span>
+      <div class="text-center">
+        <span>{{{title}}}</span>
+      </div>
+    </div>
+    <div class="popover-content">
+      <div class="input-group">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Recent <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            {{#each recentTags}}
+              <li><a href="#" class='recentTag'>{{tag}}</a></li>
+            {{/each}}
+          </ul>
+        </div>
+        <input type='text' class="text-center" id="newTag"/>
+      </div>
+    </div>
+    <div class="popover-footer popover-default">
+      Save for: 
+      <button type="submit" id="saveForActivity" class="btn btn-sm btn-primary">This Activity</button>
+      {{#if studentID}}
+        {{#unless inBlockHeaderInTeacherWall}}
+          <button type="submit" id="saveForStudent" class="btn btn-sm btn-primary">{{getname studentID 'full'}}</button>
+        {{/unless}}
+      {{/if}}
+    </div>
+  </div>
+</template>

@@ -1,0 +1,91 @@
+#startEndDates {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+table#calendar {
+  width: 98%;
+  margin-left: 1%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+table#calendar tr td {
+  border: thin black solid;
+  width:  20%;
+  vertical-align: top;
+  text-align: center;
+}
+table#calendar tr td.daysActivities {
+  border-bottom: none;
+}
+table#calendar tr td.calendar-day {
+  border-top: none;
+}
+table#calendar tr td h3 {
+  margin-top: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+table#calendar tr td h3 a {
+  color: black;
+}
+table#calendar tr td p.aItem {
+  background-color: #afafaf;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#afafaf));
+  background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: -moz-linear-gradient(top, #ffffff, #ffffff 25%, #afafaf);
+  background-image: -ms-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: -o-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  margin: 5px;
+}
+table#calendar tr td p.aItem.due {
+  background-color: #FAA732; 
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FAA732), color-stop(25%, #FAA732), to(#D77510));
+  background-image: -webkit-linear-gradient(#FAA732, #FAA732 25%, #D77510);
+  background-image: -moz-linear-gradient(top, #FAA732, #FAA732 25%, #D77510);
+  background-image: -ms-linear-gradient(#FAA732, #FAA732 25%, #D77510);
+  background-image: -o-linear-gradient(#FAA732, #FAA732 25%, #D77510);
+  background-image: linear-gradient(#FAA732, #FAA732 25%, #D77510);
+  margin: 5px;
+}
+table#calendar tr td p.aItem a {
+  color: black;
+}
+table#calendar tr td ul.dropdown-menu li.selected {
+  background-color: #EEDC94;
+  margin-bottom: 5px;
+}
+table#calendar tr td p.calendarEvent {
+  background-color: #dfdfdf;
+/*
+  background-color: #9f9f9f;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#efefef), color-stop(25%, #efefef), to(#9f9f9f));
+  background-image: -webkit-linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  background-image: -moz-linear-gradient(top, #efefef, #efefef 25%, #9f9f9f);
+  background-image: -ms-linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  background-image: -o-linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  background-image: linear-gradient(#efefef, #efefef 25%, #9f9f9f);
+  line-height: 20px;
+*/
+  padding: 4px;
+  padding-bottom: 0;
+  margin-left: 6px;
+  margin-right: 6px;
+}
+table#calendar tr td p.calendarEvent a {
+  color: black;
+}
+table#calendar tr td p.calendarEvent a.editCalenderEvent {
+  cursor: pointer;
+}
+table#calendar tr td p.calendarInvite {
+  margin-left: 6px;
+  margin-right: 6px;
+  padding: 4px;
+  padding-bottom: 0;
+  background-color: #dfdfdf;
+  color: gray;
+}
+table#calendar tr td p.calendarInvite a {
+  color: gray;
+}

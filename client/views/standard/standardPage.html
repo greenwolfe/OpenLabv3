@@ -1,0 +1,138 @@
+<template name="standardPage">
+  {{#with standard}}
+    {{#if editingMainPage}}
+      <p>Title: 
+      {{>plaintexteditor collection='Standards' field='title' _id=_id editable=editingMainPageTFtext}}</p>
+    {{/if}}
+
+    <div id="standardDescription">
+      <p>
+        {{#unless description}}
+          {{#if isInRole 'teacher'}}
+            Click 'Edit' to provide a description.
+          {{else}}
+            The teacher has not yet provided a description for this standard. 
+          {{/if}}
+        {{/unless}}
+        {{#if editingMainPage}}
+          Description:
+        {{/if}}
+        {{>summernote collection='Standards' field='description' _id=_id enabled=editingMainPage options=summernoteOptions}}
+      </p>
+    </div>
+    Current Score:
+    <span class='badge badge-inverse {{LoMAveragecolorcode}}'>{{LoMAveragetext}}</span>
+    <p>
+
+    </p>
+
+    <p>Calculation method: {{humanizedCalcMethod}} </p>
+    {{#if editingMainPage}}
+       <p>
+       {{>helpBannerNavPills messages=calcHelpMessages}}
+       {{>plaintexteditor collection='Standards' field='calcMethod' _id=_id editable=editingMainPageTFtext}} </p>
+    {{/if}}  
+
+    <p>Scale: 
+      {{#if editingMainPage}}
+        {{symbolicScale}}
+        {{>helpBannerNavPills messages=scaleHelpMessages}}
+        {{>plaintexteditor collection='Standards' field='scaleHelp' _id=_id editable=editingMainPageTFtext}}
+      {{else}}
+        {{humanizedScaleHelp}}
+      {{/if}}
+    </p>
+
+    <div id="LoMlist">
+      {{#if isTeacherViewingAsStudent}}
+        {{> newLoM}}
+      {{/if}}
+      {{#each LoMs}}
+        {{> LoMitem}}
+      {{/each}}
+    </div>
+  {{/with}}
+</template>
+
+<template name="LoMitem">
+  <div class="LoMitem"><p>
+      {{#if editingThisLoM}}
+        {{>showHide collection='LevelsOfMastery' itemName='score and feedback' item=this}}
+        <a class="glyphicon glyphicon-remove deleteLoM" title="delete level of mastery"></a>
+        {{>plaintexteditor collection='LevelsOfMastery' field='level' _id=_id editable=editingThisLoMTFtext}}
+        {{>summernote collection='LevelsOfMastery' field='comment' _id=_id enabled=editingThisLoM options=summernoteOptions}} 
+        <div class='LoMitemInfo'>
+          <form class="form-inline LoMAssessmentVersion" role="form">
+            {{#with activity}}
+              <a href="{{pathFor 'activityPage' _id=pointsTo query=studentOrSectionID}}" tabindex=-1>{{title}}</a>
+            {{/with}} 
+            (version: 
+              {{>plaintexteditor collection='LevelsOfMastery' field='version' _id=_id editable=editingThisLoMTFtext placeholder='enter version'}}
+            ) graded by {{getname teacherID 'full'}}  {{formatDateTime submitted}}
+            <button class='btn btn-default btn-small doneEditingLoM' title = 'Changes are saved as soon as you click outside any dotted blue edit box.  This button just exits edit mode.'>
+              Done
+            </button>
+          </form>
+        </div>
+      {{else}}
+        <span class='badge badge-inverse {{LoMcolorcode}}'>{{LoMtext}}</span>
+        {{#if onActivityPage}}
+          <!-- put LoMcomment in quotes//-->
+          <span class='LoMcomment' data-toggle="tooltip" data-html=true title="{{versionWithFormatting}}graded by {{getname teacherID 'full'}}  {{formatDateTime submitted}}">{{{commentOrNote}}}</span>
+        {{else}}
+          <span class=LoMcomment>{{{commentOrNote}}}</span>
+          <div class='LoMitemInfo'>
+            {{#with activity}}
+              <a href="{{pathFor 'activityPage' _id=pointsTo query=studentOrSectionID}}" tabindex=-1>{{title}}</a>
+            {{/with}} 
+            {{versionWithFormatting}}
+            graded by {{getname teacherID 'full'}}  {{formatDateTime submitted}}  
+            {{#if isInRole 'teacher'}} 
+              <a class="glyphicon glyphicon-edit editLoM" title="Edit this level of mastery and comment."></a> 
+            {{/if}} 
+          </div>
+        {{/if}}
+      {{/if}}
+  </p></div>
+</template>
+
+<template name="newLoM">
+  <div class="newLoM">
+    <form class="form-inline" role="form">
+      New level and comment (assessment version: 
+      <div class="form-group">
+        <input type="text" class="form-control version" tabindex=-1/>
+      </div>
+      )
+    </form>
+    <form class="form-inline" role="form">
+      <div class="form-group">
+        <input type="text" class="form-control level"/>
+      </div>
+      <div class="summernote comment" tabindex=0>
+        &nbsp;
+      </div>
+      <div class="btn-group">
+        <button type="submit" class="btn btn-default">Save</button>
+        {{#if previousLoM}}
+          <button type="button" class="btn btn-default hidePrevious" title="Hide previous comments." tabindex=-1><span class='glyphicon glyphicon-triangle-top'></span></button>     
+        {{else}}
+          <button type="button" class="btn btn-default showPrevious" title="Show previous comments for copy and paste." tabindex=-1><i class="fa fa-history"></i></button>
+        {{/if}}
+      </div>
+    <!-- {{#if showPrevious}} use template-level reactive var and helper?-->
+    </form>
+    <!-- put button at end? make sure all is on new line.  previous level as well -->
+    {{#with previousLoM}}
+      <div class="previousLoMLevel">
+        <span class='badge badge-inverse {{LoMcolorcode}}'>{{level}}</span>
+      </div>
+      <span class="LoMcomment">{{{commentOrNote}}}</span>
+      <div class="btn-group">
+        <button type="button" class="btn btn-default previousCommentStepBackward"><span class='glyphicon glyphicon-step-backward'></span></button>
+        <button type="button" class="btn btn-default previousCommentStepForward"><span class='glyphicon glyphicon-step-forward'></span></button>
+        <button type="button" class="btn btn-default pastePrevious" title="Paste full comment."><span class='glyphicon glyphicon-arrow-up'></span></button>
+      </div>
+    {{/with}}
+  </div>
+</template>

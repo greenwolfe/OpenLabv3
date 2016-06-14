@@ -1,0 +1,107 @@
+<template name = 'calendar'>
+  <div id='startEndDates' class='form form-inline date-range col-xs-7'>
+    <div class="form-group">
+      <label for="calendarStartDate">Show:</label>
+      <label for="calendarStartDate">from</label>
+      <div class='input-group date' id='calendarStartDate'>
+        <input type='text' class="form-control"/>
+        <span class="input-group-addon">
+          <span class="glyphicon glyphicon-calendar"></span>
+        </span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="calendarEndDate">to</label>
+      <div class='input-group date' id='calendarEndDate'>
+        <input type='text' class="form-control"/>
+        <span class="input-group-addon">
+          <span class="glyphicon glyphicon-calendar"></span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <table id='calendar'>
+    {{#each calendarWeeks}}
+      {{> calendarWeek}}
+    {{/each}}
+  </table>  
+</template>
+
+<template name = 'calendarWeek'>
+  <tr>
+    {{#each weekDays}}
+      {{> daysActivities}}      
+    {{/each}}
+  </tr>
+  <tr>
+    {{#each weekDays}}
+      {{> calendarDay}}      
+    {{/each}}
+  </tr>
+</template>
+
+<template name='daysActivities'>
+  <td class='daysActivities'>
+    {{#each daysActivities}}
+      <p class="aItem {{due}}">
+        {{#if isInRole 'teacher'}}
+          {{#with workPeriod}} 
+            <a href="#workPeriodPopoverX" type="button" class="btn workPeriod-gauge"  data-toggle="modal" data-backdrop=false>
+              {{{titleWithTags ..}}}
+            </a>
+          {{/with}}
+        {{else}}
+          <a  href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}">
+            {{{titleWithTags}}}
+          </a> 
+        {{/if}}
+      </p>
+    {{/each}}
+    {{#unless daysActivities}}
+      <p>&nbsp;</p>
+    {{/unless}}
+  </td>
+</template>
+
+<template name = 'calendarDay'>
+  <td class='calendar-day'>
+    <!--<i class="{{frozen}}" data-day={{ID}}></i>-->
+    <h3 class='dayOfTheWeek'> 
+<!--      {{#if isInRole 'teacher'}}
+        <a href="{{pathFor 'attendance2'}}">{{day}}</a> 
+      {{else}}-->
+        {{day}}
+<!--      {{/if}}-->
+    </h3>
+    <!-- ID ??? -->
+     <div class = 'daysEvents'>
+      {{#each daysEvents}}
+        {{> calendarEvent}}        
+      {{/each}}
+      {{#each daysInvitations}}
+        {{> calendarEvent}}
+      {{/each}}
+     </div>
+  </td>
+</template>
+
+<template name = 'calendarEvent'>
+  {{#if isInvite}}
+    <p class='calendarInvite text-left'>
+      Invitation: 
+      <a href="#" class="editCalendarEvent">{{title}}</a>
+    </p>
+  {{else}}
+    <p class='calendarEvent text-left'>
+      <!-- need helper for progress level and title -->
+      <i class="calendarEventProgress {{progressIcon}} float-right" title="{{progressMessage}}"></i>
+       <a href="#" class="editCalendarEvent">{{title}}</a>
+      <!--{{>showHide collection='CalendarEvents' itemName='calendarEvent' item=this}}
+      <a class="glyphicon glyphicon-remove deleteCalendarEvent" title="Delete Event"></a>-->
+      {{#with activity}}
+        <a href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}" class="glyphicon glyphicon-link editCalendarEvent" title="{{titleWithTags}}"></a>
+      {{/with}}
+    </p>
+  {{/if}}
+</template>
