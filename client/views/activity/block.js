@@ -53,6 +53,8 @@ Template.block.helpers({
       return ''; //don't put subactivity in header of subactivity block ... redundant and possibly confusing
     var subactivity = Activities.findOne(this.subActivityID);
     var wall = Walls.findOne(this.wallID);
+    if (!wall) //!wall means is displayed as a slide on the front page
+      return '';
     if (subactivity) {
       subactivity.inBlockHeader = true;
       subactivity.inTeacherWall = (wall.type == 'teacher');
@@ -72,6 +74,23 @@ Template.block.helpers({
       return '';
     }
     return '';
+  },
+  studentOrSectionID: function() {
+    var cU = Meteor.userId();
+    if (Roles.userIsInRole(cU,'teacher')) {
+      var studentID = Meteor.impersonatedId();
+      if (studentID)
+        return 'id=' + studentID;
+      var sectionID = Meteor.selectedSectionId();
+      if (sectionID)
+        return 'id=' + sectionID;
+      return '';
+    } else {
+      var studentID = Meteor.impersonatedOrUserId(); //in case is parent viewing as student
+      if (studentID)
+        return 'id=' + studentID; 
+      return '';     
+    }
   },
   /*virtualWorkStatus: function() {
     return 'icon-raise-virtual-hand';
@@ -111,6 +130,23 @@ Template.block.helpers({
   },
   formatDateTime: function(date) {
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
+  },
+  notInWall: function() {
+    return (!Walls.findOne(this.wallID)); //wall not found if in slide show on main page where walls are not subscribed to
+  },
+  subactivityOrActivity: function() {
+    return Activities.findOne(this.subactivityID) || Activities.findOne(this.activityID);
+  },
+  tags: function() {
+    var studentID = Meteor.impersonatedOrUserId();
+    var activityID = this._id;
+    var status = ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+    var tags = '';
+    if (this.tag) 
+      tags += ' (' + this.tag + ')';
+    if ((status) && (status.tag))
+      tags += '<strong> (' + status.tag + ')</strong>';
+    return tags;    
   }
 });
 
@@ -503,9 +539,6 @@ Template.subactivityItem.helpers({
     var cU = Meteor.userId();
     if (Roles.userIsInRole(cU,'teacher')) {
       var studentID = Meteor.impersonatedId();
-      var data = Template.parentData(function(data){return ('createdFor' in data)});
-      if ((data) && Meteor.users.find(data.createdFor).count())
-        studentID = data.createdFor;
       if (studentID)
         return 'id=' + studentID;
       var sectionID = Meteor.selectedSectionId();
@@ -514,9 +547,6 @@ Template.subactivityItem.helpers({
       return '';
     } else {
       var studentID = Meteor.impersonatedOrUserId(); //in case is parent viewing as student
-      var data = Template.parentData(function(data){return ('createdFor' in data)});
-      if ((data) && Meteor.users.find(data.createdFor).count())
-        studentID = data.createdFor;
       if (studentID)
         return 'id=' + studentID; 
       return '';     

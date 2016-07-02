@@ -2,27 +2,20 @@ Memberships = new Meteor.Collection('Memberships');
 
 Meteor.methods({
   addMember: function(membership) {
+    console.log(membership);
     check(membership,{
       memberID:  Match.idString,
       itemID: Match.idString,
       collectionName: Match.OneOf('Groups','Sections'),
       startDate: Match.Optional(Date),
       endDate: Match.Optional(Date)
-      /* 
-      invitedUntil: Date //deprecated?
-      startDate: Date
-      endDate: Date
-      status: //current, former, final //deprecated?
-      */
     });
     var longLongAgo = new Date(0);
     var aLittleWhileAgo = moment().subtract(1,'minutes').toDate();  //converted to javascript date object after subtracting 1 minute
     var today = new Date();
     var wayWayInTheFuture = new Date(8630000000000000); //new Date(8640000000000000) =  Sat Sep 13 275760 01:00:00 GMT+0100 (BST) and is the maximum possible javascript Date
-    //membership.invitedUntil = longLongAgo; //expired invitation = no invitation
     membership.startDate = membership.startDate || aLittleWhileAgo;
     membership.endDate = membership.endDate || wayWayInTheFuture; 
-    //membership.status='current'; // current, former, final
 
     var Collection = Mongo.Collection.get(membership.collectionName);
     if (!Collection)
@@ -40,9 +33,6 @@ Meteor.methods({
     Memberships.find({memberID:membership.memberID,collectionName:membership.collectionName}).forEach(function(mship) {
       if ((mship.startDate < today) && (today < mship.endDate)) 
         throw new Meteor.Error('hasCurrentMembership','You have a current membership.  You cannot request to join a new group until you leave your old group.  groupID = ' + mship.itemID + ' collectionName = ' + mship.collectionName + ' membershipID = ' + mship._id);
-      //if (mship.status == 'final') { //rejioning a group within two days of leaving ... status still final while waiting to see if all members leave
-      //  Memberships.update(mship._id,{$set:{status:'former'}});
-      //}
     });
 
     var formerMembership = Memberships.findOne({
@@ -51,7 +41,7 @@ Meteor.methods({
       itemID:membership.itemID
     })
     if (formerMembership) {
-      return Memberships.update(formerMembership._id,{endDate:wayWayInTheFuture}); //make former membership current again
+      return Memberships.update(formerMembership._id,{$set:{endDate:wayWayInTheFuture}}); //make former membership current again
         //note member still has no access to any materials posted while they were not a member
         //but access can be added on a block by block basis
     } else {
@@ -60,8 +50,6 @@ Meteor.methods({
   },
   removeMember: function(membershipID) { //parameter futureStatus deprecated
     check(membershipID,Match.idString);
-    //check(futureStatus,Match.Optional(Match.OneOf('former','final')));
-    //futureStatus = futureStatus || 'former';
     var membership = Memberships.findOne(membershipID);
     if (!membership)
       throw new Meteor.Error('membershipNotFound','Cannot remove member.  Membership not found.');
@@ -79,35 +67,20 @@ Meteor.methods({
     var item = Collection.findOne(membership.itemID);
     if (!item)
       throw new Meteor.Error('item-not-found', "Cannot remove member, could not find item " + membership.itemID +  " in collection" + membership.collectionName + '.');
-/*    var currentMemberIDs = _.pluck(Memberships.find({
-        collectionName:membership.collectionName,
-        itemID: membership.itemID,
-        status: 'current'
-      },
-      {fields:{memberID:1}}).fetch(),'memberID');
-    if (!_.contains(currentMemberIDs,membership.memberID))*/ //deprecated
-    var wayWayInTheFuture = new Date(8630000000000000);
-    if (membership.endDate < wayWayInTheFuture)
+    var today = new Date();
+    if (membership.endDate < today)
       throw new Meteor.Error('alreadyLeft','You have already left the group.');
-    //if (currentMemberIDs.length == 1) //this is the last member to leave
-    //  Collection.update(membership.itemID,{$set:{status:'disbanded'}}); //deprecated
-
-/*    if (!(this.isSimulation) && (futureStatus == 'final')) { 
-      if (currentMemberIDs.length > 1) { //this is not the last member to leave
-        Meteor.setTimeout(function() { //check back in a couple days 
-          var item = Collection.findOne(membership.itemID);
-          if (item.status != 'disbanded') //change status to former instead of final
-            return Memberships.update(membershipID,{$set: {status: 'former'}});
-        },2*24*3600*1000) //two days in milliseconds
-      }
-    } */ //deprecated ... thank god!
 
     //Indicate when the member left this group, and keep record rather than deleting it.
+    var aLittleWhileAgo = moment(today).subtract(1,'minutes').toDate();
     return Memberships.update(membershipID,{$set: {
-      endDate: today //,
-      //status: futureStatus
+      endDate: aLittleWhileAgo
     }})
   },
+  //Make some routines to allow teachers only to
+  //turn a former member into a final member
+  //check that there are no current members (if there are, the member can just rejoin with the normal process)
+  //change endDate to be < group.latestActivity
   changeMembershipDates: function(membershipID,startDate,endDate) { //deprecated???
     check(membershipID,Match.idString);
     check(startDate,Match.Optional(Date));

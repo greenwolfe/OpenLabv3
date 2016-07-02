@@ -10,7 +10,7 @@ Template.registerHelper('userIsInRole',function(user,role) {
  /***** GROUP HELPERS *****/
 /*************************/
 
-Meteor.currentGroup = function(memberID) {  //if memberID is not passed, returns open invitations for currently impersonated user or current user
+Meteor.currentGroup = function(memberID) {  //if memberID is not passed, returns group for currently impersonated user or current user
   var groupID = Meteor.currentGroupId(memberID);
   return Groups.findOne(groupID);
 }
@@ -56,7 +56,9 @@ Meteor.groupFirstNames = function(status,groupID) {
   groupMembers.forEach(function(user,i,gMs) {
     groupies +=  user.profile.firstName;
     if (i == groupSize - 2) {
-      groupies += 'and';
+      groupies += ' and ';
+    } else if (i < groupSize - 2) {
+      groupies += ', ';
     };
   })
   return groupies;
@@ -74,6 +76,7 @@ Meteor.groupFirstNames = function(status,groupID) {
  /**** DEFINED IN /METHODS/groupMETHODS.JS ****/
 /*********************************************/
 
+//Meteor.groupCurrentMembersCount
 //Meteor.groupMemberIds
 //Meteor.isGroupMember
 //Meteor.currentGroupId

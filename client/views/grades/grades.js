@@ -1,4 +1,4 @@
-Template.openlab.onCreated(function() {
+Template.grades.onCreated(function() {
   var iU = Meteor.impersonatedOrUserId();
   var cU = Meteor.userId();  
   var instance = this;
@@ -21,7 +21,7 @@ Template.openlab.onCreated(function() {
   };
 });
 
-Template.openlab.onRendered(function() {
+Template.grades.onRendered(function() {
   var instance = this;
   instance.autorun(function() {
     var cU = Meteor.userId();
@@ -120,7 +120,7 @@ Template.openlab.onRendered(function() {
   });
 });
 
-Template.openlab.helpers({
+Template.grades.helpers({
   studentSubscriptionLoaded: function() {
     var studentID = Meteor.impersonatedOrUserId();
     if (Roles.userIsInRole(studentID,'student')) {

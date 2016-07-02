@@ -130,14 +130,17 @@ body div.container {
     min-width: 100px;
     min-height: 14pt;
 }
-.wall .column .block div.panel-body {
+.wall .column .block div.panel-body,
+.slideShow .block div.panel-body {
     overflow: hidden;
     background-color: #FFF !important;
 }
-.wall .column .block div.panel-body img {
+.wall .column .block div.panel-body img,
+.slideShow .block div.panel-body img {
     max-width: 100%;
 }
-.wall .column .block div.panel-footer {
+.wall .column .block div.panel-footer,
+.slideShow .block div.panel-footer {
     background-color: #F8F8F8 !important;
     font-size: small;
     padding: 0;

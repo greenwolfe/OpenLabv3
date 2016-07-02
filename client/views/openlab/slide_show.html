@@ -1,0 +1,54 @@
+<Template name="slideShow">
+  <div class='slideShow'>
+    {{#if slidesReady}}
+      {{#if slidesCount}}
+        {{#with activeSlide}}
+          <div class="slideShowTitle">
+            <h4>Slide {{slideNumber}} of {{slidesCount}}</h4>
+            {{#if isInRole 'teacher'}}
+              {{#if impersonatedId}}
+                {{getname impersonatedId 'first'}}:
+              {{/if}}
+            {{/if}}
+            {{#each stars}}
+              <i class="fa fa-star {{yellow}}"></i>
+            {{/each}}
+            {{#if isInRole 'teacher'}}
+              {{#if impersonatedId}}
+                (me: 
+                  {{#each teacherStars}}
+                    <i class="fa fa-star {{yellow}}"></i>
+                  {{/each}}
+                )
+              {{/if}}
+            {{/if}}
+            <i class="fa fa-fast-backward"></i>
+            <i class="fa fa-step-backward"></i>
+            <i class="fa fa-step-forward"></i>
+          </div>
+          {{> block}}
+        {{/with}}
+      {{else}}
+        {{>noSlides title='No slides found.'}}
+      {{/if}}
+    {{else}}
+      {{#if currentUser}}
+        {{>noSlides title='Loading slides ...'}}
+      {{else}}
+        {{>noSlides title='No slides found. Not logged in.'}}
+      {{/if}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="noSlides">
+  <h4>Slide Show</h4>
+  <div class="block block-{{type}} panel panel-default">
+    <div class="panel-heading">
+        <div class="blockTitle">{{{title}}}</div>
+    </div>
+    <div class="panel-body">
+      <p> This slide show will display content from your student, group and section walls for this unit.</p>
+    </div>
+  </div>
+</template>

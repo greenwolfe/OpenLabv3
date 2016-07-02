@@ -7,7 +7,7 @@
           {{#if wallIsNotEmpty}}
             {{{title}}}
           {{else}}
-            {{#if userIsInRole impersonatedOrUserId 'student'}}
+            {{#if isInRole 'teacher,student'}}
               <ul class="nav navbar-nav text-center">
               <li class="dropdown pastGroupsDropdownList">
                 <a class="dropdown-toggle text-grey" data-toggle="dropdown">

@@ -65,6 +65,17 @@
       {{#if inEditedWall}}
         <span class="avoidwrap">Created for {{{createdForName}}} by {{getname createdBy 'full'}} {{formatDateTime createdOn}}. Last modified by {{getname modifiedBy 'full'}} {{formatDateTime modifiedOn}}.</span>
       {{/if}}
+      {{#if notInWall}}
+        <span class="avoidwrap">
+          In {{wallType}} wall on 
+          {{#with subactivityOrActivity}}
+            <a  href="{{pathFor 'activityPage' _id=pointsTo  query=studentOrSectionID}}">
+              {{{title}}}{{{tags}}}
+            </a> page.
+          {{/with}}
+          Created for {{{createdForName}}} by {{getname createdBy 'full'}} {{formatDateTime createdOn}}. Last modified by {{getname modifiedBy 'full'}} {{formatDateTime modifiedOn}}.
+        </span>      
+      {{/if}}
     </div>
   </div>
 </Template>
@@ -186,7 +197,7 @@
             {{/if}}
           {{/if}}
         {{/if}}
-        <a  href="{{pathFor 'activityPage' _id=pointsTo}}">
+        <a  href="{{pathFor 'activityPage' _id=pointsTo  query=studentOrSectionID}}">
           {{{title}}}{{{tags}}}
         </a>           
       {{else}}

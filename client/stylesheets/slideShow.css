@@ -1,0 +1,12 @@
+div.slideShowTitle h4 {
+  display: inline-block;
+}
+div.slideShow i.fa-star.yellow {
+  color: yellow;
+}
+div.slideShow i.fa-step-backward,
+div.slideShow i.fa-step-forward,
+div.slideShow i.fa-fast-backward, {
+  font-size: x-large;
+  float: right;
+}

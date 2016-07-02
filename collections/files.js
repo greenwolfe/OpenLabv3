@@ -7,10 +7,13 @@ Meteor.methods({
       //could be included from pasted block, will be overwritten with denormalized values anyway
       columnID: Match.Optional(Match.idString),  
       wallID: Match.Optional(Match.idString), 
-      activityID: Match.Optional(Match.idString), 
+      activityID: Match.Optional(Match.idString),
+      unitID: Match.Optional(Match.idString), 
       order: Match.Optional(Match.Integer), 
       createdFor: Match.Optional(Match.idString), 
-      createdBy: Match.Optional(Match.idString), 
+      createdBy: Match.Optional(Match.idString),
+      //access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
+  
 
       //if included from pasted block, then keep it
       createdOn: Match.Optional(Date), 
@@ -30,6 +33,8 @@ Meteor.methods({
     file.columnID = block.columnID;
     file.wallID = block.wallID; 
     file.activityID = block.activityID;
+    file.unitID = block.unitID;
+    file.access = block.access;
     file.createdFor = block.createdFor;
 
     var cU = Meteor.user();

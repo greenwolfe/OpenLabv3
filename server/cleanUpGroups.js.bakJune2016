@@ -1,0 +1,30 @@
+/*Fields to remove:
+status
+*/
+Meteor.startup(function () {
+  Groups.find().forEach(function(group) {
+    var longLongAgo = new Date(0);
+    var today = new Date();
+    var wayWayInTheFuture = new Date(8630000000000000); //new Date(8640000000000000) =  Sat Sep 13 275760 01:00:00 GMT+0100 (BST) and is the maximum possible javascript Date
+    /*var currentMembersCount = Memberships.find({
+      collectionName:'Groups',
+      itemID: group._id,
+      startDate: {$lt:today},
+      endDate: {$gt:today}
+    }).count();*/
+    var latestActivity = _.pluck(Blocks.find({createdFor: group._id},{fields:{createdOn:1},sort:{createdOn:-1},limit:1}).fetch(),'createdOn').pop();
+    latestActivity = latestActivity || longLongAgo;
+    //below update code recently used June 2016
+    Groups.update(group._id,{
+      $set:{latestActivity:latestActivity} //,
+      //$unset:{status:''}
+    });
+/*    if (!wallsCount) {
+      Memberships.remove({
+        collectionName:'Groups',
+        itemID: group._id,
+      });
+      Groups.remove(group._id);
+    }*/
+  });
+});

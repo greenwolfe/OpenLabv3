@@ -401,6 +401,6 @@ Template.pastGroupSelector.events({
     event.preventDefault();
     wall = Template.parentData();
     var group = this;
-    Meteor.call('wallChangeGroup',wall._id,group._id,Meteor.impersonatedOrUserId());
+    Meteor.call('wallChangeGroup',wall._id,group._id);
   }
 })

@@ -13,15 +13,15 @@ Meteor.methods({
       unitID: activity.unitID,
       visible: activity.wallVisible[wall.type],
       order: activity.wallOrder.indexOf(wall.type);
-      access: [studentID] | [groupMemberIDs] | [sectionMemberIDs];
+      access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
       */
     });
     var cU = Meteor.user();
     if (!cU)  
       throw new Meteor.Error('notLoggedIn', "You must be logged in to create a new wall.");
-    if (Roles.userIsInRole(cU,'parentOrAdvisor'))
-      throw new Meteor.Error('parentNotAllowed', "Parents may only observe.  They cannot create new content.");
-    //if student, check if student is a member of createdFor group or section
+    //troubles here when creating default walls for a parent???
+    if (!Roles.userIsInRole(cU,['teacher','student']))
+      throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can add a wall to an activity.");
 
     var activity = Activities.findOne(wall.activityID);
     if (!activity)
@@ -32,7 +32,7 @@ Meteor.methods({
 
     //validate createdFor collection and specific item 
     if (wall.type == 'student') {
-      var student = Students.findOne(wall.createdFor);
+      var student = Meteor.users.findOne(wall.createdFor);
       if (!Roles.userIsInRole(student,'student'))
         throw new Meteor.Error('notStudent','Could not create student wall.  Assigned user is not a student.');
       wall.access = [student._id];
@@ -40,35 +40,20 @@ Meteor.methods({
       var group = Groups.findOne(wall.createdFor);
       if (!group)
         throw new Meteor.Error('group-not-found','Could not create group wall.  Group not found.');
-      wall.access = groupMemberIds[group._id];
+      wall.access = Meteor.groupMemberIds('current,final',group._id);
     } else if (wall.type == 'section') {
       var section = Sections.findOne(wall.createdFor);
       if (!section)
         throw new Meteor.Error('section-not-found','Could not create section wall.  Section not found.');
-      wall.access = sectionMemberIDs[section._id];      
+      wall.access = Meteor.sectionMemberIds(section._id);      
     } else if (wall.type == 'teacher') {
       var site = Sites.findOne(wall.createdFor);
       if (!site)
         throw new Meteor.Error('site-not-found','Could not create teacher wall.  Site not found.');        
+      wall.access = []; //not sure what to do here, should not need to be used
     } else {
       throw new Meteor.Error('owner-not-found','Error creating wall.  Owner (student,group, section or site) not found.');      
     }
-
-    /***** deprecated 
-    var collectionNames = {teacher:'Site',student:'users',group:'Groups',section:'Sections'};
-    var collectionName = collectionNames[wall.type]
-    var Collection = Mongo.Collection.get(collectionName);
-    if (!Collection)
-      throw new Meteor.Error('collection-not-found','Error creating wall.  Collection ' + collectionName + ' not found.');
-    var item = Collection.findOne(wall.createdFor);
-    if (!item) 
-      throw new Meteor.Error('item-not-found','Error creating wall.  Could not find item in ' + collectionName + ' with id ' + wall.createdFor);
-    if ((wall.type == 'student') {
-      wall.access = [wall.createdFor];
-      if (!Roles.userIsInRole(item,'student')))
-        throw new Meteor.Error('notStudent','Could not create student wall.  Assigned user is not a student.');
-    }
-    *****/
 
     return Walls.insert(wall , function( error, _id) { 
       if ( error ) console.log ( error.reason ); //info about what went wrong
@@ -79,41 +64,30 @@ Meteor.methods({
       }
     });
   },
-  wallChangeGroup: function(wallID,newGroupID,studentID) {
-    //think this through ... don't pass in studentID, rather
-    //allow any changes if teacher, no changes if parent,
-    //and if it's a student doing it, check cU.
+  wallChangeGroup: function(wallID,newGroupID) {
+    //only allow group change if wall is empty?
     check(wallID,Match.idString);
     check(newGroupID,Match.idString);
     check(studentID,Match.idString);
+
     var wall = Walls.findOne(wallID);
     if (!wall)
       throw new Meteor.Error('wallNotFound','Cannot change group.  Wall not found.');
     if (wall.type != 'group')
       throw new Meteor.Error('notGroupWall','Cannot change group.  This is not a group wall.');
-    if (!Roles.userIsInRole(studentID,'student'))
-      throw new Meteor.Error('notStudent','Cannot change group wall. ' + studentID + ' is not a student.');
+    if (Blocks.find({wallID:wall._id}).count())
+      throw new Meteor.Error('notEmpty',"Cannot change group if wall already has blocks in it.");
     var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'parentOrAdvisor'))
-      throw new Meteor.Error('parentNotAllowed','Parents or advisors may not change the group assigned to a wall.');
-    if (Roles.userIsInRole(cU,'student') && (cU != studentID))
-      throw new Meteor.Error('onlyChangeForSelf','A student cannot change the group on behalf of another student.');
+    if (!cU)  
+      throw new Meteor.Error('notLoggedIn', "You must be logged in to create a new wall.");
+    if (!Roles.userIsInRole(cU,['teacher','student']))
+      throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can change the group for a group wall.");
 
-    var currentGroupMemberIds = Meteor.groupMemberIds('current',wall.createdFor);
-    var finalGroupMemberIds = Meteor.groupMemberIds('final',wall.createdFor);
-    var formerGroupMemberIds = Meteor.groupMemberIds('former',wall.createdFor);
-    var groupMemberIds = _.union(currentGroupMemberIds,finalGroupMemberIds);
-    if (!_.contains(groupMemberIds,studentID))
-      groupMemberIds = formerGroupMemberIds;
-    if (!_.contains(groupMemberIds,studentID))
+    var groupMemberIds = Meteor.groupMemberIds('current,final',wall.createdFor);
+    if (Roles.userIsInRole(cU,'student') && !_.contains(groupMemberIds,cU))
       throw new Meteor.Error('studentNotInGroup','A student can only change the group for a wall if they are in the group to begin with.');
-    var currentNewGroupMemberIds = Meteor.groupMemberIds('current',newGroupID);
-    var finalNewGroupMemberIds = Meteor.groupMemberIds('final',newGroupID);
-    var formerNewGroupMemberIds = Meteor.groupMemberIds('former',newGroupID);
-    var newGroupMemberIds = _.union(currentNewGroupMemberIds,finalNewGroupMemberIds);
-    if (!_.contains(newGroupMemberIds,studentID))
-      newGroupMemberIds = formerNewGroupMemberIds;
-    if (!_.contains(newGroupMemberIds,studentID))
+    var newGroupMemberIds = Meteor.groupMemberIds('current,final',newGroupID);
+    if (Roles.userIsInRole(cU,'student') && !_.contains(newGroupMemberIds,cU))
       throw new Meteor.Error('studentNotInNewGroup','A student can only change the group for a wall if they are in the new group.');
 
     return Walls.update(wallID,{$set:{createdFor:newGroupID,access:newGroupMemberIds}});
@@ -173,7 +147,7 @@ Meteor.methods({
       if (_.contains(wallTypes,'student') && (Walls.find(wall).count() == 0)) {
         Meteor.call('insertWall',wall,function(error,id) {
           if (error)
-            console.log(error.reason);
+            throw new Meteor.Error(error);
         });
         wallsCreated += 1;
       }
@@ -186,7 +160,7 @@ Meteor.methods({
         if (wall.createdFor)
           Meteor.call('insertWall',wall,function(error,id) {
           if (error)
-            console.log(error.reason);
+            throw new Meteor.Error(error);
         });
         wallsCreated += 1;
       }
@@ -204,7 +178,7 @@ Meteor.methods({
         if ((_.contains(wallTypes,'section')) && (Walls.find(wall).count() == 0)) {
            Meteor.call('insertWall',wall,function(error,id) {
             if (error)
-              console.log(error.reason);
+              throw new Meteor.Error(error);
           });
           wallsCreated += 1;
         }

@@ -220,3 +220,6 @@ Activities.after.update(function (userID, doc, fieldNames, modifier) {
   if (doc.visible != this.previous.visible) 
     WorkPeriods.update({activityID:this.previous._id},{$set: {activityVisible:doc.visible}}, {multi: true});
 });
+
+//check Walls, Columns, Blocks, Files
+//insert, update, put server function to put in unit ID

@@ -73,6 +73,7 @@ Template.editSection.helpers({
     if (!('_id' in this) || !Sections.findOne(this._id))
       return false; //no need for delete button if section doesn't exist
     var enrolledStudents = Meteor.sectionMemberIds(this._id);
+    //would be nice not to show delete button unless section also had no content (no )
     return (enrolledStudents.length == 0);
   }
 })

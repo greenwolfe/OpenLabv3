@@ -153,6 +153,7 @@ Meteor.publish('openlabPagePubs',function(studentIDs) {
 Meteor.publish('activityPagePubs',function(studentOrSectionIDs,activityID) {
   check(studentOrSectionIDs,[Match.idString]); 
   check(activityID,Match.idString);
+  var activity = Activities.findOne(activityID);
   var studentIDs = studentOrSectionIDs.filter(function(studentID) {
     return Roles.userIsInRole(studentID,'student');
   });
@@ -230,6 +231,10 @@ Meteor.publish('activityPagePubs',function(studentOrSectionIDs,activityID) {
   }
 
   return [
+    Activities.find({_id:activityID}),
+    Units.find({_id:activity.unitID}),
+    WorkPeriods.find({unitID:activity.unitID}),
+    Tags.find(),
     Walls.find(selector),
     Columns.find({wallID:{$in:wallIds}}),
     Blocks.find(blockSelector,{fields:{text:0}}),
@@ -355,6 +360,65 @@ Meteor.publish('assessmentSubactivity',function(activityID) {
   if (Roles.userIsInRole(this.userId,'teacher')) {
     return Activities.find({_id:activityID});
   }  
+});
+
+Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+  check(studentOrSectionID,Match.idString); 
+  check(unitID,Match.idString); 
+
+  var selector = {
+    unitID: unitID,
+    type: {$in: ['text','file','embed']}
+  };
+  var fileSelector = {unitID: unitID};
+  var slideStarSelector = {unitID: unitID};
+  if (Roles.userIsInRole(studentOrSectionID,'student')) {
+    if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
+      var wallIDs = _.pluck(Walls.find({
+        unitID:unitID,
+        type: 'student',
+        createdFor: studentOrSectionID 
+      },{fields:{_id:1}}).fetch(),'_id');
+      selector.wallID = {$in: wallIDs};
+      selector.access = {$in: [studentOrSectionID]};
+      fileSelector.wallID = {$in: wallIDs};
+      fileSelector.access = {$in: [studentOrSectionID]};
+      slideStarSelector.wallID = {$in: wallIDs};      
+      slideStarSelector.userID = {$in: [studentOrSectionID]};
+      return [
+        Blocks.find(selector,{fields:{text:0}}),
+        Files.find(fileSelector),
+        SlideStars.find(slideStarSelector)
+      ];
+    } else {
+      if (Roles.userIsInRole(this.userId,'teacher')) {
+        //requires both be in .access rather than just one???
+        selector.access = {$in: [studentOrSectionID,this.userId]};
+        fileSelector.access = {$in: [studentOrSectionID,this.userId]};
+        slideStarSelector.userID = {$in: [studentOrSectionID,this.userId]};
+      } else {
+        selector.access = {$in: [studentOrSectionID]};
+        fileSelector.access = {$in: [studentOrSectionID]};
+        slideStarSelector.userID = {$in: [studentOrSectionID]};
+      }
+      return [
+        Blocks.find(selector,{fields:{text:0}}),
+        Files.find(fileSelector),
+        SlideStars.find(slideStarSelector)
+      ];
+    }
+  } else if (Roles.userIsInRole(this.userId,'teacher')) { //and are not impersonating a student
+    selector.$or = [{createdFor:studentOrSectionID}, //if viewing a section, draw in blocks posted to its walls
+                    {access:{$in:[this.userId]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
+    fileSelector.$or = [{createdFor:studentOrSectionID},
+                        {access:{$in:[this.userId]}}];
+    slideStarSelector.userID = {$in:[this.userId]};  //stars personal to teacher, not assigned to section
+    return [
+      Blocks.find(selector,{fields:{text:0}}),
+      Files.find(fileSelector),
+      SlideStars.find(slideStarSelector)
+    ];
+  }
 });
 
 Meteor.publish('blocks',function(studentOrSectionID,activityID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!

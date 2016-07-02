@@ -27,9 +27,9 @@
                 <button class="btn btn-warning btn-nopad" id="show-history" >History: Show&nbsp;/</button>
                 <button class="btn btn-warning btn-nopad" id="hide-history">&nbsp;Hide</button> 
               </div>
-              {{#if formerMembers}}
+              {{#if formerMembersCount}}
                 <p>
-                  Past Members:  {{{groupies 'former,final'}}}
+                  Past Members:  {{{groupies 'former'}}}
                 </p>
               {{/if}}
               {{#if groupIsOpen}}

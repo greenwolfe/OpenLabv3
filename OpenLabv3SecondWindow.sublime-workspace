@@ -1,0 +1,483 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"no",
+				"nowrap"
+			],
+			[
+				"too",
+				"tooltipElements"
+			],
+			[
+				"calEvent",
+				"calEventModalNote"
+			],
+			[
+				"activity",
+				"activityPageSession"
+			],
+			[
+				"load",
+				"loadedStudentIDs"
+			],
+			[
+				"cop",
+				"copiedAndPasted"
+			],
+			[
+				"Leve",
+				"LevelsOfMastery"
+			],
+			[
+				"get",
+				"getMaxOrder"
+			],
+			[
+				"lastViewed",
+				"lastViewedChildOrAdvisee"
+			],
+			[
+				"border-",
+				"border-width"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"package control: Install Package",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 422.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/solargreen/meteor/OpenLabv3/collections/groups.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/sections.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/login_buttons.html",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/login_buttons.js",
+		"/home/solargreen/meteor/OpenLabv3/server/users.js",
+		"/home/solargreen/meteor/OpenLabv3/methods/sectionMethods.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/memberships.js",
+		"/home/solargreen/meteor/OpenLabv3/methods/groupMethods.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/groups.html",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/groups.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/section_helpers.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/siteAdmin/siteAdmin.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/siteAdmin/siteAdmin.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/login_buttons_session.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/levelsOfMastery.js",
+		"/home/solargreen/meteor/OpenLabv3/OpenLabv3SecondWindow",
+		"/home/solargreen/meteor/OpenLabv3/collections/workPeriods.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/activityProgress.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/activityStatuses.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/timePeriods.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.html",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/headers.css",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/viewAs.html",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/application.css",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/openlab.css",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/calendar/calendarPage.html",
+		"/home/solargreen/meteor/OpenLabv2/collections/workPeriods.js",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/calendarEventModal.css",
+		"/home/solargreen/meteor/OpenLabv2/methods/MatchHelpers.js",
+		"/home/solargreen/meteor/OpenLabv2/server/publications.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/calendarEvents.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/calendarEventModal.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/calendar.js",
+		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodPopoverX.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/timePeriods.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/calendarEventModal.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/helpers/openlabSession.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/blocks.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/calendar.html",
+		"/home/solargreen/meteor/OpenLabv2/collections/activityProgress.js",
+		"/home/solargreen/meteor/sources.list",
+		"/home/solargreen/meteor/OpenLabv2/collections/todos.js",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/calendar.css",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activities_list.js",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/activity_statuses.css",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/activities_list.css",
+		"/home/solargreen/meteor/OpenLabv2/collections/walls.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/columns.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activities_list.html",
+		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodButton.js",
+		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodButton.html",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/section_helpers.js",
+		"/home/solargreen/meteor/OpenLabv2/methods/sectionMethods.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/activityHeader.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/activityHeader.js",
+		"/home/solargreen/meteor/OpenLabv2/methods/groupMethods.js",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/login_buttons.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/block.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/block.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/wall.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/wall.html",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/application.css",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/activity_page.css",
+		"/home/solargreen/meteor/OpenLabv2/server/users.js",
+		"/home/solargreen/meteor/OpenLabv2/server/init.js",
+		"/home/solargreen/meteor/OpenLabv2/server/fixtures.js",
+		"/home/solargreen/meteor/OpenLabv2/server/schoolAccountsPublications.js",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/login_buttons.html",
+		"/home/solargreen/meteor/OpenLabv2/lib/routes.js",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/login_buttons_session.js",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/groups.html",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/groups.js",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/group_helpers.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/activities.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/column.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/column.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/addCalendarEventModal.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/addCalendarEventModal.html",
+		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodPopoverX.html",
+		"/home/solargreen/meteor/OpenLabv2/methods/sortable1cMethods.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activityTagsPopoverX.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/levelsOfMastery.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/tags.js",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/openlab.css",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/standards_list.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/standard/standardPage.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/standard/standardPage.html",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/standard_page.css",
+		"/home/solargreen/meteor/OpenLabv2/client/views/assessment/assessmentPage.html",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/assessmentPage.css",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/helpers/editingMainPage.js",
+		"/home/solargreen/meteor/OpenLabv2/client/plaintexteditor/plaintexteditor.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/assessment/assessmentHeader.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/assessment/assessmentPage.js",
+		"/home/solargreen/meteor/OpenLabv2/client/summernote/summernote.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/standards_list.js",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/standards_list.css",
+		"/home/solargreen/meteor/OpenLabv2/client/plaintexteditor/plaintexteditor.html",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/plaintexteditor.css",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/summernote.css",
+		"/home/solargreen/meteor/OpenLabv2/collections/memberships.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/groups.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/activityPage.js",
+		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/headers.css",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/helpers/wallHelpers.js",
+		"/home/solargreen/Desktop/stringtest.txt",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/login_buttons_dialogs.js",
+		"/home/solargreen/meteor/OpenLabv2/server/cleanUpGroups.js.bak",
+		"/home/solargreen/meteor/OpenLabv2/server/membershipsAddFields.js.bak",
+		"/home/solargreen/meteor/OpenLabv2/server/cleanUpGroups.js",
+		"/home/solargreen/meteor/OpenLabv2/server/membershipsAddFields.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/activityStatuses.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/categories.js",
+		"/home/solargreen/meteor/OpenLabv2/server/anonymizeUsernames.js.bak",
+		"/home/solargreen/meteor/OpenLabv2/server/anonymizeUsernames.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/openlab.js",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/activityPage.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/openlab.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/activity/helpers/activityPageSession.js",
+		"/home/solargreen/meteor/OpenLabv2/collections/standards.js",
+		"/home/solargreen/meteor/OpenLabv2/server/calendarEventAddField.js.bak",
+		"/home/solargreen/meteor/OpenLabv2/client/main.html",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/viewAs.js",
+		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/viewAs.html",
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activityTagsPopoverX.html"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"lastActivity",
+			"console",
+			"edit",
+			"subscribe",
+			"workPeriod",
+			"dataVAlidated",
+			"dataVAlidated(",
+			"editingTime",
+			"calEventModalTimeperiodName",
+			"workPeriod",
+			"aItem",
+			"fields",
+			"Match.oneOf",
+			"Match.",
+			"potentialParticipant",
+			"potentialPa",
+			"potentialParticipants",
+			"removeParticipant",
+			"currentPro",
+			"curentPro",
+			"currentPro",
+			"dataValidated",
+			"text",
+			"dataValidated()",
+			"instance.message.set",
+			"Template.calen",
+			"&",
+			"group",
+			"userToShow",
+			"group",
+			"name",
+			"required fields:",
+			"cursor",
+			"hover",
+			"console.",
+			"calEventMo",
+			"dateOrIDFor",
+			"dateORIDFor",
+			"addCalendarEventMOdal",
+			".update",
+			"update",
+			"Prog",
+			"glyphicon",
+			"this.block",
+			"return",
+			"_.str",
+			"subscribe",
+			"markIsExtraPractice",
+			"console.log",
+			"tag",
+			"return",
+			"alert",
+			"Meteor.is",
+			"Flow",
+			"sub",
+			"sort",
+			"rightNow",
+			"memberships",
+			"cursor",
+			"add(",
+			".add",
+			"moment.add",
+			"color",
+			"if (percent",
+			"colorcode",
+			"sItem",
+			"date",
+			"hover",
+			"assessment",
+			"Meteor.su",
+			"console.log",
+			"subactivityItem",
+			"assignment",
+			"standardID",
+			"subscribe",
+			"subscr",
+			"status",
+			"block",
+			"_id",
+			"date",
+			"      \n",
+			"defaultText",
+			"newu",
+			"unit",
+			"unittitle.active",
+			"cu",
+			"glyphicon",
+			"check",
+			"canEditBlock",
+			"Meteor.users",
+			"users",
+			"Meteor.users",
+			"block.type",
+			"Units.",
+			"lastO",
+			"firstUnit",
+			"first",
+			".modal-backdrop",
+			"|| Sections.findOne()",
+			"selected",
+			"currentStatus",
+			"console",
+			"Future",
+			"Ago",
+			"Session.set",
+			"Seld",
+			"date(",
+			"Session.set",
+			"denormalize",
+			"Format",
+			"dateFormat",
+			"id=\"activities\"",
+			"id='activities'",
+			"today",
+			".unittitle",
+			"Session",
+			"aitem",
+			"newI",
+			"activity Item",
+			"theActivityID",
+			"i.fa",
+			"glyph",
+			":hover",
+			"editing",
+			"editingMainPageTF",
+			"editingMainPage",
+			"cursor:",
+			"active"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"participantList",
+			"Meteor.Collection.ObjectID()"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		},
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 25.0
+	},
+	"input":
+	{
+		"height": 44.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.5,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "OpenLabv3SecondWindow",
+	"replace":
+	{
+		"height": 46.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/meteor/OpenLabv2/OpenLabv2.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 235.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

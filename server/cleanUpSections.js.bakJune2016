@@ -1,0 +1,17 @@
+/*Fields to remove:
+status
+*/
+Meteor.startup(function () {
+  Sections.find().forEach(function(section) {
+    var longLongAgo = new Date(0);
+    var today = new Date();
+    var wayWayInTheFuture = new Date(8630000000000000); //new Date(8640000000000000) =  Sat Sep 13 275760 01:00:00 GMT+0100 (BST) and is the maximum possible javascript Date
+    var latestActivity = _.pluck(Blocks.find({createdFor: section._id},{fields:{modifiedOn:1},sort:{modifiedOn:-1},limit:1}).fetch(),'modifiedOn').pop();
+    latestActivity = latestActivity || longLongAgo;
+    //below update code recently used June 2016
+    Sections.update(section._id,{
+      $set:{latestActivity:latestActivity} //,
+      //$unset:{status:''}
+    });
+  });
+});

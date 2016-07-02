@@ -18,10 +18,12 @@ Meteor.methods({
       modifiedBy: Match.Optional(Match.idString), //current user
       modifiedOn: Match.Optional(Date),           //current date
       wallID: Match.Optional(Match.idString),     //denormalized value from column
+      wallType: Match.Optional(Match.oneOf('teacher','student','group','section')), //denormalize value from wall
       activityID: Match.Optional(Match.idString), //same as above
       unitID: Match.Optional(Match.idString),     //same as above
       visible: Match.Optional(Boolean),           //true
-      order: Match.Optional(Match.Integer)        //0 new blocks always added at top of column
+      order: Match.Optional(Match.Integer),        //0 new blocks always added at top of column
+      access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
       */
 
       /*content fields, block types indicated, all filled with blank string on insertion
@@ -77,6 +79,7 @@ Meteor.methods({
     block.wallID = column.wallID; //denormalize block
     block.activityID = column.activityID;
     block.createdFor = wall.createdFor;
+    block.wallType = wall.type;
 
     block.order = 0;  //always insert at top of column
     block.raiseHand = '';
@@ -98,6 +101,7 @@ Meteor.methods({
   },
   //make a pasteBlock method pasteBlock: function(blockID,columnID)
   //is it necessary to pass in anything else?
+  /* REVISE THIS to past contents of block at time it was copied */
   pasteBlock: function(blockID,columnID) {
     //validation ... rights to copy this specific block to another wall?
     check(blockID,Match.idString);
@@ -118,15 +122,19 @@ Meteor.methods({
     block.wallID = column.wallID; //denormalize block
     if (block.activityID != column.activityID) {
       var subActivity = Activities.findOne(block.activityID);
-      if (subActivity.pointsTo != column.activityID) //pasted onto a completely different activity page
+      if (subActivity.pointsTo != column.activityID) { //pasted onto a completely different activity page
         //only if assessment block, otherwise set to null
         block.subActivityID = column.activityID;
-      block.activityID = column.activityID;
+        block.activityID = column.activityID;
+        var activity = Activities.findOne(block.activityID);
+        block.unitID = activity.unitID;
+      }
     }
 
     var wall = Walls.findOne(column.wallID);
     if (!wall)
       throw new Meteor.Error('wall-not-found', "Cannot paste block, not a valid wall");
+    block.wallType = wall.type;
     var cU = Meteor.user();
     if (!cU)  
       throw new Meteor.Error('notLoggedIn', "You must be logged in to paste a block.");
@@ -141,7 +149,8 @@ Meteor.methods({
 
     if (originalWall) { //handle case of teacher copying from one student wall to another, one group wall to another or one section wall to another
       if (_.contains(['student','group','section'],originalWall.type) && (originalWall.type == wall.type) && Roles.userIsInRole(cU,'teacher')) {
-        block.createdFor = wall.createdFor
+        block.createdFor = wall.createdFor,
+        block.access = wall.access
       }
     }
 
@@ -193,6 +202,7 @@ Meteor.methods({
     Blocks.update({_id: {$in: ids}}, {$inc: {order:-1}}, {multi: true});
     return numberRemoved; 
   },
+  /* REVISE to allow updating access, add or remove user */
   updateBlock: function(block) { 
     check(block,Match.ObjectIncluding({
       _id: Match.idString,
@@ -319,15 +329,32 @@ Meteor.methods({
 Blocks.after.update(function (userID, doc, fieldNames, modifier) {
   if (doc.columnID !== this.previous.columnID) {
     //denormalizing
-    //I think the line below was accidentally copied from /collections/activities.js and fortunately would do nothing here because wrong id would not return any documents
-    //ActivityStatuses.update({activityID:this.previous._id},{$set: {unitID:doc.unitID}}, {multi: true});
     var column = Columns.findOne(doc.columnID);
-    Blocks.update(doc._id,{$set:{wallID:column.wallID}});
-    Blocks.update(doc._id,{$set:{activityID:column.activityID}});
+    var wall = Walls.findOne(column.wallID);
+    Blocks.update(doc._id,{$set:{
+      wallID:column.wallID,
+      wallType:wall.type,
+      activityID:column.activityID,
+      unitID:wall.unitID,
+      access:wall.access
+    }});
     Files.find({blockID:doc._id}).forEach(function(file) { 
-      Files.update(file._id,{$set:{columnID:column._id}});
-      Files.update(file._id,{$set:{wallID:column.wallID}});
-      Files.update(file._id,{$set:{activityID:column.activityID}});
+      Files.update(file._id,{$set:{
+        columnID:column._id,
+        wallID:column.wallID,
+        activityID:column.activityID,
+        unitID:wall.unitID,
+        access:wall.access
+      }});     
+    });  
+    SlideStars.find({blockID:doc._id}).forEach(function(slideStar) { 
+      SlideStars.update(slideStar._id,{$set:{
+        columnID:column._id,
+        wallID:column.wallID,
+        activityID:column.activityID,
+        unitID:wall.unitID,
+        access:wall.access
+      }});
     });  
   }
 });

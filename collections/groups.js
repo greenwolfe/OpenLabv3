@@ -1,20 +1,37 @@
 Groups = new Meteor.Collection('Groups');
 
 Meteor.methods({
-  addGroup: function(openUntil) {
-    check(openUntil,Match.Optional(Date));
-    var wayWayInTheFuture = new Date(8630000000000000);
-    openUntil = openUntil || wayWayInTheFuture;
+  addGroup: function(studentID) {
+    check(studentID,Match.idString);
+    var cU = Meteor.user(); //current user
+    if (!Roles.userIsInRole(cU,['student','teacher']))
+      throw new Meteor.Error('notStudentOrTeacher','You must be a student or a teacher to add a new group.');    
+    if (!Roles.userIsInRole(studentID,'student'))
+      throw new Meteor.Error('invalidStudent','A valid student ID is needed to create a new group.');
+
     var longLongAgo = new Date(0);
     var today = new Date();
-    return Groups.insert({
-      openUntil: openUntil, 
+    var tenMinutesFromNow = moment().add(10,'minutes').toDate();
+    var groupID = Groups.insert({ //insert group
+      openUntil: tenMinutesFromNow, 
       votesToOpen: [],
       pollClosesAt: longLongAgo,
       latestActivity: today,
-      //status: 'active' //active or disbanded ... deprecated 6/13/16
-                       //set to disbanded by membership function if all members have voted to disband
+    },function(error,groupID) {
+      if (error) {
+        throw new Meteor.Error('failedToAddGroup',error)
+      } else {
+        Meteor.call('addMember',{ //add first member
+          memberID:  studentID,
+          itemID: groupID,
+          collectionName: 'Groups'
+        },function(error,id) {
+          if (error)
+            throw new Meteor.Error('failedToAddMember',error)
+        });
+      }
     });
+    return groupID
   },
   updateGroup: function(group) { //return to implement this with latestActivity
     check(group,{
@@ -42,7 +59,7 @@ Meteor.methods({
     var group = Groups.findOne(groupID);
     if (!group)
       throw new Meteor.Error('groupNotFound','Cannot vote to open group.  Group not found. ' + groupID);
-    if (group.status != 'active') 
+    if (!Meteor.groupCurrentMembersCount(groupID)) 
       throw new Meteor.Error('groupNotActive','Only active groups can accept new members.');
     var cU = Meteor.userId();
     if (!Roles.userIsInRole(cU,['teacher','student']))
