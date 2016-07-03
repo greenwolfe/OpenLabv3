@@ -1,12 +1,21 @@
 div.slideShowTitle h4 {
   display: inline-block;
 }
+div.slideShowTitle div#slideShowStars {
+  display: inline-block;
+  text-align: right;
+}
+div.slideShowTitle div#slideShowControls {
+  display: inline-block;
+  float: right;
+}
 div.slideShow i.fa-star.yellow {
   color: yellow;
 }
 div.slideShow i.fa-step-backward,
 div.slideShow i.fa-step-forward,
-div.slideShow i.fa-fast-backward, {
+div.slideShow i.fa-fast-backward {
   font-size: x-large;
-  float: right;
+  margin-right: 4px;
+  margin-left: 4px;
 }

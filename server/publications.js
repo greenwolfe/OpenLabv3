@@ -392,7 +392,6 @@ Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user
       ];
     } else {
       if (Roles.userIsInRole(this.userId,'teacher')) {
-        //requires both be in .access rather than just one???
         selector.access = {$in: [studentOrSectionID,this.userId]};
         fileSelector.access = {$in: [studentOrSectionID,this.userId]};
         slideStarSelector.userID = {$in: [studentOrSectionID,this.userId]};
@@ -418,6 +417,40 @@ Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user
       Files.find(fileSelector),
       SlideStars.find(slideStarSelector)
     ];
+  }
+});
+
+Meteor.publish('blockTextForSlides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+  check(studentOrSectionID,Match.idString); 
+  check(unitID,Match.idString); 
+
+  var selector = {
+    unitID: unitID,
+    type: {$in: ['text','file','embed']}
+  };
+  if (Roles.userIsInRole(studentOrSectionID,'student')) {
+    if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
+      var wallIDs = _.pluck(Walls.find({
+        unitID:unitID,
+        type: 'student',
+        createdFor: studentOrSectionID 
+      },{fields:{_id:1}}).fetch(),'_id');
+      selector.wallID = {$in: wallIDs};
+      selector.access = {$in: [studentOrSectionID]};
+      return Blocks.find(selector,{fields:{text:1}});
+    } else {
+      if (Roles.userIsInRole(this.userId,'teacher')) {
+        //requires both be in .access rather than just one???
+        selector.access = {$in: [studentOrSectionID,this.userId]};
+      } else {
+        selector.access = {$in: [studentOrSectionID]};
+      }
+      return Blocks.find(selector,{fields:{text:1}});
+    }
+  } else if (Roles.userIsInRole(this.userId,'teacher')) { //and are not impersonating a student
+    selector.$or = [{createdFor:studentOrSectionID}, //if viewing a section, draw in blocks posted to its walls
+                    {access:{$in:[this.userId]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
+    return Blocks.find(selector,{fields:{text:1}});
   }
 });
 

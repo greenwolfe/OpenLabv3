@@ -9,6 +9,9 @@ Meteor.startup(function () {
     checkCreateDirectories: true, //create the directories for you
     getDirectory: function(fileInfo,formData) {
       return formData.path;
+    },
+    imageVersions: {
+      webSize: {width: 640, height: 480}
     }
   });
 });  

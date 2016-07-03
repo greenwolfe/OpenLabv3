@@ -5,26 +5,26 @@
         {{#with activeSlide}}
           <div class="slideShowTitle">
             <h4>Slide {{slideNumber}} of {{slidesCount}}</h4>
-            {{#if isInRole 'teacher'}}
-              {{#if impersonatedId}}
-                {{getname impersonatedId 'first'}}:
+            <div id="slideShowStars">
+              {{#if isInRole 'teacher'}}
+                {{#if impersonatedId}}
+                  me: 
+                    {{#each teacherStars}}
+                      <i class="fa fa-star {{yellow}}"></i>
+                    {{/each}}
+                  <br/>
+                  {{getname impersonatedId 'first'}}:
+                {{/if}}
               {{/if}}
-            {{/if}}
-            {{#each stars}}
-              <i class="fa fa-star {{yellow}}"></i>
-            {{/each}}
-            {{#if isInRole 'teacher'}}
-              {{#if impersonatedId}}
-                (me: 
-                  {{#each teacherStars}}
-                    <i class="fa fa-star {{yellow}}"></i>
-                  {{/each}}
-                )
-              {{/if}}
-            {{/if}}
-            <i class="fa fa-fast-backward"></i>
-            <i class="fa fa-step-backward"></i>
-            <i class="fa fa-step-forward"></i>
+              {{#each stars}}
+                <i class="fa fa-star {{yellow}}"></i>
+              {{/each}}
+            </div>
+            <div id="slideShowControls">
+              <i class="fa fa-fast-backward"></i>
+              <i class="fa fa-step-backward"></i>
+              <i class="fa fa-step-forward"></i>
+            </div>
           </div>
           {{> block}}
         {{/with}}

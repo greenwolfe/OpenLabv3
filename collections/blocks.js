@@ -80,6 +80,7 @@ Meteor.methods({
     block.activityID = column.activityID;
     block.createdFor = wall.createdFor;
     block.wallType = wall.type;
+    block.access = wall.access;
 
     block.order = 0;  //always insert at top of column
     block.raiseHand = '';

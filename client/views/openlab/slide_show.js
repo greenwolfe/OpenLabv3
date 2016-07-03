@@ -24,12 +24,14 @@ Template.slideShow.onRendered(function() {
           instance.subscribe('slides',sectionID,unitID,function() {
             instance.slidesReady.set(true);
             instance.resetActiveSlide.set(true);
+            instance.subscribe('blockTextForSlides',sectionID,unitID);
           });
         } else {
           instance.slidesReady.set(false);
           instance.subscribe('slides',studentID,unitID,function() {
             instance.slidesReady.set(true);
             instance.resetActiveSlide.set(true);
+            instance.subscribe('blockTextForSlides',studentID,unitID);
           });         
         }
       } else if (Roles.userIsInRole(studentID,'student')) {
@@ -37,6 +39,7 @@ Template.slideShow.onRendered(function() {
         instance.subscribe('slides',studentID,unitID,function() {
           instance.slidesReady.set(true);
           instance.resetActiveSlide.set(true);
+          instance.subscribe('blockTextForSlides',studentID,unitID);
         });
       }
     }
@@ -63,12 +66,14 @@ Template.slideShow.onRendered(function() {
         selector.access = {$in: [studentID]};
       } 
       var slideIDs = _.pluck(Blocks.find(selector).fetch(),'_id');
-      slideIDs =  slideIDs.sort(function(slide1,slide2) {
-        var star1 = SlideStars.findOne({blockID:slide1,userID:studentID}) || {value:8};
-        var star2 = SlideStars.findOne({blockID:slide2,userID:studentID}) || {value:8};
+      slideIDs =  slideIDs.sort(function(slideID1,slideID2) {
+        var star1 = SlideStars.findOne({blockID:slideID1,userID:studentID}) || {value:8};
+        var star2 = SlideStars.findOne({blockID:slideID2,userID:studentID}) || {value:8};
         if (star1.value != star2.value) {
           return star2.value - star1.value;
-        } else { //REVERSE???
+        } else { 
+          var slide1 = Blocks.findOne(slideID1);
+          var slide2 = Blocks.findOne(slideID2);
           return slide2.modifiedOn - slide1.modifiedOn;
         }
       })
@@ -154,5 +159,23 @@ Template.slideShow.events({
   'click i.fa-star': function(event,tmpl) {
     var star = this;
     Meteor.call('setSlideStar',star.userID,star.blockID,star.index,alertOnError);
+  },
+  'click i.fa-step-forward': function(event,tmpl) {
+    var slideIDs = tmpl.slideIDs.get();
+    var activeSlideID = tmpl.activeSlideID.get();
+    var index = slideIDs.indexOf(activeSlideID);
+    if (index < slideIDs.length - 1)
+      tmpl.activeSlideID.set(slideIDs[index + 1]);
+  },
+  'click i.fa-step-backward': function(event,tmpl) {
+    var slideIDs = tmpl.slideIDs.get();
+    var activeSlideID = tmpl.activeSlideID.get();
+    var index = slideIDs.indexOf(activeSlideID);
+    if (index > 0)
+      tmpl.activeSlideID.set(slideIDs[index - 1]);
+  },
+  'click i.fa-fast-backward': function(event,tmpl) {
+    var slideIDs = tmpl.slideIDs.get();
+    tmpl.activeSlideID.set(slideIDs[0]);
   }
 })

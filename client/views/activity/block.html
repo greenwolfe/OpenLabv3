@@ -150,7 +150,22 @@
       {{#if isInRole 'parentOrAdvisor'}}
         <a href="" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">{{name}}</a>
       {{else}}
-        <a href="/upload{{path}}" target="_blank" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">{{name}}</a> 
+          {{#if isImage}}
+            {{#if editingBlock}}
+              <a href="/upload/{{path}}" target="_blank" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">
+                <img src="/upload/{{webSizePath}}" alt="{{name}}" width="50">
+                {{name}}
+              </a>
+            {{else}}
+              <a href="/upload/{{path}}" target="_blank" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">
+                <img src="/upload/{{webSizePath}}" alt="{{name}}" width="640">
+              </a>
+            {{/if}}            
+          {{else}}
+            <a href="/upload{{path}}" target="_blank" data-toggle="tooltip" title = "uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}">
+              {{name}}
+            </a>
+          {{/if}}
       {{/if}}
     {{/if}}
   </p> 

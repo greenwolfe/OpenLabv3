@@ -43,8 +43,10 @@ Meteor.methods({
         incrementedAt: rightNow
       }});
     } else { //no progress exists yet, level has been displayed as 0 by default  
-      if (cUisTeacher && userIsTeacher) //add to teachers stack
+      if (cUisTeacher && userIsTeacher) { //add to teachers stack
         Blocks.update(blockID,{$addToSet:{access:userID}});
+        Files.update({blockID:blockID},{$addToSet:{access:userID}},{multi:true});
+      }
       slideStar = {
         userID:userID,
         blockID:blockID,

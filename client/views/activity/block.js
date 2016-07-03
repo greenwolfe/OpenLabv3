@@ -355,6 +355,15 @@ Template.fileLink.helpers({
   },
   formatDateTime: function(date) {
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
+  },
+  isImage: function() {
+    return (_.str.contains(this.type,'image'));
+  },
+  webSizePath: function() {
+    var path = this.path;
+    var pathArray = path.split('/');
+    pathArray.splice(-1,0,'webSize');
+    return pathArray.join('/');
   }
 })
 

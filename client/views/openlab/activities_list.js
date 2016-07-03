@@ -265,6 +265,16 @@ Template.activityList.helpers({
 /*************************/
 
 /* currentStatus */
+/* move to server, create status for each activity
+for each section, denormalize every time a student adds
+or changes a section or a student adds or changes a status 
+stop loading status for all students, just load for section
+if section is selected only load for current unit so as 
+  little as possible loads?  put in activity list onCreated
+and onRendered rather than openlab?
+
+or for section status, collect total number students, number done, submitted, etc for each status
+compile message and percent complete, etc on client*/
 var currentStatus = function(activityID) {
   var studentID = Meteor.impersonatedOrUserId();
   var sectionID = Meteor.selectedSectionId();
