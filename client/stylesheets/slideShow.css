@@ -14,7 +14,8 @@ div.slideShow i.fa-star.yellow {
 }
 div.slideShow i.fa-step-backward,
 div.slideShow i.fa-step-forward,
-div.slideShow i.fa-fast-backward {
+div.slideShow i.fa-fast-backward,
+div.slideShow i.fa-fast-forward {
   font-size: x-large;
   margin-right: 4px;
   margin-left: 4px;

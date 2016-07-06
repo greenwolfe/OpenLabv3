@@ -1,8 +1,11 @@
   /*******************/
  /**** UTILITIES ****/
 /*******************/
-//July 4, 2016 todos:  
-//slides not reloading when just switching unit
+//todo list July 5, 2016
+//some error in activityList subscription
+//fails argument check at line 512
+//implement model summary
+
 percentExpected =  function() {
   var studentID = Meteor.impersonatedOrUserId();
   var activityIDs = _.pluck(Activities.find(

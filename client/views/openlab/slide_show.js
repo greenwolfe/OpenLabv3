@@ -7,15 +7,28 @@ Template.slideShow.onCreated(function() {
   instance.slideIDs = new ReactiveVar([]);
   instance.activeSlideID = new ReactiveVar(null);
   instance.resetActiveSlide = new ReactiveVar(true);
+  instance.limit = new ReactiveVar(5);
+  instance.loaded = new ReactiveVar(0);
 })
 
 /* slide show onRendered */
 Template.slideShow.onRendered(function() {
   instance = this;
-  instance.autorun(function() {
+
+  instance.autorun(function() {  //whenever a new set of slides is requested
     var unitID = openlabSession.get('activeUnit');
     var studentID = Meteor.impersonatedOrUserId();
     var sectionID = Meteor.selectedSectionId();
+    instance.limit.set(5);
+    instance.loaded.set(0);
+    instance.resetActiveSlide.set(true);
+  })
+
+  instance.autorun(function() {  
+    var unitID = openlabSession.get('activeUnit');
+    var studentID = Meteor.impersonatedOrUserId();
+    var sectionID = Meteor.selectedSectionId();
+    var limit = instance.limit.get();
     var studentOrSectionID = null;
     if (Roles.userIsInRole(studentID,['student'])) {
       studentOrSectionID = studentID;
@@ -23,8 +36,10 @@ Template.slideShow.onRendered(function() {
       studentOrSectionID = sectionID || studentID;
     }
     if (unitID && studentOrSectionID) {
-      instance.subscribe('slides',studentOrSectionID,unitID,function() { //things to do only when a new subscription is first ready
-        instance.resetActiveSlide.set(true);  //slides not sorted yet, so can't set active slide, notify next code segment
+      instance.subscribe('slides2',studentOrSectionID,unitID,limit,function() { //things to do only when a new subscription is first ready
+        instance.loaded.set(limit);
+        //change pub function to accept list of blockIDs 
+        //move line below to subscriptionsReady in case list os slideIDs changes without changing the subscription
         Meteor.subscribe('blockTextForSlides',studentOrSectionID,unitID);
       }); 
 
@@ -61,11 +76,7 @@ Template.slideShow.onRendered(function() {
           instance.resetActiveSlide.set(false);
         }
       }
-    } //else {
-//      instance.slideIDs.set([]);
-//      instance.activeSlideID.set(null);
-//      instance.resetActiveSlide.set(false);
-//    }        
+    }        
   });
 });
 
@@ -74,6 +85,16 @@ Template.slideShow.helpers({
   slidesCount: function() {
     var instance = Template.instance();
     return instance.slideIDs.get().length;
+  },
+  hasMoreSlides: function() {
+    var instance = Template.instance();
+    return (instance.slideIDs.get().length >= instance.limit.get());
+  },
+  displayingLastSlide: function() {
+    var instance = Template.instance();
+    var activeSlideID = instance.activeSlideID.get();
+    var slideIDs = instance.slideIDs.get();
+    return (slideIDs.indexOf(activeSlideID) + 1 == slideIDs.length);    
   },
   slideNumber: function() {
     var instance = Template.instance();
@@ -152,5 +173,13 @@ Template.slideShow.events({
   'click i.fa-fast-backward': function(event,tmpl) {
     var slideIDs = tmpl.slideIDs.get();
     tmpl.activeSlideID.set(slideIDs[0]);
+  },
+  'click i.fa-fast-forward': function(event,tmpl) {
+    var slideIDs = tmpl.slideIDs.get();
+    tmpl.activeSlideID.set(_.last(slideIDs));
+  },
+  'click i.fa-plus-square-o': function(event,tmpl) {
+    var limit = tmpl.limit.get();
+    tmpl.limit.set(limit + 5);
   }
 })

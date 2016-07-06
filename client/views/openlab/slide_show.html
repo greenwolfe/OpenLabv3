@@ -4,7 +4,12 @@
       {{#if Template.subscriptionsReady}}
         {{#with activeSlide}}
           <div class="slideShowTitle">
-            <h4>Slide {{slideNumber}} of {{slidesCount}}</h4>
+            <h4>
+              Slide {{slideNumber}} of {{slidesCount}}
+              {{#if hasMoreSlides}}
+                <i class="fa fa-plus-square-o" title="load more"></i>
+              {{/if}}
+            </h4>
             <div id="slideShowStars">
               {{#if isInRole 'teacher'}}
                 {{#if impersonatedId}}
@@ -24,6 +29,7 @@
               <i class="fa fa-fast-backward"></i>
               <i class="fa fa-step-backward"></i>
               <i class="fa fa-step-forward"></i>
+              <i class="fa fa-fast-forward"></i>
             </div>
           </div>
           {{> block}}

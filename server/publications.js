@@ -326,6 +326,67 @@ Meteor.publish('assessmentSubactivity',function(activityID) {
   }  
 });
 
+//re-write this to accept a limit, which means
+//the slideIDs must first be sorted
+//files and slideStars should be returned only for the indicated blocks/slides
+Meteor.publish('slides2',function(studentOrSectionID,unitID,limit)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+  check(studentOrSectionID,Match.idString); 
+  check(unitID,Match.idString); 
+  check(limit,Match.Integer);
+
+  var selector = {
+    unitID: unitID,
+    type: {$in: ['text','file','embed']}
+  };
+  var slideIDs = [];
+  var userID = studentOrSectionID;
+  if (Roles.userIsInRole(studentOrSectionID,'student')) {
+    if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
+      var wallIDs = _.pluck(Walls.find({
+        unitID:unitID,
+        type: 'student',
+        createdFor: studentOrSectionID 
+      },{fields:{_id:1}}).fetch(),'_id');
+      selector.wallID = {$in: wallIDs};
+      selector.access = {$in: [studentOrSectionID]}; 
+      slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
+    } else {
+      if (Roles.userIsInRole(this.userId,'teacher')) {
+        selector.access = {$in: [studentOrSectionID,this.userId]};
+      } else {
+        selector.access = {$in: [studentOrSectionID]};
+      }
+    }
+    slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
+  } else if (Roles.userIsInRole(this.userId,'teacher')) { //and are not impersonating a student
+    userID = this.userId;
+    selector.$or = [{createdFor:studentOrSectionID}, //if viewing a section, draw in blocks posted to its walls
+                    {access:{$in:[this.userId]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
+    slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
+  }
+
+  slideIDs =  slideIDs.sort(function(slideID1,slideID2) {
+    var star1 = SlideStars.findOne({blockID:slideID1,userID:userID}) || {value:8};
+    var star2 = SlideStars.findOne({blockID:slideID2,userID:userID}) || {value:8};
+    if (star1.value != star2.value) {
+      return star2.value - star1.value;
+    } else { 
+      var slide1 = Blocks.findOne(slideID1);
+      var slide2 = Blocks.findOne(slideID2);
+      return slide2.modifiedOn - slide1.modifiedOn;
+    }
+  })
+  var slideIDs = slideIDs.slice(0,limit);
+
+  return [
+    Blocks.find({_id:{$in:slideIDs}},{fields:{text:0}}),
+    Files.find({blockID:{$in:slideIDs}}),
+    SlideStars.find({blockID:{$in:slideIDs},userID:userID})
+  ]
+
+});
+
+
 Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
@@ -383,6 +444,7 @@ Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user
   }
 });
 
+//and this will have to be re-written to just accept a list of blockIDs
 Meteor.publish('blockTextForSlides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
