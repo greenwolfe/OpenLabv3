@@ -1,4 +1,5 @@
-Template.openlab.onCreated(function() {
+//all deprecated July 4, 2016
+/*Template.openlab.onCreated(function() {
   var iU = Meteor.impersonatedOrUserId();
   var cU = Meteor.userId();  
   var instance = this;
@@ -19,9 +20,9 @@ Template.openlab.onCreated(function() {
       this.reactive.set(newvalue) 
     }
   };
-});
+});*/
 
-Template.openlab.onRendered(function() {
+/*Template.openlab.onRendered(function() {
   var instance = this;
   instance.autorun(function() {
     var cU = Meteor.userId();
@@ -118,9 +119,9 @@ Template.openlab.onRendered(function() {
       });
     }
   });
-});
+}); */
 
-Template.openlab.helpers({
+/*Template.openlab.helpers({
   studentSubscriptionLoaded: function() {
     var studentID = Meteor.impersonatedOrUserId();
     if (Roles.userIsInRole(studentID,'student')) {
@@ -130,4 +131,4 @@ Template.openlab.helpers({
       return true; // not trying to show student data, so don't put message
     }
   }
-});
+});*/

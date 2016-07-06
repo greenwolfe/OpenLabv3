@@ -93,14 +93,17 @@ Meteor.methods({
 
 WorkPeriods.after.update(function (userID, doc, fieldNames, modifier) {
   setUnitPeriod(doc);
+  Meteor.updateSectionStatus(doc.sectionID,doc.activityID);
 });
 
 WorkPeriods.after.insert(function(userID,doc) {
   setUnitPeriod(doc);
+  Meteor.updateSectionStatus(doc.sectionID,doc.activityID);
 });
 
 WorkPeriods.after.remove(function(userID,doc) {
   setUnitPeriod(doc);
+  Meteor.updateSectionStatus(doc.sectionID,doc.activityID);
 });
 
 var setUnitPeriod = function(workPeriod) {

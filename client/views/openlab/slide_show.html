@@ -1,7 +1,7 @@
 <Template name="slideShow">
   <div class='slideShow'>
-    {{#if slidesReady}}
-      {{#if slidesCount}}
+    {{#if slidesCount}}
+      {{#if Template.subscriptionsReady}}
         {{#with activeSlide}}
           <div class="slideShowTitle">
             <h4>Slide {{slideNumber}} of {{slidesCount}}</h4>
@@ -29,23 +29,27 @@
           {{> block}}
         {{/with}}
       {{else}}
-        {{>noSlides title='No slides found.'}}
+        {{>noSlides title="<h4 class='bg-info'> Loading slides ... </h4>"}}
       {{/if}}
     {{else}}
       {{#if currentUser}}
-        {{>noSlides title='Loading slides ...'}}
+        {{#if Template.subscriptionsReady}}
+          {{>noSlides title='<h4>No slides found.</h4>'}}
+        {{else}}
+          {{>noSlides title="<h4 class='bg-info'> Loading slides ... </h4>"}}
+        {{/if}}
       {{else}}
-        {{>noSlides title='No slides found. Not logged in.'}}
+        {{>noSlides title="<h4 class='bg-info'>No slides.  Not logged in.</h4>"}}
       {{/if}}
     {{/if}}
   </div>
 </template>
 
 <template name="noSlides">
-  <h4>Slide Show</h4>
+  {{{title}}}
   <div class="block block-{{type}} panel panel-default">
     <div class="panel-heading">
-        <div class="blockTitle">{{{title}}}</div>
+        <div class="blockTitle">&nbsp;</div>
     </div>
     <div class="panel-body">
       <p> This slide show will display content from your student, group and section walls for this unit.</p>

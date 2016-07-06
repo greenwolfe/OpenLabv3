@@ -1,7 +1,8 @@
   /*******************/
  /**** UTILITIES ****/
 /*******************/
-
+//July 4, 2016 todos:  
+//slides not reloading when just switching unit
 percentExpected =  function() {
   var studentID = Meteor.impersonatedOrUserId();
   var activityIDs = _.pluck(Activities.find(
@@ -50,22 +51,23 @@ percentCompleted = function() {
   var selector = {
     activityID:{$in:expectedActivityIDs}
   };
-  var numStudents = 1;
   if (Roles.userIsInRole(studentID,'student')) {
     selector.studentID = studentID;
   } else  if (Roles.userIsInRole(cU,'teacher') && (sectionID)) {
-    var sectionMemberIds = Meteor.sectionMemberIds(sectionID);
-    numStudents = Math.max(sectionMemberIds.length,1);
-    selector.studentID = {$in: sectionMemberIds};
+    selector.sectionID = sectionID;
   } else {
     selector.studentID =  studentID; //will find no statuses
   }
 
   var statuses = ActivityStatuses.find(selector).fetch();
-  var completed = statuses.filter(function(status) {
-    return _.str.include(status.level,'done')
-  }).length
-  return 100*completed/numStudents/total;
+  var completed = statuses.reduce(function(p,status) {
+    if (status.studentID) {
+      return (_.str.include(status.level,'done')) ? p + 1 : p;
+    } else if (status.sectionID) {
+      return (status.studentsTotal) ? p + status.studentsDone/status.studentsTotal : p;
+    }
+  },0);
+  return 100*completed/total;
 }  
 
   /*************************/
@@ -73,7 +75,23 @@ percentCompleted = function() {
 /*************************/
 
 Template.activitiesList.onRendered(function() {
+  var instance = this;
   $('.fa.fa-question-circle[data-toggle="tooltip"]').tooltip();
+
+  instance.autorun(function() {
+    var activeUnitID = openlabSession.get('activeUnit');
+    var studentID = Meteor.impersonatedOrUserId();
+    if (Roles.userIsInRole(studentID,'student')) {
+      Meteor.subscribe('activityStatuses',studentID,activeUnitID,function() {
+        Meteor.subscribe('activityStatuses',studentID,null);
+      });
+    } else if (Roles.userIsInRole(studentID,'teacher')) {
+      var sectionID = Meteor.selectedSectionId();
+      Meteor.subscribe('activityStatuses',sectionID,activeUnitID,function() {
+        Meteor.subscribe('activityStatuses',sectionID,null);
+      });
+    }
+  });
 });
 
 Template.activitiesList.helpers({
@@ -266,7 +284,8 @@ Template.activityList.helpers({
 
 /* currentStatus */
 /* move to server, create status for each activity
-for each section, denormalize every time a student adds
+for each section, 
+******denormalize every time a student adds
 or changes a section or a student adds or changes a status 
 stop loading status for all students, just load for section
 if section is selected only load for current unit so as 
@@ -282,75 +301,8 @@ var currentStatus = function(activityID) {
   if (Roles.userIsInRole(studentID,'student')) {
     return ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
   } else if (Roles.userIsInRole(cU,'teacher') && (sectionID)) {
-    //indicate lowest level so it is flagged if 
-    var sectionMemberIds = Meteor.sectionMemberIds(sectionID);
-    var levels = _.pluck(ActivityStatuses.find({
-      studentID:{$in:sectionMemberIds},
-      activityID:activityID},
-      {fields: {level: 1}}).fetch(),'level');
-    if (levels.length) {
-      var statuses = ['nostatus','submitted','returned','donewithcomments','done'];
-      var numberMarkedSubmitted = levels.reduce(function(n,l){
-        return n  + _.str.count(l,'submitted');
-      },0)
-      var numberMarkedDone = levels.reduce(function(n,l){
-        return n + _.str.count(l,'done');
-      },0)
-      var numberMarkedReturned = levels.reduce(function(n,l){
-        return n + _.str.count(l,'return');
-      },0)
-      var numberNotSubmitted = sectionMemberIds.length - numberMarkedSubmitted - numberMarkedReturned - numberMarkedDone;
-      var tag = numberMarkedSubmitted + ' submitted. ' + numberMarkedReturned + ' returned to students for resubmission. ' + numberMarkedDone + ' done. ' + numberNotSubmitted + ' not yet submitted.';
-      //at least one student has submitted something for teacher to look at
-      if (numberMarkedSubmitted) {
-        return {
-          late:false,
-          level: 'submitted',
-          tag: tag 
-        }
-      }
-      //every student marked done
-      if (numberMarkedDone == sectionMemberIds.length) {
-        return {
-          late: false,
-          level: 'done',
-          tag: tag
-        }
-      }
-      //teacher has returned all submissions
-      //late tag indicates some students still have not submitted
-      if (numberMarkedReturned + numberMarkedDone == levels.length) {
-        return {
-          late: (sectionMemberIds.length - numberMarkedReturned - numberMarkedDone),
-          level: 'returned',
-          tag: tag
-        }
-      }
-      //some (all?) assignments not submitted yet
-      if (numberNotSubmitted) {
-        return {
-          late: false,
-          level: 'nostatus',
-          tag: tag
-        }
-      }
-    } else {
-      return {
-        late: false,
-        level: 'nostatus',
-        tag: '0 submitted. 0 returned to students for resubmission. 0 done. ' + sectionMemberIds.length + ' not yet submitted.'
-      } 
-    }
+    return ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID});
   }
-  return undefined;
-}
-
-/* currentProgress */
-var currentProgress = function(activityID) {
-  var studentID = Meteor.impersonatedOrUserId();
-  if (!Roles.userIsInRole(studentID,'student'))
-    return undefined;
-  return ActivityProgress.findOne({studentID:studentID,activityID:activityID});
 }
 
 Template.activityItem.helpers({
@@ -386,17 +338,11 @@ Template.activityItem.helpers({
       return 'icon-nostatus';
     return 'icon-' + status.level;
   },
-  progress: function() {
-    var progress = currentProgress(this._id);
-    if (!progress)
-      return 'icon-notStarted';
-    return 'icon-' + progress.level;
-  },
   statusTitle: function() {
     var status = currentStatus(this._id);
     if (!status)
-      return 'not started';
-    if ('_id' in status) {
+      return 'empty inbox, not started';
+    if (status.studentID) {
       var titleDict = {
         'nostatus':'empty inbox: not started',
         'submitted':'full inbox: work submitted, waiting for teacher response',
@@ -404,29 +350,17 @@ Template.activityItem.helpers({
         'donewithcomments':'Done.  Revisions not required but review comments by your teacher before taking an assessment',
         'done':'Done.'
       };
-    } else {
+    } else if (status.sectionID) {
+      var message = status.studentsSubmitted + ' submitted. ' + status.studentsReturned + ' returned to students for resubmission. ' + status.studentsDone + ' done. ' + status.studentsNotSubmitted + ' not yet submitted.';
       var titleDict = {
-        'nostatus':'empty inbox. ' + status.tag,
-        'submitted': 'Inbox has submissions. ' + status.tag,
-        'returned':'Outbox has returned work. ' + status.tag,
+        'nostatus':'empty inbox. ' + message,
+        'submitted': 'Inbox has submissions. ' + message,
+        'returned':'Outbox has returned work. ' + message,
         'donewithcomments':"All students marked done.",
         'done':"All students marked done."
       };
     }
     return titleDict[status.level];
-  },
-  progressTitle: function() {
-    var progress = currentProgress(this._id);
-    if (!progress)
-      return 'not started';
-    var titleDict = {
-      'notStarted':'not started',
-      'oneBar':'barely started',
-      'twoBars':'almost half-way done',
-      'threeBars':'more than half-way done',
-      'fourBars':'80% there',
-      'fiveBars':'just about done'};
-    return titleDict[progress.level];
   },
   late: function() {
     var status = currentStatus(this._id);
@@ -435,20 +369,27 @@ Template.activityItem.helpers({
     return (status.late) ? 'icon-late' : '';  
   },
   lateHoverText: function() {
+    //needs own popup ... mark all as late?
     var status = currentStatus(this._id);
-    if (!status || _.isBoolean(status.late))
-      return 'late';
-    return status.late + ' students have not yet submitted this assignment.';
-  },
-/*  expected: function() { //compute based on workPeriod
-    return 'expected';
-  },
-  completed: function() {
-    var status = currentStatus(this._id);
-    if (!status)
+    if (!status || !status.late)
       return '';
-    return _.str.include(status.level,'done') ? 'completed' : '';
-  },*/
+    if (status.studentID) {
+      return 'late';
+    } else if (status.sectionID) {
+      var message = (status.studentsNotSubmitted > 1) ? ' students have' : ' student has';
+      var message = 'The deadline has passed and ' + status.studentsNotSubmitted + message + ' not yet submitted this assignment. ';
+      status.lateStudents.forEach(function(studentID,i) {
+        message += Meteor.getname(studentID,'full');
+        if (i == status.studentsNotSubmitted - 2) {
+          message += ' and ';
+        } else if (i < status.studentsNotSubmitted - 2) {
+          message += ', ';
+        }
+      })
+      return message;
+    }
+  },
+
   workPeriod: function () {
     //find existing workPeriod
     var workPeriod =  WorkPeriods.findOne({

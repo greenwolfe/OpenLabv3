@@ -107,42 +107,6 @@ Meteor.publish('site',function() {
   return Site.find();
 });
 
-Meteor.publish('openlabPagePubs',function(studentIDs) {
-  check(studentIDs,[Match.idString]);
-  var studentIDs = studentIDs.filter(function(studentID) {
-    return Roles.userIsInRole(studentID,'student');
-  });
-  if (Roles.userIsInRole(this.userId,'student'))
-    studentIDs.push(this.userId);
-  var isNotTeacher = !Roles.userIsInRole(this.userId,'teacher');
-
-
-  //activity status and progress
-  if (studentIDs.length == 0) { //return nothing
-    var statusProgressSelector = {_id:'none'};
-  } else {
-    var statusProgressSelector = {studentID:{$in:studentIDs}};
-  }
-
-  //levels of mastery
-  if (studentIDs.length == 0) { //return nothing
-    var LoMSelector = {_id:'none'};
-  } else {
-    var LoMSelector = {studentID:{$in:studentIDs}};
-    if (isNotTeacher)
-      LoMSelector.visible = true; //send only visible LoMs
-  }
-
-  //calendar events
-  //loaded one user at a time in calendar.js
-
-  return [
-    ActivityStatuses.find(statusProgressSelector),
-    ActivityProgress.find(statusProgressSelector),
-    LevelsOfMastery.find(LoMSelector)
-  ];
-})
-
 /* send initial wall, column, block and file information
    as well as subactivityStatuses, subactivityProgresses
    with initial page info
@@ -231,7 +195,7 @@ Meteor.publish('activityPagePubs',function(studentOrSectionIDs,activityID) {
   }
 
   return [
-    Activities.find({_id:activityID}),
+    Activities.find({pointsTo:activityID}),
     Units.find({_id:activity.unitID}),
     WorkPeriods.find({unitID:activity.unitID}),
     Tags.find(),
@@ -365,7 +329,6 @@ Meteor.publish('assessmentSubactivity',function(activityID) {
 Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
-
   var selector = {
     unitID: unitID,
     type: {$in: ['text','file','embed']}
@@ -483,14 +446,19 @@ Meteor.publish('files',function(studentOrSectionID,activityID) {  //change to us
   return Files.find({wallID:{$in:wallIds}});
 });
 
-Meteor.publish('activityStatuses',function(studentID,unitID) { 
-  check(studentID,Match.Optional(Match.OneOf(Match.idString,null))); 
-  studentID = studentID || this.userId;  
-  var selector = {}
-  if (Roles.userIsInRole(studentID,'student'))
-    selector.studentID = studentID;
-
+Meteor.publish('activityStatuses',function(studentOrSectionID,unitID) { 
+  check(studentOrSectionID,Match.Optional(Match.OneOf(Match.idString,null))); 
   check(unitID,Match.Optional(Match.OneOf(Match.idString,null)));
+  var studentID = studentOrSectionID || this.userId;  
+  var sectionID = (Sections.find(studentOrSectionID).count()) ? studentOrSectionID : null;
+  var selector = {}
+  if (Roles.userIsInRole(studentID,'student')) {
+    selector.studentID = studentID;
+  } else if (Roles.userIsInRole(this.userId,'teacher') && sectionID) {
+    selector.sectionID = sectionID;
+  } else {
+    return this.ready();
+  }
   if (unitID)
     selector.unitID = unitID;
 

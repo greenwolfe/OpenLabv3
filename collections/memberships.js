@@ -108,3 +108,23 @@ Meteor.methods({
       Memberships.update(membershipID,{$set: {startDate:startDate}});
   }
 });
+
+/**** HOOKS *****/
+//section status surveys status for all members, so must
+//be denormalized when section membership changes
+var updateAllSectionStatuses = function(doc) {
+  if (doc.collectionName == "Sections") {
+    ActivityStatuses.find({sectionID:doc.itemID}).forEach(function(actStatus) {
+      Meteor.updateSectionStatus(doc.itemID,actStatus.activityID);
+    })
+  }  
+}
+Memberships.after.update(function (userID, doc, fieldNames, modifier) {
+  updateAllSectionStatuses(doc);
+});
+Memberships.after.insert(function (userID, doc) {
+  updateAllSectionStatuses(doc);
+});
+Memberships.after.remove(function (userID, doc) {
+  updateAllSectionStatuses(doc);
+});
