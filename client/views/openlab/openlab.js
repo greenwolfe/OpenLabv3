@@ -121,8 +121,11 @@
   });
 }); */
 
-/*Template.openlab.helpers({
-  studentSubscriptionLoaded: function() {
+Template.openlab.helpers({
+  activeUnit: function() {
+    return Units.findOne(openlabSession.get('activeUnit'));
+  }
+  /*studentSubscriptionLoaded: function() {
     var studentID = Meteor.impersonatedOrUserId();
     if (Roles.userIsInRole(studentID,'student')) {
       var tmpl = Template.instance();
@@ -130,5 +133,5 @@
     } else {
       return true; // not trying to show student data, so don't put message
     }
-  }
-});*/
+  }*/
+});

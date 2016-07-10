@@ -1,0 +1,29 @@
+#modelSummary p.aItem {
+  background-color: #afafaf;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#afafaf));
+  background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: -moz-linear-gradient(top, #ffffff, #ffffff 25%, #afafaf);
+  background-image: -ms-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: -o-linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  background-image: linear-gradient(#ffffff, #ffffff 25%, #afafaf);
+  margin-top: 5px;
+  margin-bottom: 0;
+  padding-left: 15px;
+  padding-right: 15px;
+  width:100%;
+}
+#modelSummary p.aItem a {
+    color: #555555;
+    font-size: small;
+}
+#modelSummary p.aItem a.glyphicon {
+  font-size: medium;
+}
+#modelSummary p.aItem div[contenteditable="true"][class~='plaintexteditor'] {
+  width: 94%%;
+  cursor: text;
+  background: transparent;
+}
+#modelSummary .block div.panel-body img {
+  max-width: 100%;
+}

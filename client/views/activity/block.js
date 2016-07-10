@@ -60,6 +60,7 @@ Template.block.helpers({
       subactivity.inTeacherWall = (wall.type == 'teacher');
       return subactivity;
     }
+    //null activity to hold place for dropdown list for teacher when editing
     var cU = Meteor.userId();
     if (inEditedWall(this.wallID) && Roles.userIsInRole(cU,'teacher')) {
       subactivity = Activities.findOne(FlowRouter.getParam('_id'));

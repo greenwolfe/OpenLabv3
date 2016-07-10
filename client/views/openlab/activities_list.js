@@ -1,11 +1,9 @@
   /*******************/
  /**** UTILITIES ****/
 /*******************/
-//todo list July 5, 2016
-//some error in activityList subscription
-//fails argument check at line 512
-//implement model summary
-
+//todo list July 2016
+//model summary, concept map (as whiteboard photo), faster pub/sub on activity pages
+//concept map (interactive to replace list navigation)
 percentExpected =  function() {
   var studentID = Meteor.impersonatedOrUserId();
   var activityIDs = _.pluck(Activities.find(
@@ -84,14 +82,16 @@ Template.activitiesList.onRendered(function() {
   instance.autorun(function() {
     var activeUnitID = openlabSession.get('activeUnit');
     var studentID = Meteor.impersonatedOrUserId();
-    if (Roles.userIsInRole(studentID,'student')) {
-      Meteor.subscribe('activityStatuses',studentID,activeUnitID,function() {
-        Meteor.subscribe('activityStatuses',studentID,null);
-      });
+    var sectionID = Meteor.selectedSectionId();
+    var studentOrSectionID = null;
+    if (Roles.userIsInRole(studentID,['student'])) {
+      studentOrSectionID = studentID;
     } else if (Roles.userIsInRole(studentID,'teacher')) {
-      var sectionID = Meteor.selectedSectionId();
-      Meteor.subscribe('activityStatuses',sectionID,activeUnitID,function() {
-        Meteor.subscribe('activityStatuses',sectionID,null);
+      studentOrSectionID = sectionID || studentID;
+    }
+    if (activeUnitID && studentOrSectionID) {
+      Meteor.subscribe('activityStatuses',studentOrSectionID,activeUnitID,function() {
+        Meteor.subscribe('activityStatuses',studentOrSectionID,null); //all units
       });
     }
   });
@@ -173,6 +173,9 @@ Template.unitTitle.events({
 /*****************************/
 
 Template.activityListHeader.helpers({
+  nameOrTitle: function() {
+    return this.longname || this.title;
+  },
   colWidth: function() {
     return openlabSession.get('activeUnit2') ? 'col-md-6' : 'col-md-12';
   },
@@ -286,17 +289,6 @@ Template.activityList.helpers({
 /*************************/
 
 /* currentStatus */
-/* move to server, create status for each activity
-for each section, 
-******denormalize every time a student adds
-or changes a section or a student adds or changes a status 
-stop loading status for all students, just load for section
-if section is selected only load for current unit so as 
-  little as possible loads?  put in activity list onCreated
-and onRendered rather than openlab?
-
-or for section status, collect total number students, number done, submitted, etc for each status
-compile message and percent complete, etc on client*/
 var currentStatus = function(activityID) {
   var studentID = Meteor.impersonatedOrUserId();
   var sectionID = Meteor.selectedSectionId();
@@ -392,7 +384,6 @@ Template.activityItem.helpers({
       return message;
     }
   },
-
   workPeriod: function () {
     //find existing workPeriod
     var workPeriod =  WorkPeriods.findOne({
@@ -444,6 +435,9 @@ Template.activityItem.helpers({
     if ((status) && (status.tag))
       tags += '<strong> (' + status.tag + ')</strong>';
     return tags;    
+  },
+  activities: function() {
+    return Activities.find({unitID:openlabSession.get('activeUnit')});
   }
 })
 
@@ -473,6 +467,18 @@ Template.activityItem.events({
   },
   'click .tagActivity': function(event,tmpl) {
     Session.set('activityForTagModal',this);
+  },
+  'click li.activityChoice': function(event,tmpl) {
+    var summary = Template.parentData();
+    var activity = this;
+    if (activity._id != summary.activityID) 
+      Meteor.call('summaryLinkWithActivity',summary.unitID,activity._id,alertOnError);
+    event.preventDefault();
+  },
+  'click li.chooseNoActivity': function(event,tmpl) {
+    var summary = Template.parentData();
+    Meteor.call('summaryLinkWithActivity',summary.unitID,'',alertOnError);
+    event.preventDefault();
   }
 })
 

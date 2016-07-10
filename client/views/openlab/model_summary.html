@@ -1,3 +1,49 @@
 <template name="modelSummary">
-  <h2>space for model sumary</h2>
+  <div id="modelSummary">  
+    {{#unless Template.subscriptionsReady}}
+      <h4 class='bg-info'>Loading Summary</h4>
+    {{/unless}}
+    {{#with summary}}
+      {{#with linkedActivity}}
+        {{>activityItem}}
+      {{/with}}
+      <div class="block block-{{type}} panel panel-default row">
+        <div class="panel-heading">
+          <div class="blockTitle">{{{title}}}</div>
+        </div>
+        <div class="panel-body">
+          {{#with image}}
+            {{#if isImage}}
+              <p class="file">
+                <a href="/upload/{{path}}" target="_blank">
+                  <img src="/upload/{{webSizePath}}" alt="{{name}}" width="640">
+                </a>
+              </p>
+            {{else}}
+              <a href="/upload{{path}}" target="_blank">
+                {{name}}
+              </a>
+            {{/if}}
+            <button class="btn btn-primary deleteSummaryImage"> 
+              Delete Image
+            </button>
+          {{else}}
+            <p>
+              {{>upload_bootstrap multiple=false formData=formData callbacks=processUpload}}
+            </p> 
+          {{/with}}
+          <p>
+            <!--message here? also test for .jpg, .png, .gif, etc in validate callback and issue warning message in alert box-->
+          </p>
+        </div>
+        <div class="panel-footer">
+          {{#with image}}
+            <span class="avoidwrap"> 
+              Image uploaded by {{getname createdBy 'full'}} {{formatDateTime createdOn}}.
+            </span>
+          {{/with}}
+        </div>
+      </div>
+    {{/with}}
+  </div>
 </template>

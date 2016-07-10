@@ -386,8 +386,8 @@ Meteor.publish('slides2',function(studentOrSectionID,unitID,limit)  {  //change 
 
 });
 
-
-Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+//replaced July 5, 2016
+/*Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
   var selector = {
@@ -442,10 +442,14 @@ Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user
       SlideStars.find(slideStarSelector)
     ];
   }
+});*/
+Meteor.publish('blockTextForSlides2',function(slideIDs) {
+  check(slideIDs,[Match.idString]);
+  return Blocks.find({_id:{$in:slideIDs}},{fields:{text:1}});
 });
 
-//and this will have to be re-written to just accept a list of blockIDs
-Meteor.publish('blockTextForSlides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+//replaced July 5, 2016
+/*Meteor.publish('blockTextForSlides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
 
@@ -477,7 +481,7 @@ Meteor.publish('blockTextForSlides',function(studentOrSectionID,unitID)  {  //ch
                     {access:{$in:[this.userId]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
     return Blocks.find(selector,{fields:{text:1}});
   }
-});
+}); */
 
 Meteor.publish('blocks',function(studentOrSectionID,activityID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.Optional(Match.OneOf(Match.idString,null))); 
@@ -506,6 +510,18 @@ Meteor.publish('files',function(studentOrSectionID,activityID) {  //change to us
   check(activityID,Match.idString); 
   var wallIds = currentWallIds(studentOrSectionID,activityID);
   return Files.find({wallID:{$in:wallIds}});
+});
+
+Meteor.publish('summary',function(studentID,unitID) {
+  check(studentID,Match.idString);
+  check(unitID,Match.idString);
+  return Summaries.find({studentID:studentID,unitID:unitID});
+});
+
+Meteor.publish('fileForSummary',function(studentID,unitID) {
+  check(studentID,Match.idString);
+  check(unitID,Match.idString);
+  return Files.find({studentID:studentID,unitID:unitID},{sort:{modifiedOn:1},limit:1});
 });
 
 Meteor.publish('activityStatuses',function(studentOrSectionID,unitID) { 

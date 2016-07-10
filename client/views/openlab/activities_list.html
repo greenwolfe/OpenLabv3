@@ -60,7 +60,7 @@
 <template name='activityListHeader'>
   <div id='activityListHeader' class="row">
     <div class='activityColumn column {{colWidth}} {{bgprimary}}'>
-      <h2 class='text-center'>{{{title}}}</h2>
+      <h2 class='text-center'>{{{nameOrTitle}}}</h2>
       <div class="progress"  title="should be completed">
         <div class="progress-bar progress-bar-warning" style="width: {{percentExpected}}%;"></div>
       </div>
@@ -118,27 +118,48 @@
 
 <template name = 'activityItem'>
     <p class="aItem">
+      {{#if inSummaryHeader}}
+        {{#if isInRole 'teacher'}}
+          <div class="dropdown">
+            <a class="glyphicon glyphicon-triangle-bottom assessmentAssociateSubactivity pull-right dropdown-toggle" data-toggle="dropdown" title="Associate this summary with a different activity."></a>
+            <ul class="dropdown-menu">
+              {{#each activities}}
+                <li class="activityChoice"><a href="#">{{{title}}}{{#if tag}} ({{{tag}}}){{/if}}</a></li>
+              {{/each}}
+              <li class="chooseNoActivity"><a href="#">None</a></li>
+            </ul>
+          </div> 
+        {{/if}}
+      {{/if}}
       {{#if editingMainPage}}
-        <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder or move to another model (in side-by-side view).">
-        </a>
-        {{>showHide collection='Activities' itemName='activity' item=this}}
-        <!--two issues, formatting, and don't have access to blocks to truly check if empty
-        {{#if canDelete}}
-          <a class="glyphicon glyphicon-remove deleteActivity" title="Delete Activity"></a>
-        {{/if}}--> 
-        <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
-        <a>
-        {{{tags}}}
-        </a>
-        {{>plaintexteditor collection='Activities' field='title' _id=_id editable=editingMainPageTFtext}} 
+        {{#unless inSummaryHeader}}
+          <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder or move to another model (in side-by-side view).">
+          </a>
+          {{>showHide collection='Activities' itemName='activity' item=this}}
+          <!--two issues, formatting, and don't have access to blocks to truly check if empty
+          {{#if canDelete}}
+            <a class="glyphicon glyphicon-remove deleteActivity" title="Delete Activity"></a>
+          {{/if}}--> 
+          <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
+          <a>
+          {{{tags}}}
+          </a>
+          {{>plaintexteditor collection='Activities' field='title' _id=_id editable=editingMainPageTFtext}} 
+        {{/unless}}
       {{else}}
-        {{> workPeriodButton workPeriod}}
-        <!--not useful here ... moving to calendar event and linking to todo list<i class="activityProgress {{progress}}" title="{{progressTitle}}"></i>-->
-        <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
-        <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
-        <a  href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}"> 
-          {{{title}}}{{{tags}}}
-        </a>        
+        {{#if _id}}
+          {{> workPeriodButton workPeriod}}
+          <!--not useful here ... moving to calendar event and linking to todo list<i class="activityProgress {{progress}}" title="{{progressTitle}}"></i>-->
+          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+          <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
+          <a  href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}"> 
+            {{{title}}}{{{tags}}}
+          </a> 
+        {{else}}
+          <a  href="#"> 
+            {{{title}}}
+          </a>         
+        {{/if}}       
       {{/if}}
     </p>
 </template>

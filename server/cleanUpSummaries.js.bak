@@ -1,0 +1,8 @@
+Meteor.startup(function() {
+  Summaries.find().forEach(function(summary) {
+    Summaries.remove(summary._id);
+  });
+  Files.find({summaryID:{$exists:true}}).forEach(function(file) {
+    Files.remove(file._id);
+  });
+})

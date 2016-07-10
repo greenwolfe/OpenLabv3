@@ -5,9 +5,11 @@
   <div class='container-fluid'>
     <div class="row"> <!-- class="modal-body row" to scroll -->
       <div class='col-md-5'>
-        <div class='col-md-12'>
+        {{#with activeUnit}}
           {{>modelSummary}}
-        </div>
+        {{else}}
+          <!-- placeholder goes here? -->
+        {{/with}}
         {{>slideShow}}
       </div>
 	    <div class='col-md-7'>
