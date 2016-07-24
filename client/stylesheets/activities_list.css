@@ -1,3 +1,6 @@
+#unitNavigation {
+  text-align: center;
+}
 #activitiesListTitle h4 {
   display: inline-block;
 }
@@ -13,6 +16,7 @@ p.aItem a.deleteActivity {
 #units { /* makes bootstrap nav-pills equal height so they wrap in distinct rows */
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 #units li {
   margin-bottom: 10px;
@@ -21,6 +25,9 @@ p.aItem a.deleteActivity {
   padding-left: 3px;
   padding-right: 3px;
   user-drag: none;
+  min-width: 100px;
+  max-width: 200px;
+  display: inline;
 }
 #units li > a {
   color: black;
@@ -30,8 +37,8 @@ p.aItem a.deleteActivity {
   border-color: black;
   text-align: center;
   word-wrap: break-word;
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 #unittitle div.editTitle {
   padding-left: 0;

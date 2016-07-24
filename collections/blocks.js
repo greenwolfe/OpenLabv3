@@ -74,10 +74,14 @@ Meteor.methods({
     var wall = Walls.findOne(column.wallID);
     if (!wall)
       throw new Meteor.Error('wall-not-found', "Cannot add block, not a valid wall");
+    var activity = Activities.findOne(wall.activityID);
+    if (!activity)
+      throw new Meteor.Error('activityNotFound',"Cannot add block, activity not found.");
     if (Roles.userIsInRole(cU,'student') && !Meteor.studentCanEditWall(cU._id,wall))
       throw new Meteor.Error('cannodEditWall', "You do not have permissions to edit this wall.");
     block.wallID = column.wallID; //denormalize block
     block.activityID = column.activityID;
+    block.unitID = activity.unitID;
     block.createdFor = wall.createdFor;
     block.wallType = wall.type;
     block.access = wall.access;

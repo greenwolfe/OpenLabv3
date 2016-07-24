@@ -39,6 +39,10 @@ var dateTimeFormat = "[at] h:mm a MM[/]DD[/]YY";
 
 //modelSummary helpers
 Template.modelSummary.helpers({
+  loadingSummary: function() {
+    var site = Site.findOne(this._id);
+    return (site) ? 'Loading Concept Map' : 'Loading Summary';
+  },
   summary: function() {
     var studentID = Meteor.impersonatedOrUserId();
     if (('_id' in this) && (studentID))
@@ -53,11 +57,15 @@ Template.modelSummary.helpers({
     //null activity to hold place for dropdown list for teacher
     var cU = Meteor.userId();
     if (Roles.userIsInRole(cU,'teacher')) {
+      var site = Site.findOne(this.unitID);
+      var message = (site) ? 
+        'Associate the concept map with an activity.' :
+        'Associate this model summary with an activity.'
       return {
         _id: '',
         inSummaryHeader: true,
         pointsTo: '',
-        title: 'Associate this model summary with an activity.',
+        title: message,
         unitID: openlabSession.get('activeUnit'),
         tag: '',
         visible: true,
@@ -74,6 +82,9 @@ Template.modelSummary.helpers({
       var name = unit.longname || unit.title;
       return 'Summary for ' + name;
     }
+    var site = Site.findOne(this.unitID);
+    if (site)
+      return 'Concept Map';
   },
   image: function() {
     return Files.findOne({summaryID:this._id});
@@ -96,7 +107,6 @@ Template.modelSummary.helpers({
         file.summaryID = summaryID;
         file.studentID = studentID;
         file.unitID = unitID;
-        console.log(file);
         var fileId = Meteor.call('insertSummaryFile',file,alertOnError);
       },
       validate: validateFiles

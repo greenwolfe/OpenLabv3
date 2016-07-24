@@ -3,18 +3,38 @@
     <p class='bg-info'> Loading data for {{getname impersonatedOrUserId 'full'}}</p>
   {{/unless}}--> <!--deprecated July 4, 2016 -->
   <div class='container-fluid'>
+    <div id="unitNavigation">
+      {{>activitiesList}} <!-- now just the header, so poorly named-->
+    </div>
     <div class="row"> <!-- class="modal-body row" to scroll -->
       <div class='col-md-5'>
-        {{#with activeUnit}}
-          {{>modelSummary}}
-        {{else}}
-          <!-- placeholder goes here? -->
-        {{/with}}
-        {{>slideShow}}
+        <div id="selectSlidesSummaryMap" class='btn-group'>
+            <button class="btn btn-primary showSlides {{slidesActive}}">Slides</button>
+            <button class="btn btn-primary showSummary {{summaryActive}}">Unit Summary</button>
+            <button class="btn btn-primary showConceptMap {{conceptMapActive}}">Course Summary</button>
+        </div>
+        {{#if showingConceptMap}}
+          {{#with site}}
+            {{>modelSummary}}
+          {{else}}
+            <!-- placeholder goes here? -->
+          {{/with}}
+        {{else}} {{#if showingSummary}}
+          {{#with activeUnit}}
+            {{>modelSummary}}
+          {{else}}
+            <!-- placeholder goes here? -->
+          {{/with}}
+        {{else}} {{#if showingSlides}}
+          {{>slideShow}}
+        {{/if}} {{/if}}  {{/if}}
       </div>
 	    <div class='col-md-7'>
         <div class='col-md-12'>
-	       {{> activitiesList}}
+          {{#with activeUnit}}
+            {{> activityListHeader}}
+	          {{> activityList}}
+          {{/with}}
         </div>
 	    </div>
     </div>

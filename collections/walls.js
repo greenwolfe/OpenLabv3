@@ -47,7 +47,7 @@ Meteor.methods({
         throw new Meteor.Error('section-not-found','Could not create section wall.  Section not found.');
       wall.access = Meteor.sectionMemberIds(section._id);      
     } else if (wall.type == 'teacher') {
-      var site = Sites.findOne(wall.createdFor);
+      var site = Site.findOne(wall.createdFor);
       if (!site)
         throw new Meteor.Error('site-not-found','Could not create teacher wall.  Site not found.');        
       wall.access = []; //not sure what to do here, should not need to be used

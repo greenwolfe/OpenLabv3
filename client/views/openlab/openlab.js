@@ -1,127 +1,52 @@
-//all deprecated July 4, 2016
-/*Template.openlab.onCreated(function() {
-  var iU = Meteor.impersonatedOrUserId();
-  var cU = Meteor.userId();  
+Template.openlab.onCreated(function() {
+  var instance = this;
+  instance.showing = new ReactiveVar('summary'); //slides or summary or concept
+})
+
+Template.openlab.onRendered(function() {
   var instance = this;
 
-  instance.requestedStudentIDs = {
-    plainarray: [],
-    reactive: new ReactiveVar([]),
-    set:function(newvalue) { 
-      this.plainarray = newvalue; 
-      this.reactive.set(newvalue) 
-    }
-  };
-  instance.loadedStudentIDs = {
-    plainarray: [],
-    reactive: new ReactiveVar([]),
-    set:function(newvalue) { 
-      this.plainarray = newvalue; 
-      this.reactive.set(newvalue) 
-    }
-  };
-});*/
-
-/*Template.openlab.onRendered(function() {
-  var instance = this;
-  instance.autorun(function() {
-    var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'student')) {
-      instance.requestedStudentIDs.set([cU]);
-      console.log('loading: ' + Meteor.user().username);
-      instance.subscribe('openlabPagePubs',[cU],function() {
-        console.log('loaded');
-        instance.loadedStudentIDs.set([cU]);
-      });
-    }
+  instance.autorun(function() { 
+    var unitID = openlabSession.get('activeUnit');
+    var studentID = Meteor.impersonatedOrUserId();
+    var sectionID = Meteor.selectedSectionId();
+    console.log('openlab autorun should be resetting summary');
+    //make more sophisticated, check for new slides
+    //check if new slides are dated 
+    //check if a summary exists and has a current image
+    instance.showing.set('summary');    
   });
 
-  instance.autorun(function() {
-    var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'teacher')) {
-      var iU = Meteor.impersonatedId();
-      var rSIDs = instance.requestedStudentIDs.plainarray;
-      if (Roles.userIsInRole(iU,'student') && !_.contains(rSIDs,iU)) {
-        rSIDs.push(iU);
-        instance.requestedStudentIDs.set(rSIDs); 
-      }
-    }
-  });
-  instance.autorun(function() {
-    var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'teacher')) {
-      var sectionID = Meteor.selectedSectionId();
-      if ((sectionID) && !(Meteor.impersonatedId())) { //section itself selected, rather than student in section
-        var rSIDs = instance.requestedStudentIDs.plainarray;
-        var sectionMemberIds = Meteor.sectionMemberIds(sectionID);
-        var urSIDs = _.difference(sectionMemberIds,rSIDs); //unrequested student IDs
-        var numberToAdd = Math.min(urSIDs.length,3);
-        if (numberToAdd) 
-          instance.requestedStudentIDs.set(rSIDs.concat(urSIDs.slice(0,numberToAdd))); 
-      }
-    }
-  });
-  instance.autorun(function() {
-    var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'teacher')) {
-      var rSIDs = instance.requestedStudentIDs.reactive.get();
-      var names = rSIDs.map(function(id) {
-        var user = Meteor.users.findOne(id);
-        if (user)
-          return user.username;
-        return id;
-      });
-      console.log('loading: ' + names.join(', '));
-      instance.subscribe('openlabPagePubs',rSIDs,function() {
-        console.log('loaded');
-        instance.loadedStudentIDs.set(rSIDs);
-        var sectionID = Meteor.selectedSectionId();
-        var sectionMemberIds = Meteor.sectionMemberIds(sectionID);
-        var urSIDs = _.difference(sectionMemberIds,rSIDs); //unrequested student IDs
-        var numberToAdd = Math.min(urSIDs.length,3);
-        if (numberToAdd) 
-          instance.requestedStudentIDs.set(rSIDs.concat(urSIDs.slice(0,numberToAdd))); 
-      });
-    }
-  });
-
-  instance.autorun(function() {
-    var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'parentOrAdvisor')) {
-      var iU = Meteor.impersonatedId();
-      var childOrAdviseeIds = Meteor.childOrAdviseeIds(cU);
-      var rSIDs = instance.requestedStudentIDs.plainarray;
-      if (_.contains(childOrAdviseeIds,iU) && (!_.contains(rSIDs,iU))) {
-        rSIDs.push(iU);
-        instance.requestedStudentIDs.set(rSIDs); 
-      }
-    }
-  });
-  instance.autorun(function() {
-    var cU = Meteor.userId();
-    if (Roles.userIsInRole(cU,'parentOrAdvisor')) {
-      var rSIDs = instance.requestedStudentIDs.reactive.get();
-      var names = rSIDs.map(function(id) {
-        var user = Meteor.users.findOne(id);
-        if (user)
-          return user.username;
-        return id;
-      });
-      console.log('loading: ' + names.join(', '));
-      instance.subscribe('openlabPagePubs',rSIDs,function() {
-        console.log('loaded');
-        instance.loadedStudentIDs.set(rSIDs);
-        var childOrAdviseeIds = Meteor.childOrAdviseeIds();
-        var urSIDs = _.difference(childOrAdviseeIds,rSIDs); //unrequested student IDs
-        var numberToAdd = Math.min(urSIDs.length,3);
-        if (numberToAdd) 
-          instance.requestedStudentIDs.set(rSIDs.concat(urSIDs.slice(0,numberToAdd))); 
-      });
-    }
-  });
-}); */
+});
 
 Template.openlab.helpers({
+  showingSlides: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'slides')
+  },
+  slidesActive: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'slides') ? 'active' : '';
+  },
+  showingSummary: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'summary')
+  },
+  summaryActive: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'summary') ? 'active' : '';
+  },
+  showingConceptMap: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'concept')
+  },
+  conceptMapActive: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'concept') ? 'active' : '';
+  },
+  site: function() {
+    return Site.findOne();
+  },
   activeUnit: function() {
     return Units.findOne(openlabSession.get('activeUnit'));
   }
@@ -135,3 +60,15 @@ Template.openlab.helpers({
     }
   }*/
 });
+
+Template.openlab.events({
+  'click button.showSlides': function(event,tmpl) {
+    tmpl.showing.set('slides');
+  },
+  'click button.showSummary': function(event,tmpl) {
+    tmpl.showing.set('summary');
+  },
+  'click button.showConceptMap': function(event,tmpl) {
+    tmpl.showing.set('concept');
+  }
+})

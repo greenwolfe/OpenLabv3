@@ -1,7 +1,7 @@
 <template name="modelSummary">
   <div id="modelSummary">  
     {{#unless Template.subscriptionsReady}}
-      <h4 class='bg-info'>Loading Summary</h4>
+      <h4 class='bg-info'>{{{loadingSummary}}}</h4>
     {{/unless}}
     {{#with summary}}
       {{#with linkedActivity}}

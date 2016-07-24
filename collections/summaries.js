@@ -54,7 +54,7 @@ Meteor.methods({
     if (!unit && !site)
       throw new Meteor.Error('unitNotFound','Cannot most model summary.  Unit not found.');
     var activity = Activities.findOne(activityID);
-    if ((activity) && (activity.unitID != unitID)) 
+    if ((unit) && (activity) && (activity.unitID != unitID)) 
       throw new Meteor.Error('notSameUnit','A model summary can  only be linked to an activity from its own unit.');
 
     //validate user and set permissions

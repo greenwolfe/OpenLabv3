@@ -186,7 +186,7 @@ Template.subActivitiesList.helpers({
   subactivities: function() {
     var activity = Activities.findOne(FlowRouter.getParam('_id'));
     return Activities.find({
-      pointsTo:activity._id
+      pointsTo:FlowRouter.getParam('_id') //activity._id
     },{sort: {suborder: 1}});
   },
   sortableOpts: function() {
