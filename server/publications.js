@@ -1,10 +1,4 @@
-Meteor.publish('activities',function() {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
-  /*var userToShow = Meteor.users.findOne(userID);
-  var Acts = Activities.find({visible:true});
-  if (!userToShow) return Acts;
-  if (Roles.userIsInRole(userToShow,'teacher')) 
-    return Activities.find();  */
-  //check(userID,Match.oneOf(Match.idString,null));
+Meteor.publish('activities',function() {  
   return Activities.find();
 });
 
@@ -114,6 +108,180 @@ Meteor.publish('site',function() {
    Call with increasingly longer student list to load for all students in background once initial page loads
 */
 //for later ... more limited publish/subscribe for memberships and groups ??
+
+  /***********************************/
+ /**** ACTIVITY PAGE PUBLCATIONS ****/
+/***********************************/
+
+Meteor.publish('subActivities',function(activityID) { //including the main activity
+  check(activityID,Match.idString);
+  var activity = Activities.findOne(activityID);
+  if (!activity)
+    return this.ready();
+  return [
+    Activities.find({pointsTo:activityID}),
+    Units.find({_id:activity.unitID}),
+    WorkPeriods.find({unitID:activity.unitID}),
+    Tags.find()
+  ]
+});
+
+Meteor.publish('teacherWalls',function(activityID) {
+  check(activityID,Match.idString);
+  var selector = {
+    activityID: activityID,
+    access:{$in: [Site.findOne()._id]},
+    wallType:'teacher'
+  };
+  if (!Roles.userIsInRole(this.userId,'teacher')) {
+    selector.visible = true;
+    selector.wallVisible =true;
+    var selectorF = _.clone(selector);
+    selectorF.blockVisible = true;
+  } else {
+    selectorF = selector;
+  }
+
+  return [ 
+    Walls.find(selector),
+    Columns.find(selector),
+    Blocks.find(selector),
+    Files.find(selectorF)
+  ];
+});
+
+//to provide teacher with access to a list of current groups for the activity page
+Meteor.publish('groupsFromGroupWalls',function(activityID) {
+  check(activityID,Match.idString);
+  var activity = Activities.findOne(activityID);
+  if (!activity) return this.ready();
+  if (!Roles.userIsInRole(this.userId,'teacher')) return this.ready();
+  return Walls.find({type:'group',activityID:activity.pointsTo},{fields:{createdFor:1}});
+});
+
+Meteor.publish('subActivityStatuses',function(actvityID,studentOrSectonID) {
+  //think this through ... really optional?
+  //if teacher, need statuses for all students for filtering?
+  check(studentOrSectionID,Match.OneOf(Match.idString,null)); 
+  check(activityID,Match.OneOf(Match.idString,null));
+  var studentID = studentOrSectionID || this.userId;  
+  var sectionID = (Sections.find(studentOrSectionID).count()) ? studentOrSectionID : null;
+  var selector = {pointsTo:activityID}
+  if (Roles.userIsInRole(studentID,'student')) {
+    selector.studentID = studentID;
+  } else if (Roles.userIsInRole(this.userId,'teacher') && sectionID) {
+    selector.sectionID = sectionID;
+  } else {
+    return this.ready();
+  }
+
+  return ActivityStatuses.find(selector);  
+});
+
+Meteor.publish('sectionWalls',function(activityID,studentOrSectionID) {
+  check(activityID,Match.idString);
+  check(studentOrSectionID,Match.OneOf(Match.idString,null));
+  var studentID = studentOrSectionID || this.userId;  
+  var sectionID = (Sections.find(studentOrSectionID).count()) ? studentOrSectionID : null;
+  var selector = {
+    activityID: activityID,
+    wallType:'section'
+  };
+
+  if (Roles.userIsInRole(studentID,'student')) { //anyone (student, teacher or parent) viewing a particular student
+    selector.access = {$in:[studentID]};
+  } else if (Roles.userIsInRole(this.userId,'teacher')) { 
+    if (sectionID) { //teacher viewing a particular section
+      selector.access = Meteor.sectionMemberIds(sectionID);
+    } else { //teacher viewing all sections
+      var memberships = Memberships.find({
+        collectionName:'Sections',
+        startDate: {$lt: today}, //startDate < today < endDate
+        endDate: {$gt: today}
+      },
+      {fields:{memberID:1}}).fetch();
+      selector.access = _.pluck(memberships,'memberID');
+    }
+  } else { //none of the above
+    return this.ready();
+  }
+
+  if (!Roles.userIsInRole(this.userId,'teacher')) {
+    selector.visible = true;
+    selector.wallVisible =true;
+    var selectorF = _.clone(selector);
+    selectorF.blockVisible = true;
+  } else {
+    selectorF = selector;
+  }
+
+  if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
+    return [
+      Walls.find(selector),
+      Columns.find(selector)
+    ];
+  } else { 
+    return [
+      Walls.find(selector),
+      Columns.find(selector),
+      Blocks.find(selector),
+      Files.find(selectorF)
+    ];
+  }
+});
+
+Meteor.publish('groupWalls',function(activityID,studentIDs) {
+  check(activityID,Match.idString);
+  check(studentIDs,[Match.idString]);
+  var selector = {
+    activityID:activityID,
+    access: {$in:studentIDs},
+    wallType:'group'
+  }
+
+  if (!Roles.userIsInRole(this.userId,'teacher')) {
+    selector.visible = true;
+    selector.wallVisible =true;
+    var selectorF = _.clone(selector);
+    selectorF.blockVisible = true;
+  } else {
+    selectorF = selector;
+  }
+ 
+  return [
+    Walls.find(selector),
+    Columns.find(selector),
+    Blocks.find(selector),
+    Files.find(selectorF)
+  ];
+});
+
+Meteor.publish('studentWalls',function(activityID,studentIDs) {
+  check(activityID,Match.idString);
+  check(studentIDs,[Match.idString]);
+  var selector = {
+    activityID:activityID,
+    access: {$in:studentIDs},
+    wallType:'student'
+  }
+
+  if (!Roles.userIsInRole(this.userId,'teacher')) {
+    selector.visible = true;
+    selector.wallVisible =true;
+    var selectorF = _.clone(selector);
+    selectorF.blockVisible = true;
+  } else {
+    selectorF = selector;
+  }
+ 
+  return [
+    Walls.find(selector),
+    Columns.find(selector),
+    Blocks.find(selector),
+    Files.find(selectorF)
+  ];
+});
+
 Meteor.publish('activityPagePubs',function(studentOrSectionIDs,activityID) {
   check(studentOrSectionIDs,[Match.idString]); 
   check(activityID,Match.idString);
@@ -268,15 +436,6 @@ Meteor.publish('walls',function(studentOrSectionID,activityID) {  //change to us
   return Walls.find(selector);
 });
 
-//to provide teacher with access to a list of current groups for the activity page
-Meteor.publish('groupWalls',function(activityID) {
-  check(activityID,Match.idString);
-  var activity = Activities.findOne(activityID);
-  if (!activity) return this.ready();
-  if (!Roles.userIsInRole(this.userId,'teacher')) return this.ready();
-  return Walls.find({type:'group',activityID:activity.pointsTo});
-});
-
 var currentWallIds = function(studentOrSectionID,activityID) {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   var studentID = studentOrSectionID || Meteor.userId(); 
 
@@ -326,10 +485,7 @@ Meteor.publish('assessmentSubactivity',function(activityID) {
   }  
 });
 
-//re-write this to accept a limit, which means
-//the slideIDs must first be sorted
-//files and slideStars should be returned only for the indicated blocks/slides
-Meteor.publish('slides2',function(studentOrSectionID,unitID,limit)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
   check(limit,Match.Integer);
@@ -386,102 +542,10 @@ Meteor.publish('slides2',function(studentOrSectionID,unitID,limit)  {  //change 
 
 });
 
-//replaced July 5, 2016
-/*Meteor.publish('slides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
-  check(studentOrSectionID,Match.idString); 
-  check(unitID,Match.idString); 
-  var selector = {
-    unitID: unitID,
-    type: {$in: ['text','file','embed']}
-  };
-  var fileSelector = {unitID: unitID};
-  var slideStarSelector = {unitID: unitID};
-  if (Roles.userIsInRole(studentOrSectionID,'student')) {
-    if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
-      var wallIDs = _.pluck(Walls.find({
-        unitID:unitID,
-        type: 'student',
-        createdFor: studentOrSectionID 
-      },{fields:{_id:1}}).fetch(),'_id');
-      selector.wallID = {$in: wallIDs};
-      selector.access = {$in: [studentOrSectionID]};
-      fileSelector.wallID = {$in: wallIDs};
-      fileSelector.access = {$in: [studentOrSectionID]};
-      slideStarSelector.wallID = {$in: wallIDs};      
-      slideStarSelector.userID = {$in: [studentOrSectionID]};
-      return [
-        Blocks.find(selector,{fields:{text:0}}),
-        Files.find(fileSelector),
-        SlideStars.find(slideStarSelector)
-      ];
-    } else {
-      if (Roles.userIsInRole(this.userId,'teacher')) {
-        selector.access = {$in: [studentOrSectionID,this.userId]};
-        fileSelector.access = {$in: [studentOrSectionID,this.userId]};
-        slideStarSelector.userID = {$in: [studentOrSectionID,this.userId]};
-      } else {
-        selector.access = {$in: [studentOrSectionID]};
-        fileSelector.access = {$in: [studentOrSectionID]};
-        slideStarSelector.userID = {$in: [studentOrSectionID]};
-      }
-      return [
-        Blocks.find(selector,{fields:{text:0}}),
-        Files.find(fileSelector),
-        SlideStars.find(slideStarSelector)
-      ];
-    }
-  } else if (Roles.userIsInRole(this.userId,'teacher')) { //and are not impersonating a student
-    selector.$or = [{createdFor:studentOrSectionID}, //if viewing a section, draw in blocks posted to its walls
-                    {access:{$in:[this.userId]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
-    fileSelector.$or = [{createdFor:studentOrSectionID},
-                        {access:{$in:[this.userId]}}];
-    slideStarSelector.userID = {$in:[this.userId]};  //stars personal to teacher, not assigned to section
-    return [
-      Blocks.find(selector,{fields:{text:0}}),
-      Files.find(fileSelector),
-      SlideStars.find(slideStarSelector)
-    ];
-  }
-});*/
-Meteor.publish('blockTextForSlides2',function(slideIDs) {
+Meteor.publish('blockTextForSlides',function(slideIDs) {
   check(slideIDs,[Match.idString]);
   return Blocks.find({_id:{$in:slideIDs}},{fields:{text:1}});
 });
-
-//replaced July 5, 2016
-/*Meteor.publish('blockTextForSlides',function(studentOrSectionID,unitID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
-  check(studentOrSectionID,Match.idString); 
-  check(unitID,Match.idString); 
-
-  var selector = {
-    unitID: unitID,
-    type: {$in: ['text','file','embed']}
-  };
-  if (Roles.userIsInRole(studentOrSectionID,'student')) {
-    if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
-      var wallIDs = _.pluck(Walls.find({
-        unitID:unitID,
-        type: 'student',
-        createdFor: studentOrSectionID 
-      },{fields:{_id:1}}).fetch(),'_id');
-      selector.wallID = {$in: wallIDs};
-      selector.access = {$in: [studentOrSectionID]};
-      return Blocks.find(selector,{fields:{text:1}});
-    } else {
-      if (Roles.userIsInRole(this.userId,'teacher')) {
-        //requires both be in .access rather than just one???
-        selector.access = {$in: [studentOrSectionID,this.userId]};
-      } else {
-        selector.access = {$in: [studentOrSectionID]};
-      }
-      return Blocks.find(selector,{fields:{text:1}});
-    }
-  } else if (Roles.userIsInRole(this.userId,'teacher')) { //and are not impersonating a student
-    selector.$or = [{createdFor:studentOrSectionID}, //if viewing a section, draw in blocks posted to its walls
-                    {access:{$in:[this.userId]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
-    return Blocks.find(selector,{fields:{text:1}});
-  }
-}); */
 
 Meteor.publish('blocks',function(studentOrSectionID,activityID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
   check(studentOrSectionID,Match.Optional(Match.OneOf(Match.idString,null))); 
@@ -560,20 +624,6 @@ Meteor.publish('activityProgress',function(studentID,unitID) {
 
   return ActivityProgress.find(selector);
 });
-
-Meteor.publish('subActivityStatuses',function(studentID,pointsTo){
-  check(studentID,Match.Optional(Match.idString)); 
-  studentID = studentID || this.userId;  //setting default here because flow router cannot pass in user id
-  var selector = {}
-  if (Roles.userIsInRole(studentID,'student'))
-    selector.studentID = studentID;
-
-  check(pointsTo,Match.Optional(Match.idString));
-  if (pointsTo)
-    selector.pointsTo = pointsTo;
-
-  return ActivityStatuses.find(selector);  
-})
 
 Meteor.publish('subActivityProgress',function(studentID,pointsTo){
   check(studentID,Match.Optional(Match.idString)); 

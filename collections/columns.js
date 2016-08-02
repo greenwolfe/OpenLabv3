@@ -15,6 +15,9 @@ Meteor.methods({
       return Columns.insert({
         wallID:wallID,
         activityID: wall.activityID,
+        access: wall.access,
+        wallType: wall.type,
+        wallVisible: wall.visible,
         width:6, //was 4, but trying out 6 to insert two columns in new walls
         order: 0,
         visible: true
@@ -34,6 +37,9 @@ Meteor.methods({
     return columnID = Columns.insert({
       wallID:wallID,
       activityID: wall.activityID,
+      access: wall.access,
+      wallType: wall.type,
+      wallVisible: wall.visible,
       width:width,
       order: order,
       visible: true

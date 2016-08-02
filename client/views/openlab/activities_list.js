@@ -2,7 +2,6 @@
  /**** UTILITIES ****/
 /*******************/
 //todo list July 2016
-//model summary, concept map (as whiteboard photo), faster pub/sub on activity pages
 //concept map (interactive to replace list navigation)
 percentExpected =  function() {
   var studentID = Meteor.impersonatedOrUserId();
@@ -72,10 +71,10 @@ percentCompleted = function() {
 }  
 
   /*************************/
- /*** ACTIVITIES LIST  ****/
+ /*** UNIT NAVIGATION  ****/
 /*************************/
 
-Template.activitiesList.onRendered(function() {
+Template.unitNavigation.onRendered(function() {
   var instance = this;
   $('.fa.fa-question-circle[data-toggle="tooltip"]').tooltip();
 
@@ -97,7 +96,7 @@ Template.activitiesList.onRendered(function() {
   });
 });
 
-Template.activitiesList.helpers({
+Template.unitNavigation.helpers({
   units: function() {
     var selector = {};
     if (!editingMainPage())

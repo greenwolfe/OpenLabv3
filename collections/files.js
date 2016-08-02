@@ -5,14 +5,18 @@ Meteor.methods({
     check(file,{
       blockID: Match.idString, //required
       //could be included from pasted block, will be overwritten with denormalized values anyway
+      blockType: Match.Optional(Match.OneOf('file','embed')), //deprecated 'workSubmit','text','subactivities','assessment'
+      blockVisible: Match.Optional(Boolean),
       columnID: Match.Optional(Match.idString),  
       wallID: Match.Optional(Match.idString), 
+      wallVisible: Match.Optional(Boolean),
+      wallType: Match.Optional(Match.oneOf('teacher','student','group','section')),
       activityID: Match.Optional(Match.idString),
       unitID: Match.Optional(Match.idString), 
       order: Match.Optional(Match.Integer), 
       createdFor: Match.Optional(Match.idString), 
       createdBy: Match.Optional(Match.idString),
-      //access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
+      access: Match.Optional([Match.idString]),    // [studentID] | [groupMemberIDs] | [sectionMemberIDs] | [site._id]
   
 
       //if included from pasted block, then keep it
@@ -30,8 +34,12 @@ Meteor.methods({
     var block = Blocks.findOne(file.blockID)
     if (!block)
       throw new Meteor.Error('block-not-found', "Cannot add file, not a valid block");
+    file.blockVisible = block.visible;
+    file.blockType = block.type;
     file.columnID = block.columnID;
     file.wallID = block.wallID; 
+    file.wallVisible = block.wallVisible,
+    file.wallType = block.wallType,
     file.activityID = block.activityID;
     file.unitID = block.unitID;
     file.access = block.access;
@@ -70,7 +78,7 @@ Meteor.methods({
       if (cU._id != file.createdBy)
         throw new Meteor.Error('noPermissions','You did not upload this file, and do not have permissions to delete it.');
     }
-    //test this code
+    
     var ids = _.pluck(Files.find({blockID:file.blockID,order:{$gt: file.order}},{fields: {_id: 1}}).fetch(), '_id');
     if (Meteor.isServer && (fileCount <= 1)) { //only delete file itself if there are no other links to it
       UploadServer.delete(file.path);
@@ -150,7 +158,7 @@ Meteor.methods({
       if (cU._id != file.studentID)
         throw new Meteor.Error('noPermissions','You did not upload this file, and do not have permissions to delete it.');
     }
-    //test this code
+
     var numRemoved = Files.remove(fileID);
     if (Meteor.isServer) { //only delete file itself if there are no other links to it
       UploadServer.delete(file.path);

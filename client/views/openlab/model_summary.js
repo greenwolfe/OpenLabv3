@@ -39,10 +39,6 @@ var dateTimeFormat = "[at] h:mm a MM[/]DD[/]YY";
 
 //modelSummary helpers
 Template.modelSummary.helpers({
-  loadingSummary: function() {
-    var site = Site.findOne(this._id);
-    return (site) ? 'Loading Concept Map' : 'Loading Summary';
-  },
   summary: function() {
     var studentID = Meteor.impersonatedOrUserId();
     if (('_id' in this) && (studentID))
@@ -145,4 +141,12 @@ Template.modelSummary.events({
       Meteor.call('deleteSummaryFile', this._id,alertOnError);
     }
   }
+})
+
+Template.noSummary.helpers({
+  unitOrCourse: function() {
+    var data = Template.parentData();
+    var site = Site.findOne(data._id);
+    return (site) ? 'the whole course' : 'a particular unit';
+  },
 })

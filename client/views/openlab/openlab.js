@@ -10,7 +10,6 @@ Template.openlab.onRendered(function() {
     var unitID = openlabSession.get('activeUnit');
     var studentID = Meteor.impersonatedOrUserId();
     var sectionID = Meteor.selectedSectionId();
-    console.log('openlab autorun should be resetting summary');
     //make more sophisticated, check for new slides
     //check if new slides are dated 
     //check if a summary exists and has a current image
@@ -50,15 +49,6 @@ Template.openlab.helpers({
   activeUnit: function() {
     return Units.findOne(openlabSession.get('activeUnit'));
   }
-  /*studentSubscriptionLoaded: function() {
-    var studentID = Meteor.impersonatedOrUserId();
-    if (Roles.userIsInRole(studentID,'student')) {
-      var tmpl = Template.instance();
-      return _.contains(tmpl.loadedStudentIDs.reactive.get(),studentID);
-    } else {
-      return true; // not trying to show student data, so don't put message
-    }
-  }*/
 });
 
 Template.openlab.events({

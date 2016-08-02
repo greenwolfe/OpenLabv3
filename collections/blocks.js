@@ -5,7 +5,7 @@ Meteor.methods({
     check(block,{
       //required fields to create the new block
       columnID: Match.idString,
-      type: Match.OneOf('workSubmit','text','file','embed','subactivities','assessment'), 
+      type: Match.OneOf('file','embed'), //deprecated 'workSubmit','text','subactivities','assessment'
         //workSubmit blocks probably deprecated
       /*fields that will be initially filled based on the information passed in
       createdBy: Match.idString,              //current user
@@ -19,6 +19,7 @@ Meteor.methods({
       modifiedOn: Match.Optional(Date),           //current date
       wallID: Match.Optional(Match.idString),     //denormalized value from column
       wallType: Match.Optional(Match.oneOf('teacher','student','group','section')), //denormalize value from wall
+      wallVisible: Match.Optional(Boolean),
       activityID: Match.Optional(Match.idString), //same as above
       unitID: Match.Optional(Match.idString),     //same as above
       visible: Match.Optional(Boolean),           //true
@@ -84,6 +85,7 @@ Meteor.methods({
     block.unitID = activity.unitID;
     block.createdFor = wall.createdFor;
     block.wallType = wall.type;
+    block.wallVisible = wall.visible;
     block.access = wall.access;
 
     block.order = 0;  //always insert at top of column
@@ -140,6 +142,7 @@ Meteor.methods({
     if (!wall)
       throw new Meteor.Error('wall-not-found', "Cannot paste block, not a valid wall");
     block.wallType = wall.type;
+    block.wallVisible = wall.visible;
     var cU = Meteor.user();
     if (!cU)  
       throw new Meteor.Error('notLoggedIn', "You must be logged in to paste a block.");
@@ -230,8 +233,10 @@ Meteor.methods({
       /*fields that might be passed along with original block object, but are ignored
       columnID: Match.Optional(Match.idString), 
       wallID: Match.Optional(Match.idString), 
+      wallType: Match.Optional(Match.oneOf('teacher','student','group','section')), //denormalize value from wall
+      wallVisible: Match.Optional(Boolean),      
       activityID: Match.Optional(Match.idString),
-      type: Match.Optional(String), 
+      type: Match.Optional(String), //'file','embed' - precated 'workSubmit','text','subactivities','assessment'
       order: Match.Optional(Match.Integer), 
       createdFor: Match.Optional(Match.idString),
       createdBy: Match.Optional(Match.idString),  
@@ -339,28 +344,32 @@ Blocks.after.update(function (userID, doc, fieldNames, modifier) {
     Blocks.update(doc._id,{$set:{
       wallID:column.wallID,
       wallType:wall.type,
+      wallVisible: wall.visible,
       activityID:column.activityID,
       unitID:wall.unitID,
       access:wall.access
     }});
-    Files.find({blockID:doc._id}).forEach(function(file) { 
-      Files.update(file._id,{$set:{
+    Files.update({blockID:doc._id},{$set:{
+        columnID:column._id,
+        wallID:column.wallID,
+        wallType:wall.type,
+        wallVisible: wall.visible,
+        activityID:column.activityID,
+        unitID:wall.unitID,
+        access:wall.access
+    }},{multi:true});
+    SlideStars.update({blockID:doc._id},{$set:{
         columnID:column._id,
         wallID:column.wallID,
         activityID:column.activityID,
         unitID:wall.unitID,
         access:wall.access
-      }});     
-    });  
-    SlideStars.find({blockID:doc._id}).forEach(function(slideStar) { 
-      SlideStars.update(slideStar._id,{$set:{
-        columnID:column._id,
-        wallID:column.wallID,
-        activityID:column.activityID,
-        unitID:wall.unitID,
-        access:wall.access
-      }});
-    });  
+    }},{multi:true}); 
+  }
+  if (doc.visible != this.previous.visible) {
+    Files.update({blockID:doc._id},{$set:{
+        blockVisible: doc.visible,
+    }},{multi:true});    
   }
 });
 

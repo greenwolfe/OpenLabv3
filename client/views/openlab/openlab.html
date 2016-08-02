@@ -1,10 +1,7 @@
 <template name = "openlab">
-  <!--{{#unless studentSubscriptionLoaded}}
-    <p class='bg-info'> Loading data for {{getname impersonatedOrUserId 'full'}}</p>
-  {{/unless}}--> <!--deprecated July 4, 2016 -->
   <div class='container-fluid'>
     <div id="unitNavigation">
-      {{>activitiesList}} <!-- now just the header, so poorly named-->
+      {{>unitNavigation}} 
     </div>
     <div class="row"> <!-- class="modal-body row" to scroll -->
       <div class='col-md-5'>
@@ -16,14 +13,10 @@
         {{#if showingConceptMap}}
           {{#with site}}
             {{>modelSummary}}
-          {{else}}
-            <!-- placeholder goes here? -->
           {{/with}}
         {{else}} {{#if showingSummary}}
           {{#with activeUnit}}
             {{>modelSummary}}
-          {{else}}
-            <!-- placeholder goes here? -->
           {{/with}}
         {{else}} {{#if showingSlides}}
           {{>slideShow}}

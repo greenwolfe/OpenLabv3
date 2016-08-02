@@ -1,8 +1,5 @@
 <template name="modelSummary">
   <div id="modelSummary">  
-    {{#unless Template.subscriptionsReady}}
-      <h4 class='bg-info'>{{{loadingSummary}}}</h4>
-    {{/unless}}
     {{#with summary}}
       {{#with linkedActivity}}
         {{>activityItem}}
@@ -44,6 +41,26 @@
           {{/with}}
         </div>
       </div>
+    {{else}}
+      {{#if currentUser}}
+        {{#unless Template.subscriptionsReady}}
+          {{>noSummary title="<h4 class='bg-info'> Loading summary ... </h4>"}}
+        {{/unless}}
+      {{else}}
+        {{>noSummary title="<h4 class='bg-info'>Logged out.</h4>"}}
+      {{/if}}
     {{/with}}
+  </div>
+</template>
+
+<template name="noSummary">
+  {{{title}}}
+  <div class="block block-{{type}} panel panel-default">
+    <div class="panel-heading">
+        <div class="blockTitle">&nbsp;</div>
+    </div>
+    <div class="panel-body">
+      <p> This space will display a summary of {{unitOrCourse}}. You will likely write your summary on a whiteboard, half of a single sheet of paper or one computer screen and submit a photograph, scan or screenshot.</p>
+    </div>
   </div>
 </template>

@@ -10,8 +10,10 @@ Meteor.methods({
                                   //id of a section if section wall
       type: Match.OneOf('teacher','student','group','section'),
       /* set below, value not passed in
+      wallType: wall.type, //denormalized value for ease of publication functions
       unitID: activity.unitID,
       visible: activity.wallVisible[wall.type],
+      wallVisible: wall.Visible, //denormalized value for ease of publication functions
       order: activity.wallOrder.indexOf(wall.type);
       access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
       */
@@ -28,7 +30,9 @@ Meteor.methods({
       throw new Meteor.Error('activity-not-found',"Cannot add wall, invalid activityID.");
     wall.unitID = activity.unitID;
     wall.order = activity.wallOrder.indexOf(wall.type);
+    wall.wallType = wall.type; //denormalized for ease of publication functions
     wall.visible = activity.wallVisible[wall.type];
+    wall.wallVisible = wall.visible; //denormalizing for ease of publication functions
 
     //validate createdFor collection and specific item 
     if (wall.type == 'student') {
@@ -50,7 +54,7 @@ Meteor.methods({
       var site = Site.findOne(wall.createdFor);
       if (!site)
         throw new Meteor.Error('site-not-found','Could not create teacher wall.  Site not found.');        
-      wall.access = []; //not sure what to do here, should not need to be used
+      wall.access = [site._id]; 
     } else {
       throw new Meteor.Error('owner-not-found','Error creating wall.  Owner (student,group, section or site) not found.');      
     }
@@ -90,6 +94,7 @@ Meteor.methods({
     if (Roles.userIsInRole(cU,'student') && !_.contains(newGroupMemberIds,cU))
       throw new Meteor.Error('studentNotInNewGroup','A student can only change the group for a wall if they are in the new group.');
 
+    Columns.update({wallID:wallID},{$set:{access:newGroupMemberIds}},{multi:true});
     return Walls.update(wallID,{$set:{createdFor:newGroupID,access:newGroupMemberIds}});
   },
   deleteWallIfEmpty: function(wallID) {
@@ -214,8 +219,10 @@ Walls.after.update(function (userID, doc, fieldNames, modifier) {
     wallVisible[doc.type] = doc.visible;
     Activities.update(doc.activityID,{$set:{wallVisible:wallVisible}});
     Walls.find({activityID:doc.activityID,type:doc.type}).forEach(function(wall){
-      if (wall.visible != doc.visible) 
-        Walls.direct.update(wall._id,{$set:{visible:doc.visible}});
-    });    
+      Walls.direct.update(wall._id,{$set:{visible:doc.visible,wallVisible:doc.visible}});
+      Columns.update({wallID:wall._id},{$set:{wallVisible:doc.visible}},{multi:true});
+      Blocks.update({wallID:wall._id},{$set:{wallVisible:doc.visible}},{multi:true});
+      Files.update({wallID:wall._id},{$set:{wallVisible:doc.visible}},{multi:true});
+    }); 
   }
 });

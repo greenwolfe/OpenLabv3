@@ -96,7 +96,7 @@ Template.activityPage.onCreated(function() {
   //get all groups walls for this activity to create the group list for browsing
   //move to flow-router
   if (Roles.userIsInRole(cU,'teacher')) {
-    instance.subscribe('groupWalls',FlowRouter.getParam('_id'));
+    instance.subscribe('groupsFromGroupWalls',FlowRouter.getParam('_id'));
   }
 });
 

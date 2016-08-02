@@ -36,12 +36,9 @@ Template.slideShow.onRendered(function() {
       studentOrSectionID = sectionID || studentID;
     }
     if (unitID && studentOrSectionID) {
-      instance.subscribe('slides2',studentOrSectionID,unitID,limit,function() { //things to do only when a new subscription is first ready
+      instance.subscribe('slides',studentOrSectionID,unitID,limit,function() { //things to do only when a new subscription is first ready
         instance.loaded.set(limit);
-        //change pub function to accept list of blockIDs 
-        //move line below to subscriptionsReady in case list os slideIDs changes without changing the subscription
-        //Meteor.subscribe('blockTextForSlides',studentOrSectionID,unitID);
-      }); 
+     }); 
 
       if (instance.subscriptionsReady()) {  //things to do when a new subscription is first ready, or when items are changed or added to an existing subscription
         var selector = {
@@ -70,7 +67,7 @@ Template.slideShow.onRendered(function() {
             return slide2.modifiedOn - slide1.modifiedOn;
           }
         })
-        Meteor.subscribe('blockTextForSlides2',slideIDs); //can be removed once we start fresh with no images stored in the text field
+        Meteor.subscribe('blockTextForSlides',slideIDs); //can be removed once we start fresh with no images stored in the text field
         instance.slideIDs.set(slideIDs)
         if (instance.resetActiveSlide.get()) {
           instance.activeSlideID.set(slideIDs[0]);

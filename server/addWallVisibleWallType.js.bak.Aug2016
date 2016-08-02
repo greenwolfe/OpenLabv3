@@ -1,0 +1,15 @@
+Meteor.startup(function() {
+  Walls.find().forEach(function(wall) {
+    Walls.update(wall._id,{$set:{wallVisible:wall.visible,wallType:wall.type}});
+/*
+    Columns.update({wallID:wall._id},{$set:{wallVisible:wall.visible,wallType:wall.type}},{multi:true});
+    Blocks.update({wallID:wall._id},{$set:{wallVisible:wall.visible,wallType:wall.type}},{multi:true});
+    Files.update({wallID:wall._id},{$set:{wallVisible:wall.visible,wallType:wall.type}},{multi:true});
+*/
+  });
+/*
+    Blocks.find().forEach(function(block) {
+    Files.update({blockID:block._id},{$set:{blockVisible:block.visible,blockType:block.type}},{multi:true});
+  });
+*/
+})
