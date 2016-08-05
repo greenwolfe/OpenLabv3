@@ -9,10 +9,6 @@ Template.wall.onCreated(function() {
   instance.whichGroups = new ReactiveVar("thisActivity");
 })
 
-Template.wall.onDestroyed(function() {
-  Meteor.call('deleteWallIfEmpty',this.data._id);
-})
-
 Template.wall.helpers({
   title: function() {
     if (this.type == 'teacher') return 'Teacher Wall';
@@ -47,6 +43,11 @@ Template.wall.helpers({
   },
   wallIsNotEmpty: function() {
     return Blocks.find({wallID:this._id}).count();
+  },
+  canSelectPastGroups: function() {
+    var studentID = Meteor.impersonatedOrUserId();
+    var cU = Meteor.userId();
+    return ((Roles.userIsInRole(cU,['teacher','student'])) && Roles.userIsInRole(studentID,'student'))
   },
   pastGroups: function() {
     var cU = Meteor.userId();
@@ -364,6 +365,10 @@ Template.studentStatus.events({
 /*****************************/
 
 Template.pastGroupSelector.helpers({
+  'bgPrimary': function() {
+    var wall = Template.parentData();
+    return (wall.createdFor == this._id) ? 'bg-primary' : '';
+  },
   isInGroup: function() {
     var studentID = Meteor.impersonatedOrUserId();
     if (!Roles.userIsInRole(studentID,'student'))

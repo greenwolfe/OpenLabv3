@@ -18,7 +18,7 @@ Meteor.methods({
       modifiedBy: Match.Optional(Match.idString), //current user
       modifiedOn: Match.Optional(Date),           //current date
       wallID: Match.Optional(Match.idString),     //denormalized value from column
-      wallType: Match.Optional(Match.oneOf('teacher','student','group','section')), //denormalize value from wall
+      wallType: Match.Optional(Match.OneOf('teacher','student','group','section')), //denormalize value from wall
       wallVisible: Match.Optional(Boolean),
       activityID: Match.Optional(Match.idString), //same as above
       unitID: Match.Optional(Match.idString),     //same as above
@@ -86,7 +86,13 @@ Meteor.methods({
     block.createdFor = wall.createdFor;
     block.wallType = wall.type;
     block.wallVisible = wall.visible;
-    block.access = wall.access;
+    if (wall.type == 'group') {
+      block.access = Meteor.groupMemberIds('current,final',wall.createdFor);
+    } else if (wall.type == 'section') {
+      block.access = Meteor.sectionMemberIds(wall.createdFor);
+    } else {
+      block.access = wall.access;
+    }
 
     block.order = 0;  //always insert at top of column
     block.raiseHand = '';
@@ -210,7 +216,47 @@ Meteor.methods({
     Blocks.update({_id: {$in: ids}}, {$inc: {order:-1}}, {multi: true});
     return numberRemoved; 
   },
-  /* REVISE to allow updating access, add or remove user */
+  blockChangeAccess: function(blockID,access,action) {
+    check(blockID,Match.idString);
+    check(access,[Match.idString]);
+    check(action,Match.OneOf('set','add','remove'));
+
+    var block = Blocks.findOne(blockID);
+    if (!block)
+      throw new Meteor.Error('blockNotFount','Cannot change access.  Block not found.');
+    var wall = Walls.findOne(block.wallID);
+    if (!wall)
+      throw new Meteor.Error('wallNotFound','Cannot change access.  Wall not found.');
+    var cU = Meteor.userId();
+    if (!cU)  
+      throw new Meteor.Error('notLoggedIn', "You must be logged in to change block access.");
+    if (!Roles.userIsInRole(cU,['teacher','student']))
+      throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can change the block access.");
+    if ((wall.type == 'teacher') || (wall.type == 'student')) 
+      throw new Meteor.Error('notGroupOrSectionWall','You cannot change access for blocks in student or teacher walls.');
+    if (wall.type == 'group') {
+      var memberIds = Meteor.groupMemberIds('current,final',wall.createdFor);
+      if (Roles.userIsInRole(cU,'student') && !_.contains(block.access,cU))
+        throw new Meteor.Error('studentNotAMember','A student can only change the group for a block if they already have access to it.');
+    } else if (wall.type == 'section') {
+      var memberIds = Meteor.sectionMemberIds(wall.createdFor);
+      if (!Roles.userIsInRole(cU,'teacher'))
+        throw new Meteor.Error('notATeacher','Only a teacher can change access to a block in a section wall.');
+    }
+    if (_.intersection(access,memberIds).length != access.length)
+      throw new Meteor.Error('notInGroupOrSection','Not a group or section member.  You must specify members of the group or section to be added or removed from block access.')
+
+    if (action == 'set') {
+      Files.update({blockID:blockID},{$set:{access:access}},{multi:true});
+      return Blocks.update(blockID,{$set:{access:access}});
+    } else if (action == 'add') {
+      Files.update({blockID:blockID},{$addToSet:{access:{$each: access}}},{multi:true});
+      return Blocks.update(blockID,{$addToSet:{access:{$each: access}}});
+    } else if (action == 'remove') {
+      Files.update({blockID:blockID},{$pullAll:{access:access}},{multi:true});
+      return Blocks.update(blockID,{$pullAll:{access:access}});
+    }
+  },
   updateBlock: function(block) { 
     check(block,Match.ObjectIncluding({
       _id: Match.idString,
@@ -233,11 +279,12 @@ Meteor.methods({
       /*fields that might be passed along with original block object, but are ignored
       columnID: Match.Optional(Match.idString), 
       wallID: Match.Optional(Match.idString), 
-      wallType: Match.Optional(Match.oneOf('teacher','student','group','section')), //denormalize value from wall
+      wallType: Match.Optional(Match.OneOf('teacher','student','group','section')), //denormalize value from wall
       wallVisible: Match.Optional(Boolean),      
       activityID: Match.Optional(Match.idString),
       type: Match.Optional(String), //'file','embed' - precated 'workSubmit','text','subactivities','assessment'
       order: Match.Optional(Match.Integer), 
+      access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
       createdFor: Match.Optional(Match.idString),
       createdBy: Match.Optional(Match.idString),  
       createdOn: Match.Optional(Date), 

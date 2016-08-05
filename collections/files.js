@@ -10,7 +10,7 @@ Meteor.methods({
       columnID: Match.Optional(Match.idString),  
       wallID: Match.Optional(Match.idString), 
       wallVisible: Match.Optional(Boolean),
-      wallType: Match.Optional(Match.oneOf('teacher','student','group','section')),
+      wallType: Match.Optional(Match.OneOf('teacher','student','group','section')),
       activityID: Match.Optional(Match.idString),
       unitID: Match.Optional(Match.idString), 
       order: Match.Optional(Match.Integer), 
@@ -81,11 +81,15 @@ Meteor.methods({
     
     var ids = _.pluck(Files.find({blockID:file.blockID,order:{$gt: file.order}},{fields: {_id: 1}}).fetch(), '_id');
     if (Meteor.isServer && (fileCount <= 1)) { //only delete file itself if there are no other links to it
-      UploadServer.delete(file.path);
+      try{
+        UploadServer.delete(file.path);
+      } catch(err) {}
       if (_.str.contains(file.type,'image')) {
-        var pathArray = file.path.split('/');
-        pathArray.splice(-1,0,'webSize');
-        UploadServer.delete(pathArray.join('/'));
+        try {
+          var pathArray = file.path.split('/');
+          pathArray.splice(-1,0,'webSize');
+          UploadServer.delete(pathArray.join('/'));
+        } catch(err) {}
       }
     }
     var numberRemoved = Files.remove(fileID); //remove this link regardless

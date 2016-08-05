@@ -7,6 +7,13 @@ var getBlocks = function(column) {
     columnID:column._id,
     type: {$ne: 'subactivities'} //deprecated march 16, 2016
   };
+  var studentID = Meteor.impersonatedOrUserId();
+  var siteID = Site.findOne()._id;
+  if (Roles.userIsInRole(studentID,'student')) {
+    selector.access = {$in:[studentID,siteID]};
+  } else if (Roles.userIsInRole(studentID,'parentOrAdvisor')) {
+    selector.access = {$in:[siteID]};
+  }
   if (!inEditedWall(column.wallID)) //if not editing
     selector.visible = true //show only visible blocks
   return Blocks.find(selector,{sort: {order:1}});

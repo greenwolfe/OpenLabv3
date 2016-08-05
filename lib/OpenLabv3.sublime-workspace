@@ -52,66 +52,42 @@
 	"buffers":
 	[
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.html",
 			"settings":
 			{
-				"buffer_size": 592,
+				"buffer_size": 3815,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.html",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.html",
 			"settings":
 			{
-				"buffer_size": 5779,
+				"buffer_size": 229,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.html",
 			"settings":
 			{
-				"buffer_size": 1699,
+				"buffer_size": 4983,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/column.html",
 			"settings":
 			{
-				"buffer_size": 2765,
+				"buffer_size": 2550,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
 			"settings":
 			{
-				"buffer_size": 4673,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
-			"settings":
-			{
-				"buffer_size": 16550,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
-			"settings":
-			{
-				"buffer_size": 5460,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/helpers/openlabSession.js",
-			"settings":
-			{
-				"buffer_size": 5477,
+				"buffer_size": 14137,
 				"line_ending": "Unix"
 			}
 		},
@@ -119,7 +95,66 @@
 			"file": "/home/solargreen/meteor/OpenLabv3/server/publications.js",
 			"settings":
 			{
-				"buffer_size": 21160,
+				"buffer_size": 23855,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.js",
+			"settings":
+			{
+				"buffer_size": 5476,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "\n/*\n\ntext block, image block, files block, embed block,\nto-do list block (drag copy from teacher to student?),\nPGA block - conversation with teacher (or just use text\nblock?) or discussion block?  homework block?\n\ngroup block:  stays with originally assigned group by default.\noption in dropdown to change to current group IF only difference is someone was added to the group\noption to copy instead of move, so that something could be shared with more than one group\nonly owner (original poster, individual student) can delete, edit or move.  Others can copy.\nor just offer (share with another group and make a copy?)  See checklist of all\ngroups (that you are in) and check them off.\n*/\n/*Meteor.startup(function() {\n  Uploader.finished = function(index, file, tmpl) {\n    _.extend(file,tmpl.data.formData);\n    Meteor.call('insertFile',file,alertOnError);\n  }\n});*/\nTemplate.activityPage.onCreated(function() {\n  var instance = this;\n  activityPageSession.initializePage(); //set initial values of editedWalls, showWalls, statusFilter, subActivityFilter\n  var activityID = FlowRouter.getParam('_id');\n\n  var iU = Meteor.impersonatedOrUserId();\n  var cU = Meteor.userId();\n //reset to teacher if teacher reached the page while impersonating a parent\n  if (Roles.userIsInRole(cU,'teacher') && Roles.userIsInRole(iU,'parentOrAdvisor')) {\n    loginButtonsSession.set('viewAs',cU);\n    iU = cU;\n  }\n\n\n  //deprecated Aug 2016\n  //reactive var needed so this doesn't flip when the publication is invalidated when student data is loaded in the background\n  //instance.initialSubscriptionsLoaded = new ReactiveVar(false);\n\n  var reactiveArray = function(initialValue) {\n    var initialArray = (initialValue) ? [initialValue] : []\n    return {\n      plainarray: initialArray,\n      reactive: new ReactiveVar(initialArray),\n      set:function(newvalue) { \n        this.plainarray = newvalue; \n        this.reactive.set(newvalue) \n      }\n    };\n  };\n  instance.requestedStudentWallAccess = reactiveArray(FlowRouter.getQueryParam('id'));\n  instance.loadedStudentWallAccess = reactiveArray(null);\n  instance.requestedGroupWallAccess = reactiveArray(FlowRouter.getQueryParam('id'));\n  instance.loadedGroupWallAccess = reactiveArray(null);\n\n  instance.subscribe('subActivities',activityID);\n  instance.subscribe('teacherWalls',activityID);\n  //get all groups walls for this activity to create the group list for browsing\n  if (Roles.userIsInRole(cU,'teacher')) {\n    instance.subscribe('groupsFromGroupWalls',activityID);\n  }\n});\n\nTemplate.activityPage.onRendered(function() {\n  var instance = this;\n  var cU = Meteor.userId();\n  if (Roles.userIsInRole(cU,'student')) {\n    var activityID = FlowRouter.getParam('_id');\n    instance.requestedStudentWallAccess.set([cU]);\n    instance.subscribe('activityPagePubs',[cU],activityID,function() {\n      console.log('loaded');\n      instance.loadedStudentIDs.set([cU]);\n      //instance.initialSubscriptionsLoaded.set(true);\n    });\n  }\n\n  if (Roles.userIsInRole(cU,'teacher')) {\n    instance.autorun(function() {\n      var iU = Meteor.impersonatedId();\n      var rSIDs = instance.requestedStudentIDs.plainarray;\n      if (Roles.userIsInRole(iU,'student') && !_.contains(rSIDs,iU)) {\n        rSIDs.push(iU);\n        instance.requestedStudentIDs.set(rSIDs); \n      }\n      var sectionID = Meteor.selectedSectionId();\n      if ((sectionID) && !_.contains(rSIDs,sectionID)) {\n        rSIDs.push(sectionID);\n        instance.requestedStudentIDs.set(rSIDs);\n      }\n    })\n    instance.autorun(function() {\n      var rSIDs = instance.requestedStudentIDs.reactive.get();\n      var activityID = FlowRouter.getParam('_id');\n      var names = rSIDs.map(function(id) {\n        var user = Meteor.users.findOne(id);\n        if (user)\n          return user.username;\n        var section = Sections.findOne(id);\n        if (section)\n          return section.name;\n        return id;\n      });\n      console.log('loading: ' + names.join(', '));\n      instance.subscribe('activityPagePubs',rSIDs,activityID,function() {\n        console.log('loaded');\n        //instance.initialSubscriptionsLoaded.set(true);\n        instance.loadedStudentIDs.set(rSIDs);\n        var sectionID = Meteor.selectedSectionId();\n        var sectionMemberIds = Meteor.sectionMemberIds(sectionID);\n        var urSIDs = _.difference(sectionMemberIds,rSIDs); //unrequested student IDs\n        var numberToAdd = Math.min(urSIDs.length,3);\n        if (numberToAdd) \n          instance.requestedStudentIDs.set(rSIDs.concat(urSIDs.slice(0,numberToAdd))); \n      });\n    });\n  }\n\n  if (Roles.userIsInRole(cU,'parentOrAdvisor')) {\n    instance.autorun(function() {\n      var iU = Meteor.impersonatedId();\n      var childOrAdviseeIds = Meteor.childOrAdviseeIds(cU);\n      var rSIDs = instance.requestedStudentIDs.plainarray;\n      if (_.contains(childOrAdviseeIds,iU) && (!_.contains(rSIDs,iU))) {\n        rSIDs.push(iU);\n        instance.requestedStudentIDs.set(rSIDs); \n      }\n    })\n    instance.autorun(function() {\n      var rSIDs = instance.requestedStudentIDs.reactive.get();\n      var activityID = FlowRouter.getParam('_id');\n      var names = rSIDs.map(function(id) {\n        var user = Meteor.users.findOne(id);\n        if (user)\n          return user.username;\n        var section = Sections.findOne(id);\n        if (section)\n          return section.name;\n        return id;\n      });\n      console.log('loading: ' + names.join(', '));\n      instance.subscribe('activityPagePubs',rSIDs,activityID,function() {\n        console.log('loaded');\n        //instance.initialSubscriptionsLoaded.set(true);\n        instance.loadedStudentIDs.set(rSIDs);\n        var childOrAdviseeIds = Meteor.childOrAdviseeIds();\n        var urSIDs = _.difference(childOrAdviseeIds,rSIDs); //unrequested student IDs\n        var numberToAdd = Math.min(urSIDs.length,3);\n        if (numberToAdd) \n          instance.requestedStudentIDs.set(rSIDs.concat(urSIDs.slice(0,numberToAdd))); \n      });\n    });\n  }\n});\n\nTemplate.activityPage.helpers({\n  /*initialSubscriptionsLoaded: function() {\n    var tmpl = Template.instance();\n    //var subsReady = FlowRouter.subsReady('initialActivityPagePub');\n    //if (subsReady) { //latch this so it doesn't invalidate when publish function is called to load more student data in the background\n    //  tmpl.initialSubscriptionsLoaded.set(true);\n    //  return true;\n    //}\n    return tmpl.initialSubscriptionsLoaded.get();\n  },*/\n  walls: function() {\n    var selector = {activityID:FlowRouter.getParam('_id')}\n    var cU = Meteor.userId();\n    if (!Roles.userIsInRole(cU,'teacher'))\n      selector.visible = true;\n    selector.type = 'teacher'; //default\n    var showWalls = activityPageSession.get('showWalls');\n    var studentID = Meteor.impersonatedOrUserId();\n    var sectionID = Meteor.selectedSectionId();\n    var statusFilter = activityPageSession.get('statusFilter');\n    var subactivityFilter = activityPageSession.get('subactivityFilter');\n\n    if (showWalls == 'student') {\n      if ((studentID) && Roles.userIsInRole(studentID,'student')) {\n        selector.createdFor = studentID;\n        selector.type = 'student';\n      } else if ((sectionID) && Roles.userIsInRole(cU,'teacher')) {\n        var sectionMemberIds = Meteor.sectionMemberIds(sectionID);\n        if (statusFilter == 'nofilter') {\n          selector.createdFor = {$in: sectionMemberIds};\n        } else {\n          var filteredIds = sectionMemberIds.filter(function(studentID) {\n            var status = ActivityStatuses.findOne({studentID:studentID,activityID:subactivityFilter});\n            if (!status)\n              return (statusFilter == 'nostatus');\n            return _.str.count(status.level,statusFilter);\n          });\n          selector.createdFor = {$in: filteredIds};\n        }\n        selector.type = 'student';\n      }\n    } else if (showWalls == 'group') {\n      if ((studentID) && Roles.userIsInRole(studentID,'student')) {\n        var studentsGroupIds = _.pluck(Memberships.find({\n          memberID:studentID,\n          collectionName: 'Groups',\n        },{fields: {itemID: 1}}).fetch(), 'itemID');\n        selector.createdFor = {$in:studentsGroupIds};\n        selector.type = 'group';\n      } else if ((sectionID) && Roles.userIsInRole(cU,'teacher')) {\n        var sectionMemberIds = Meteor.sectionMemberIds(sectionID);\n        if (statusFilter == 'nofilter') {\n          var filteredIds = sectionMemberIds;\n        } else {\n          var filteredIds = sectionMemberIds.filter(function(studentID) {\n            var status = ActivityStatuses.findOne({studentID:studentID,activityID:subactivityFilter});\n            if (!status)\n              return (statusFilter == 'nostatus');\n            return _.str.count(status.level,statusFilter);\n          });\n        }\n        var studentsGroupIds = _.pluck(Memberships.find({\n          memberID:{$in: filteredIds},\n          collectionName: 'Groups',\n        },{fields: {itemID: 1}}).fetch(), 'itemID');\n        selector.createdFor = {$in:studentsGroupIds};        \n        selector.type = 'group'\n      }     \n    } else if (showWalls == 'section') {\n      selector.createdFor = sectionID;\n      selector.type = 'section';\n    } else if (showWalls == 'allTypes') {\n      delete selector.type;\n      var createdFors = [Site.findOne()._id]\n      if (Roles.userIsInRole(studentID,'student')) {\n        createdFors.push(studentID);\n        var studentsGroupIds = _.pluck(Memberships.find({\n          memberID:studentID,\n          collectionName: 'Groups',\n        },{fields: {itemID: 1}}).fetch(), 'itemID');\n        createdFors = _.union(createdFors,studentsGroupIds);\n      }\n      createdFors.push(Meteor.selectedSectionId());\n      selector.createdFor = {$in: createdFors};\n    } \n    return Walls.find(selector,{sort: {order:1}});\n  },\n  sortableOpts: function() {\n    return {\n      draggable:'.wall',\n      handle: '.wallSortableHandle',\n      collection: 'Walls',\n      selectField: 'activityID',\n      selectValue: FlowRouter.getParam('_id'),\n      disabled: !activityPageSession.get('editedWall')\n    }\n  }\n});",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+			"file_size": 11820,
+			"file_write_time": 131146605406392736,
+			"settings":
+			{
+				"buffer_size": 10062,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "  //add default walls //\n  instance.autorun(function() {\n    var cU = Meteor.userId();\n    if ((!cU) || !FlowRouter.subsReady() || Roles.userIsInRole(cU,'parentOrAdvisor'))\n      return;\n    var studentID = Meteor.impersonatedOrUserId();\n    var sectionID = Meteor.selectedSectionId();\n    var studentOrSectionIDs = [];\n    var wallType = activityPageSession.get('showWalls');\n    if (Roles.userIsInRole(studentID,'student')) {\n      studentOrSectionIDs.push(studentID);\n    } else if (Roles.userIsInRole(cU,'teacher') && (sectionID) && (wallType != 'teacher')) {\n      if (_.contains(['section','allTypes'],wallType)) {\n        studentOrSectionIDs.push(sectionID);\n      } else if (_.contains(['student','group'],wallType)) {\n        studentOrSectionIDs = Meteor.sectionMemberIds(sectionID);\n        var statusFilter = activityPageSession.get('statusFilter');\n        var subactivityFilter = activityPageSession.get('subactivityFilter');\n        if (statusFilter != 'nofilter') {\n          studentOrSectionIDs = studentOrSectionIDs.filter(function(studentID) {\n            var status = ActivityStatuses.findOne({studentID:studentID,activityID:subactivityFilter});\n            if (!status)\n              return (statusFilter == 'nostatus');\n            return _.str.count(status.level,statusFilter);\n          });\n        }\n      }\n    }\n    var activityID = FlowRouter.getParam('_id');\n    if ((studentOrSectionIDs.length) && (activityID)) {\n      Meteor.call('addDefaultWalls',studentOrSectionIDs,activityID,wallType,function(error,wallsCreated) {\n        if (error)\n          console.log(error.reason);\n        if (wallsCreated) { //resubscribe to get columns, blocks, files for new wall\n          var rSIDs = instance.requestedStudentIDs.plainarray;\n          instance.subscribe('activityPagePubs',rSIDs,activityID,function(error,result) {\n            if (error)\n              console.log(error.reason);\n            console.log('resubscribed for ' + wallsCreated + ' new walls.');\n          });\n        }     \n      });\n    }\n  })",
+			"settings":
+			{
+				"buffer_size": 2034,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.js",
+			"settings":
+			{
+				"buffer_size": 14444,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
+			"settings":
+			{
+				"buffer_size": 5947,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/block.js",
+			"settings":
+			{
+				"buffer_size": 30470,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/helpers/activityPageSession.js",
+			"settings":
+			{
+				"buffer_size": 1637,
 				"line_ending": "Unix"
 			}
 		}
@@ -161,57 +196,68 @@
 	},
 	"file_history":
 	[
-		"/home/solargreen/meteor/OpenLabv3/collections/activityStatuses.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/workPeriods.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/memberships.js",
+		"/home/solargreen/meteor/OpenLabv3/lib/routes.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/viewAs.html",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/groups.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.html",
+		"/home/solargreen/meteor/OpenLabv3/collections/files.js",
+		"/home/solargreen/meteor/OpenLabv3/server/publications.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
 		"/home/solargreen/meteor/OpenLabv3/collections/blocks.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/walls.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/summaries.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/login_buttons_session.js",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/summary.css",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
+		"/home/solargreen/meteor/OpenLabv3/collections/activities.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.js",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/openlab.css",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activities_list.css",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_page.css",
+		"/home/solargreen/meteor/OpenLabv3/client/workPeriod/workPeriodPopoverX/workPeriodPopoverX.js",
+		"/home/solargreen/meteor/OpenLabv3/client/summernote/summernote.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/helpers/openlabSession.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/workPeriods.js",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/slideShow.css",
+		"/home/solargreen/meteor/OpenLabv3/collections/activityStatuses.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/memberships.js",
 		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/section_helpers.js",
 		"/home/solargreen/meteor/OpenLabv3/helpers/sectionMethods.js",
 		"/home/solargreen/meteor/OpenLabv3/helpers/groupMethods.js",
-		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
-		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/login_buttons_session.js",
 		"/home/solargreen/meteor/OpenLabv3/server/ActivityStatusForSection.js",
 		"/home/solargreen/meteor/OpenLabv3/server/activityStatusAddField.js.bak",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/grades/grades.js",
-		"/home/solargreen/meteor/OpenLabv3/lib/routes.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/grades/grades.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/calendar/calendarPage.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.html",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/slideShow.css",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.html",
 		"/home/solargreen/meteor/OpenLabv3/server/addAccess.js.bakJune2016",
 		"/home/solargreen/meteor/OpenLabv3/server/textBlockToFile.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/files.js",
 		"/home/solargreen/meteor/OpenLabv3/server/init.js",
 		"/home/solargreen/meteor/OpenLabv3/client/summernote/toolbars.js",
 		"/home/solargreen/meteor/OpenLabv3/server/renormalizeFiles.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/slideStars.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/helpers/wallHelpers.js",
-		"/home/solargreen/meteor/OpenLabv3/server/publications.js",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_statuses.css",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activities_list.css",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.html",
 		"/home/solargreen/meteor/OpenLabv3/collections/columns.js",
 		"/home/solargreen/meteor/OpenLabv3/methods/MatchHelpers.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/activityProgress.js",
 		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/login_buttons.html",
 		"/home/solargreen/meteor/OpenLabv3/collections/tags.js",
 		"/home/solargreen/meteor/OpenLabv3/server/addAccess.js",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_page.css",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/calendar/calendarPage.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/walls.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/activities.js",
-		"/home/solargreen/meteor/OpenLabv3/client/summernote/summernote.js",
 		"/home/solargreen/meteor/OpenLabv3/client/summernote/summernote.html",
 		"/home/solargreen/meteor/OpenLabv3/collections/sections.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/units.js",
@@ -224,13 +270,8 @@
 		"/home/solargreen/meteor/OpenLabv3/collections/groups.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/timePeriods.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.html",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/headers.css",
-		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/viewAs.html",
-		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/groups.html",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/application.css",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/openlab.css",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
 		"/home/solargreen/meteor/OpenLabv2/collections/workPeriods.js",
 		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/calendarEventModal.css",
 		"/home/solargreen/meteor/OpenLabv2/methods/MatchHelpers.js",
@@ -282,13 +323,7 @@
 		"/home/solargreen/meteor/OpenLabv2/client/views/activity/column.html",
 		"/home/solargreen/meteor/OpenLabv2/client/views/activity/column.js",
 		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/addCalendarEventModal.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/addCalendarEventModal.html",
-		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodPopoverX.html",
-		"/home/solargreen/meteor/OpenLabv2/methods/sortable1cMethods.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activityTagsPopoverX.js",
-		"/home/solargreen/meteor/OpenLabv2/collections/levelsOfMastery.js",
-		"/home/solargreen/meteor/OpenLabv2/collections/tags.js",
-		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/openlab.css"
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/addCalendarEventModal.html"
 	],
 	"find":
 	{
@@ -299,6 +334,7 @@
 		"height": 93.0,
 		"where_history":
 		[
+			""
 		]
 	},
 	"find_state":
@@ -306,6 +342,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"viewAs",
+			"$or",
+			"initialSub",
+			"pageTitle",
+			"type",
+			"wallType",
+			".type",
+			"unitID",
+			"sort",
+			"edit",
+			"currentData",
+			"editColumns",
 			"slidesReady",
 			"slidesREach",
 			"console.log",
@@ -421,19 +469,7 @@
 			"unittitle.active",
 			"cu",
 			"glyphicon",
-			"check",
-			"canEditBlock",
-			"Meteor.users",
-			"users",
-			"Meteor.users",
-			"block.type",
-			"Units.",
-			"lastO",
-			"firstUnit",
-			"first",
-			".modal-backdrop",
-			"|| Sections.findOne()",
-			"selected"
+			"check"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -455,24 +491,82 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 5,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.html",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 592,
+						"buffer_size": 3815,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								205,
-								205
+								1714,
+								1714
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 867.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 229,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								216,
+								216
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4983,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4239,
+								4239
 							]
 						],
 						"settings":
@@ -485,29 +579,184 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.html",
+					"buffer": 3,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/column.html",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5779,
+						"buffer_size": 2550,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5486,
-								5486
+								0,
+								0
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14137,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/home/solargreen/meteor/OpenLabv3/server/publications.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 23855,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5797,
+								5797
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2320.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 6,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5476,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								576,
+								576
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10062,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2408,
+								2408
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 195.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2034,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2034,
+								2034
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
@@ -519,50 +768,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
+					"buffer": 9,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1699,
+						"buffer_size": 14444,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								73,
-								73
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2765,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
+								1008,
+								1008
 							]
 						],
 						"settings":
@@ -572,115 +791,79 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 153.0,
+						"translation.y": 1785.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5947,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1411,
+								1411
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 433.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/block.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 30470,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10163,
+								10163
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4938.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 7,
 					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 2,
-			"sheets":
-			[
-				{
-					"buffer": 4,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4673,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								4673,
-								4673
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1836.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
+					"buffer": 12,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/helpers/activityPageSession.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16550,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								12995,
-								12995
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1122.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5460,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2964,
-								2964
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 918.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/helpers/openlabSession.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5477,
+						"buffer_size": 1637,
 						"regions":
 						{
 						},
@@ -697,41 +880,11 @@
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": -0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "/home/solargreen/meteor/OpenLabv3/server/publications.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 21160,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								12891,
-								12891
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
 						"translation.x": 0.0,
-						"translation.y": 5482.0,
+						"translation.y": 357.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 10,
 					"type": "text"
 				}
 			]
@@ -817,7 +970,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 0,
+	"selected_group": 1,
 	"settings":
 	{
 	},

@@ -145,7 +145,7 @@ Meteor.publish('teacherWalls',function(activityID) {
   return [ 
     Walls.find(selector),
     Columns.find(selector),
-    Blocks.find(selector),
+    Blocks.find(selector,{fields:{text:0}}),
     Files.find(selectorF)
   ];
 });
@@ -156,21 +156,29 @@ Meteor.publish('groupsFromGroupWalls',function(activityID) {
   var activity = Activities.findOne(activityID);
   if (!activity) return this.ready();
   if (!Roles.userIsInRole(this.userId,'teacher')) return this.ready();
-  return Walls.find({type:'group',activityID:activity.pointsTo},{fields:{createdFor:1}});
+  return Walls.find({type:'group',activityID:activity.pointsTo},{fields:{createdFor:1,type:1,activityID:1}});
 });
 
-Meteor.publish('subActivityStatuses',function(actvityID,studentOrSectonID) {
+Meteor.publish('subActivityStatuses',function(activityID,studentOrSectionID) {
   //think this through ... really optional?
   //if teacher, need statuses for all students for filtering?
+  check(activityID,Match.idString);
   check(studentOrSectionID,Match.OneOf(Match.idString,null)); 
-  check(activityID,Match.OneOf(Match.idString,null));
+
   var studentID = studentOrSectionID || this.userId;  
   var sectionID = (Sections.find(studentOrSectionID).count()) ? studentOrSectionID : null;
-  var selector = {pointsTo:activityID}
+  var selector = {pointsTo:activityID};
   if (Roles.userIsInRole(studentID,'student')) {
     selector.studentID = studentID;
-  } else if (Roles.userIsInRole(this.userId,'teacher') && sectionID) {
-    selector.sectionID = sectionID;
+  } else if (Roles.userIsInRole(this.userId,'teacher')) {
+    if (sectionID) {
+      selector.$or = [
+        {sectionID:sectionID},
+        {studentID:{$in:Meteor.sectionMemberIds(sectionID)}}
+      ];
+    } else {
+      selector.studentID = {$in:Meteor.allStudentIds()};
+    }
   } else {
     return this.ready();
   }
@@ -192,15 +200,9 @@ Meteor.publish('sectionWalls',function(activityID,studentOrSectionID) {
     selector.access = {$in:[studentID]};
   } else if (Roles.userIsInRole(this.userId,'teacher')) { 
     if (sectionID) { //teacher viewing a particular section
-      selector.access = Meteor.sectionMemberIds(sectionID);
+      selector.access = {$in: Meteor.sectionMemberIds(sectionID)};
     } else { //teacher viewing all sections
-      var memberships = Memberships.find({
-        collectionName:'Sections',
-        startDate: {$lt: today}, //startDate < today < endDate
-        endDate: {$gt: today}
-      },
-      {fields:{memberID:1}}).fetch();
-      selector.access = _.pluck(memberships,'memberID');
+      selector.access = {$in:Meteor.allStudentIds()};
     }
   } else { //none of the above
     return this.ready();
@@ -248,12 +250,19 @@ Meteor.publish('groupWalls',function(activityID,studentIDs) {
     selectorF = selector;
   }
  
-  return [
-    Walls.find(selector),
-    Columns.find(selector),
-    Blocks.find(selector),
-    Files.find(selectorF)
-  ];
+  if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
+    return [
+      Walls.find(selector),
+      Columns.find(selector)
+    ];
+  } else { 
+    return [
+      Walls.find(selector),
+      Columns.find(selector),
+      Blocks.find(selector),
+      Files.find(selectorF)
+    ];
+  }
 });
 
 Meteor.publish('studentWalls',function(activityID,studentIDs) {
@@ -282,101 +291,8 @@ Meteor.publish('studentWalls',function(activityID,studentIDs) {
   ];
 });
 
-Meteor.publish('activityPagePubs',function(studentOrSectionIDs,activityID) {
-  check(studentOrSectionIDs,[Match.idString]); 
-  check(activityID,Match.idString);
-  var activity = Activities.findOne(activityID);
-  var studentIDs = studentOrSectionIDs.filter(function(studentID) {
-    return Roles.userIsInRole(studentID,'student');
-  });
-  if (Roles.userIsInRole(this.userId,'student'))
-    studentIDs.push(this.userId);
-  var sectionIDs = studentOrSectionIDs.filter(function(sectionID) {
-    return Sections.find(sectionID,{limit:1}).count();
-  });
-  var isNotTeacher = !Roles.userIsInRole(this.userId,'teacher');
 
-  //walls
-  var selector = {};
-  var createdFors = [Site.findOne()._id]
-  studentIDs.forEach(function(studentID) {
-    createdFors.push(studentID);
-    var studentsGroupSectionIds = _.pluck(Memberships.find({
-      memberID:studentID,
-      collectionName: {$in: ['Groups','Sections']},
-    },{fields: {itemID: 1}}).fetch(), 'itemID');
-    createdFors = _.union(createdFors,studentsGroupSectionIds);
-  });
-  sectionIDs.forEach(function(sectionID) {
-    //create section walls for this activity
-    createdFors.push(sectionID);
-  });
-  selector.createdFor = {$in: createdFors};
-  if (Activities.find({_id:activityID},{limit:1}).count() > 0)
-    selector.activityID = activityID;
-  if (isNotTeacher)
-    selector.visible = true; //send only visible walls
-  var wallIds = _.pluck(Walls.find(selector,{fields:{_id:1}}).fetch(),'_id');
-
-  //columns,just return all columns for all walls, nothing more to do
-
-  //blocks
-  var blockSelector = {};
-  //if parent, only publish locks in teacher wall and some blocks in student wall)
-  if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
-    studentWallIds = wallIds.filter(function(wallID) { 
-      var wall = Walls.findOne(wallID);
-      return ((wall) && (wall.type == 'student'));
-    })
-    teacherWallIds = wallIds.filter(function(wallID) { 
-      var wall = Walls.findOne(wallID);
-      return ((wall) && (wall.type == 'teacher'));
-    })
-    blockSelector = {$or: [
-      {wallID:{$in:studentWallIds},type:{$in:['file','assessment','text']}},
-      {wallID:{$in:teacherWallIds}}
-    ]}
-  } else {
-    blockSelector.wallID = {$in:wallIds};
-  }
-
-  //files,just return all files for all walls, nothing more to do
-  //parents not given live link to student files (but could ferret out file URL if clever and uses the console?),
-  //doesn't see blocks on section/group walls anyway
-
-  //activity status and progress
-  if (studentIDs.length == 0) { //return nothing
-    var statusProgressSelector = {_id:'none'};
-  } else {
-    var statusProgressSelector = {studentID:{$in:studentIDs}};
-    if (Activities.find({_id:activityID},{limit:1}).count() > 0)
-      statusProgressSelector.pointsTo = activityID;
-  }
-
-  //levels of mastery
-  if (studentIDs.length == 0) { //return nothing
-    var LoMSelector = {_id:'none'};
-  } else {
-    var LoMSelector = {studentID:{$in:studentIDs}};
-    if (isNotTeacher)
-      LoMSelector.visible = true; //send only visible LoMs
-  }
-
-  return [
-    Activities.find({pointsTo:activityID}),
-    Units.find({_id:activity.unitID}),
-    WorkPeriods.find({unitID:activity.unitID}),
-    Tags.find(),
-    Walls.find(selector),
-    Columns.find({wallID:{$in:wallIds}}),
-    Blocks.find(blockSelector,{fields:{text:0}}),
-    Files.find({wallID:{$in:wallIds}}),
-    ActivityStatuses.find(statusProgressSelector),
-    ActivityProgress.find(statusProgressSelector),
-    LevelsOfMastery.find(LoMSelector)
-  ];
-});
-
+//deprecated August 2016
 Meteor.publish('blockText',function(blockID) {
   check(blockID,Match.idString);
   var block = Blocks.findOne(blockID);
@@ -397,74 +313,6 @@ Meteor.publish('blockText',function(blockID) {
   }
 
   return Blocks.find(blockID,{fields:{text:1}});
-});
-
-
-
-
-//issue with sections - right now sending all of a user's
-//sections, even if the student switched sections in the past and has two
-//memberships.  How to select also those section walls with content that
-//overlaps the time period of the student's past membership
-//and only serve those blocks created during that overlap time
-//does not arise to the same degree with groups, because the
-//group will not tend to continue creating content for other activities
-//once it is disolved.  Still should be handled in a similar way
-Meteor.publish('walls',function(studentOrSectionID,activityID) {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
-  check(studentOrSectionID,Match.Optional(Match.OneOf(Match.idString,null))); 
-  check(activityID,Match.idString); 
-  var studentID = studentOrSectionID || this.userId; 
-
-  var selector = {};
-  var createdFors = [Site.findOne()._id]
-  if (Roles.userIsInRole(studentID,'student')) {
-    createdFors.push(studentID);
-    var studentsGroupSectionIds = _.pluck(Memberships.find({
-      memberID:studentID,
-      collectionName: {$in: ['Groups','Sections']},
-    },{fields: {itemID: 1}}).fetch(), 'itemID');
-    createdFors = _.union(createdFors,studentsGroupSectionIds);
-  } else { //check if section selected without selecting a student 
-    var section = Sections.findOne(studentOrSectionID);
-    if (section)
-      createdFors.push(studentOrSectionID);
-  }
-  selector.createdFor = {$in: createdFors};
-  if (Activities.find({_id:activityID}).count() > 0)
-    selector.activityID = activityID;
-
-  return Walls.find(selector);
-});
-
-var currentWallIds = function(studentOrSectionID,activityID) {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
-  var studentID = studentOrSectionID || Meteor.userId(); 
-
-  var selector = {};
-  var createdFors = [Site.findOne()._id]
-  if (Roles.userIsInRole(studentID,'student')) {
-    createdFors.push(studentID);
-    var studentsGroupSectionIds = _.pluck(Memberships.find({
-      memberID:studentID,
-      collectionName: {$in: ['Groups','Sections']},
-    },{fields: {itemID: 1}}).fetch(), 'itemID');
-    createdFors = _.union(createdFors,studentsGroupSectionIds);
-  } else { //check if section selected without selecting a student 
-    var section = Sections.findOne(studentOrSectionID);
-    if (section)
-      createdFors.push(studentOrSectionID);
-  }
-  selector.createdFor = {$in: createdFors};
-  if (Activities.find({_id:activityID}).count() > 0)
-    selector.activityID = activityID;
-
-  return _.pluck(Walls.find(selector,{fields:{_id:1}}).fetch(),'_id');
-};
-
-Meteor.publish('columns',function(studentOrSectionID,activityID) {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
-  check(studentOrSectionID,Match.Optional(Match.OneOf(Match.idString,null))); 
-  check(activityID,Match.idString); 
-  var wallIds = currentWallIds(studentOrSectionID,activityID);
-  return Columns.find({wallID:{$in:wallIds}});
 });
 
 Meteor.publish('assessment',function(assessmentID){

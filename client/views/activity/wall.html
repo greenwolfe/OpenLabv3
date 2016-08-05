@@ -7,7 +7,7 @@
           {{#if wallIsNotEmpty}}
             {{{title}}}
           {{else}}
-            {{#if isInRole 'teacher,student'}}
+            {{#if canSelectPastGroups}}
               <ul class="nav navbar-nav text-center">
               <li class="dropdown pastGroupsDropdownList">
                 <a class="dropdown-toggle text-grey" data-toggle="dropdown">
@@ -137,7 +137,7 @@
 <template name="pastGroupSelector">
   {{#if isInGroup}}
     <li>
-      <a href="#" class="pastGroup">
+      <a href="#" class="pastGroup {{bgPrimary}}">
         {{{groupMembers}}}
       </a>
     </li>

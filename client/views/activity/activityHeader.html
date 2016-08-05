@@ -10,11 +10,7 @@
           </button>
       </div>
       <div class="navbar-collapse collapse">
-        <!--<p class="navbar-text">{{{pageTitle}}}</p>-->
           <ul class="nav navbar-nav">
-            <!--<li class="{{activeIfEditingMainPage}} {{hiddenIfNotTeacher}}">
-              <a href="#" id='editButton'>Edit</a>
-            </li>-->
             {{>showWalls}}
             {{>viewAs}}
             {{#if sectionOnlySelected}}
@@ -54,9 +50,9 @@
 </template>
 
 <template name= 'filterStudents'>
-<span class='navbar-text marginLR0'>Filter students:</span>
   <li id="status-dropdown-list" class="dropdown">
     <a class="dropdown-toggle paddingR3 paddingL3" data-toggle="dropdown">
+      Filter students:
       <b class="caret"></b>
       <i class="activityStatus icon-{{statusFilter}}"></i> 
     </a>

@@ -3,9 +3,9 @@ Meteor.studentCanEditBlock = function(studentID,block) {
     return false;
   if (studentID == block.createdBy)
     return true;
-  if (Meteor.isGroupMember(studentID,block.createdFor))
+  if (Meteor.isGroupMember(studentID,block.createdFor) && _.contains(wall.access,studentID))
     return true;
-  if (Meteor.isSectionMember(studentID,block.createdFor))
+  if (Meteor.isSectionMember(studentID,block.createdFor) && _.contains(wall.access,studentID))
     return true;
   return false;
 }
@@ -13,11 +13,11 @@ Meteor.studentCanEditBlock = function(studentID,block) {
 Meteor.studentCanEditWall = function(studentID,wall) {
   if (wall.type == 'teacher')
     return false;
-  if (studentID == wall.createdFor)
+  if ((studentID == wall.createdFor))
     return true;
-  if (Meteor.isGroupMember(studentID,wall.createdFor))
+  if (Meteor.isGroupMember(studentID,wall.createdFor) && _.contains(wall.access,studentID))
     return true;
-  if (Meteor.isSectionMember(studentID,wall.createdFor))
+  if (Meteor.isSectionMember(studentID,wall.createdFor) && _.contains(wall.access,studentID))
     return true;
   return false;
 }

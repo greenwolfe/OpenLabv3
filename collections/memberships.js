@@ -2,7 +2,6 @@ Memberships = new Meteor.Collection('Memberships');
 
 Meteor.methods({
   addMember: function(membership) {
-    console.log(membership);
     check(membership,{
       memberID:  Match.idString,
       itemID: Match.idString,

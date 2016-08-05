@@ -99,12 +99,7 @@ Meteor.methods({
           //this places it on equal footing with the other subactivities
           Activities.update(_id,{$set: {pointsTo:_id}});
           Activities.update(_id,{$set: {suborder:0}});
-          var wall = {
-            activityID: _id,
-            createdFor: Site.findOne()._id,
-            type: 'teacher',
-          }
-          Meteor.call('insertWall',wall);
+          Meteor.call('addDefaultWalls',_id);
         }
       }
     });

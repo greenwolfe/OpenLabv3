@@ -28,6 +28,17 @@ Meteor.sectionMemberIds = function(sectionOrID) {
   return _.pluck(memberships,'memberID');
 }
 
+Meteor.allStudentIds = function() {
+  var today = new Date();
+  var memberships = Memberships.find({
+      collectionName:'Sections',
+      startDate: {$lt: today}, //startDate < today < endDate
+      endDate: {$gt: today}
+    },
+    {fields:{memberID:1}}).fetch();
+  return _.pluck(memberships,'memberID');  
+}
+
 Meteor.isSectionMember = function(userOrID,sectionOrID) {
   var userID = ((userOrID) && ('object' === typeof userOrID)) ? userOrID._id : userOrID;
   if (Meteor.isClient)

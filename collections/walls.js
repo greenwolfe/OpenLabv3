@@ -10,12 +10,12 @@ Meteor.methods({
                                   //id of a section if section wall
       type: Match.OneOf('teacher','student','group','section'),
       /* set below, value not passed in
+      access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
       wallType: wall.type, //denormalized value for ease of publication functions
       unitID: activity.unitID,
       visible: activity.wallVisible[wall.type],
       wallVisible: wall.Visible, //denormalized value for ease of publication functions
       order: activity.wallOrder.indexOf(wall.type);
-      access: Match.Optional([Match.idString])    // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
       */
     });
     var cU = Meteor.user();
@@ -72,7 +72,6 @@ Meteor.methods({
     //only allow group change if wall is empty?
     check(wallID,Match.idString);
     check(newGroupID,Match.idString);
-    check(studentID,Match.idString);
 
     var wall = Walls.findOne(wallID);
     if (!wall)
@@ -97,6 +96,44 @@ Meteor.methods({
     Columns.update({wallID:wallID},{$set:{access:newGroupMemberIds}},{multi:true});
     return Walls.update(wallID,{$set:{createdFor:newGroupID,access:newGroupMemberIds}});
   },
+  wallChangeAccess: function(wallID,access,action) {
+    check(wallID,Match.idString);
+    check(access,[Match.idString]);
+    check(action,Match.OneOf('set','add','remove'));
+
+    var wall = Walls.findOne(wallID);
+    if (!wall)
+      throw new Meteor.Error('wallNotFound','Cannot change access.  Wall not found.');
+    var cU = Meteor.userId();
+    if (!cU)  
+      throw new Meteor.Error('notLoggedIn', "You must be logged in to change wall access.");
+    if (!Roles.userIsInRole(cU,['teacher','student']))
+      throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can change the wall access.");
+    if ((wall.type == 'teacher') || (wall.type == 'student')) 
+      throw new Meteor.Error('notGroupOrSectionWall','You cannot change access for student or teacher walls.');
+    if (wall.type == 'group') {
+      var memberIds = Meteor.groupMemberIds('current,final',wall.createdFor);
+      if (Roles.userIsInRole(cU,'student') && !_.contains(wall.access,cU))
+        throw new Meteor.Error('studentNotAMember','A student can only change the group for a wall if they already have access to it.');
+    } else if (wall.type == 'section') {
+      var memberIds = Meteor.sectionMemberIds(wall.createdFor);
+      if (!Roles.userIsInRole(cU,'teacher'))
+        throw new Meteor.Error('notATeacher','Only a teacher can change access to a section wall.');
+    }
+    if (_.intersection(access,memberIds).length != access.length)
+      throw new Meteor.Error('notInGroupOrSection','Not a group or section member.  You must specify members of the group or section to be added or removed from wall access.')
+
+    if (action == 'set') {
+      Columns.update({wallID:wallID},{$set:{access:access}},{multi:true});
+      return Walls.update(wallID,{$set:{access:access}});
+    } else if (action == 'add') {
+      Columns.update({wallID:wallID},{$addToSet:{access:{$each: access}}},{multi:true});
+      return Walls.update(wallID,{$addToSet:{access:{$each: access}}});
+    } else if (action == 'remove') {
+      Columns.update({wallID:wallID},{$pullAll:{access:access}},{multi:true});
+      return Walls.update(wallID,{$pullAll:{access:access}});
+    }
+  },
   deleteWallIfEmpty: function(wallID) {
     check(wallID,Match.idString);
     if (this.isSimulation)
@@ -115,15 +152,10 @@ Meteor.methods({
     }
     return Walls.remove(wallID);
   },
-  addDefaultWalls: function(studentOrSectionIDs,activityID,wallType) {
+  addDefaultWalls: function(activityID) {
     if (Meteor.isSimulation)
       return;
-    check(wallType,Match.OneOf('allTypes','teacher','student','group','section'));
-    check(studentOrSectionIDs,[Match.idString]);
     check(activityID,Match.idString);
-    if (wallType == 'teacher') //default teacher wall added when activity is created and then never removed
-      return 0;
-    var wallTypes = (wallType == 'allTypes') ? ['teacher','student','group','section'] : [wallType];
     var wallsCreated = 0;
     var activity = Activities.findOne(activityID);
     //if activity doesn't exist, just don't create walls for it
@@ -131,25 +163,89 @@ Meteor.methods({
     if (!activity)
       return;
       //throw new Meteor.Error('activityNotFound','Cannot create default walls.  Activity not found.');
-    var studentIDs = studentOrSectionIDs.filter(function(studentID) {
-      return Roles.userIsInRole(studentID,'student');
-    })
-    var sectionIDs = studentOrSectionIDs.filter(function(sectionID) {
-      return Sections.find(sectionID,{limit:1}).count();
-    })
 
-    var wall = {};
-    studentIDs.forEach(function(studentID) {
-      var sectionID = Meteor.currentSectionId(studentID);
-      if (sectionID && !_.contains(sectionIDs,sectionID))
-        sectionIDs.push(sectionID);
+    //teacher wall
+    var siteID = Site.findOne()._id;
+      var wall = {
+        activityID: activityID,
+        type: 'teacher',
+        access: [siteID],
+        createdFor: siteID
+      }
 
+      foundEmptyWall = false;
+      Walls.find(wall).fetch().forEach(function(w) {
+        if (!Blocks.find({wallID:w._id}).count())  { //wall is empty
+          if (foundEmptyWall) {
+            Walls.remove(w._id)
+          } else {
+            foundEmptyWall = true;
+          }
+        }
+      })  
+
+      if((Walls.find(wall).count() == 0)) {
+        delete wall.access;
+        Meteor.call('insertWall',wall,function(error,id) {
+          if (error)
+            throw new Meteor.Error(error);
+        });
+        wallsCreated += 1;
+      }  
+    //  
+
+    //section walls
+    Sections.find().forEach(function(section) {
+      wall = {
+        activityID: activityID,
+        type: 'section',
+        createdFor: section._id
+      }
+
+      foundEmptyWall = false;
+      Walls.find(wall).fetch().forEach(function(w) {
+        if (!Blocks.find({wallID:w._id}).count())  { //wall is empty
+          if (foundEmptyWall) {
+            Walls.remove(w._id)
+          } else {
+            foundEmptyWall = true;
+            Meteor.call('wallChangeAccess',w._id,Meteor.sectionMemberIds(section._id),'set',function(error,id) {
+              if (error)
+                throw new Meteor.Error(error);
+            });
+          }
+        }
+      })
+
+      if((Walls.find(wall).count() == 0)) {
+         Meteor.call('insertWall',wall,function(error,id) {
+          if (error)
+            throw new Meteor.Error(error);
+        });
+        wallsCreated += 1;
+      }
+    });
+
+    //student walls
+    Meteor.allStudentIds().forEach(function(studentID) {
       wall = {
         activityID: activityID,
         type: 'student',
         createdFor: studentID
       }
-      if (_.contains(wallTypes,'student') && (Walls.find(wall).count() == 0)) {
+
+      foundEmptyWall = false;
+      Walls.find(wall).fetch().forEach(function(w) {
+        if (!Blocks.find({wallID:w._id}).count())  { //wall is empty
+          if (foundEmptyWall) {
+            Walls.remove(w._id);
+          } else {
+            foundEmptyWall = true;
+          }
+        }
+      })
+
+      if (Walls.find(wall).count() == 0) {
         Meteor.call('insertWall',wall,function(error,id) {
           if (error)
             throw new Meteor.Error(error);
@@ -157,38 +253,40 @@ Meteor.methods({
         wallsCreated += 1;
       }
 
-      wall.type = 'group';
-      var groupIds = _.pluck(Memberships.find({memberID:studentID,collectionName:'Groups'},{fields:{itemID:1}}).fetch(),'itemID');
-      wall.createdFor = {$in: groupIds}; 
-      if (_.contains(wallTypes,'group') && (Walls.find(wall).count() == 0)) { //count non-empty walls for all past groups
-        wall.createdFor = Meteor.currentGroupId(studentID); //if none, create wall for current group
-        if (wall.createdFor)
-          Meteor.call('insertWall',wall,function(error,id) {
+      //group walls
+      wall = {
+        activityID: activityID,
+        type: 'group',
+        access: {$in:[studentID]}
+      }
+
+      var currentGroupID = Meteor.currentGroupId(studentID);
+      foundEmptyWall = false;
+      Walls.find(wall).fetch().forEach(function(w) {
+        if (!Blocks.find({wallID:w._id}).count())  { //wall is empty
+          if (foundEmptyWall) {
+            Walls.remove(w._id)
+          } else {
+            foundEmptyWall = true;
+            if (currentGroupID)
+              Meteor.call('wallChangeGroup',w._id,currentGroupID,function(error,id) {
+                if (error)
+                  throw new Meteor.Error(error);
+              });
+          }
+        }
+      })
+
+      if ((Walls.find(wall).count() == 0) && (currentGroupID)) { 
+        wall.createdFor = currentGroupID; 
+        delete wall.access;
+        Meteor.call('insertWall',wall,function(error,id) {
           if (error)
             throw new Meteor.Error(error);
         });
-        wallsCreated += 1;
       }
-    })
-
-    sectionIDs.forEach(function(sectionID) {
-      var wall = {
-        activityID: activityID
-      }
-
-      var section = Sections.findOne(sectionID);
-      if (section) {
-        wall.type = 'section';
-        wall.createdFor = sectionID;
-        if ((_.contains(wallTypes,'section')) && (Walls.find(wall).count() == 0)) {
-           Meteor.call('insertWall',wall,function(error,id) {
-            if (error)
-              throw new Meteor.Error(error);
-          });
-          wallsCreated += 1;
-        }
-      }
-    });
+      wallsCreated += 1;
+      });
 
     return wallsCreated;
   }
