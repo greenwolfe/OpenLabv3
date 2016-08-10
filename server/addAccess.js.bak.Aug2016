@@ -1,0 +1,40 @@
+Meteor.startup(function () {
+  var siteID = Site.findOne()._id;
+  Walls.find({type:'teacher'}).forEach(function(wall) {
+//    Walls.update(wall._id,{$set:{access:[siteID]}});
+    Columns.update({wallID:wall._id},{$set:{access:[siteID]}}, {multi: true});
+//    Blocks.update({wallID:wall._id},{$set:{access:[siteID]}}, {multi: true});
+//    Files.update({wallID:wall._id},{$set:{access:[siteID]}}, {multi: true});
+  });
+  Walls.find({type:'student'}).forEach(function(wall) {
+//    Walls.update(wall._id,{$set:{access:[wall.createdFor]}});
+    Columns.update({wallID:wall._id},{$set:{access:[wall.createdFor]}}, {multi: true});
+//    Blocks.update({wallID:wall._id},{$set:{access:[wall.createdFor]}}, {multi: true});
+//    Files.update({wallID:wall._id},{$set:{access:[wall.createdFor]}}, {multi: true});
+  });
+  Walls.find({type:'group'}).forEach(function(wall) {
+    var memberIds = Meteor.groupMemberIds('current,final',wall.createdFor);
+//    Walls.update(wall._id,{$set:{access:memberIds}});
+    Columns.update({wallID:wall._id},{$set:{access:memberIds}}, {multi: true});
+//    Blocks.update({wallID:wall._id},{$set:{access:memberIds}}, {multi: true});
+//    Files.update({wallID:wall._id},{$set:{access:memberIds}}, {multi: true});
+  });
+  Walls.find({type:'section'}).forEach(function(wall) {
+    var memberIds = Meteor.sectionMemberIds(wall.createdFor);
+//    Walls.update(wall._id,{$set:{access:memberIds}});
+    Columns.update({wallID:wall._id},{$set:{access:memberIds}}, {multi: true});  
+//    Blocks.update({wallID:wall._id},{$set:{access:memberIds}}, {multi: true});    
+//    Files.update({wallID:wall._id},{$set:{access:memberIds}}, {multi: true});    
+  })
+
+
+//  Walls.find().forEach(function(wall) {
+//    var activity = Activities.findOne(wall.activityID);
+//    var unitID = activity.unitID;
+//    Walls.update(wall._id,{$set:{unitID:unitID}});
+//    Columns.update({wallID:wall._id},{$set:{unitID:unitID}},{multi:true});
+//    Blocks.update({wallID:wall._id},{$set:{unitID:unitID}},{multi:true});
+//    Blocks.update({wallID:wall._id},{$set:{wallType:wall.type}},{multi:true});
+//    Files.update({wallID:wall._id},{$set:{unitID:unitID}},{multi:true});
+//  });
+})

@@ -145,7 +145,7 @@ Meteor.publish('teacherWalls',function(activityID) {
   return [ 
     Walls.find(selector),
     Columns.find(selector),
-    Blocks.find(selector,{fields:{text:0}}),
+    Blocks.find(selector),
     Files.find(selectorF)
   ];
 });
@@ -199,11 +199,7 @@ Meteor.publish('sectionWalls',function(activityID,studentOrSectionID) {
   if (Roles.userIsInRole(studentID,'student')) { //anyone (student, teacher or parent) viewing a particular student
     selector.access = {$in:[studentID]};
   } else if (Roles.userIsInRole(this.userId,'teacher')) { 
-    if (sectionID) { //teacher viewing a particular section
-      selector.access = {$in: Meteor.sectionMemberIds(sectionID)};
-    } else { //teacher viewing all sections
-      selector.access = {$in:Meteor.allStudentIds()};
-    }
+    //don't include access field, so walls are sent even if there are no students in the section
   } else { //none of the above
     return this.ready();
   }
@@ -291,30 +287,6 @@ Meteor.publish('studentWalls',function(activityID,studentIDs) {
   ];
 });
 
-
-//deprecated August 2016
-Meteor.publish('blockText',function(blockID) {
-  check(blockID,Match.idString);
-  var block = Blocks.findOne(blockID);
-  if (!block)
-    throw new Meteor.Error('blockNotFound','Cannot publish text field.  Block not found.');
-  var wall = Walls.findOne(block.wallID);
-  if (!wall)
-    throw new Meteor.Error('wallNotFound','Cannot publish text field.  Wall not found.')
-
-  //if parent, only publish blocks in teacher wall and some blocks in student wall)
-  if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
-    if (!_.contains(['teacher','student'],wall.type))
-      return this.ready();  //return empty cursor
-    if (wall.type == 'student') {
-      if (!_.contains(['file','assessment','text'],block.type))
-        return this.ready(); 
-    }
-  }
-
-  return Blocks.find(blockID,{fields:{text:1}});
-});
-
 Meteor.publish('assessment',function(assessmentID){
   check(assessmentID,Match.idString);
   if (Roles.userIsInRole(this.userId,'teacher')) {
@@ -333,7 +305,7 @@ Meteor.publish('assessmentSubactivity',function(activityID) {
   }  
 });
 
-Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!
+Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {
   check(studentOrSectionID,Match.idString); 
   check(unitID,Match.idString); 
   check(limit,Match.Integer);
@@ -346,12 +318,7 @@ Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {  //change t
   var userID = studentOrSectionID;
   if (Roles.userIsInRole(studentOrSectionID,'student')) {
     if (Roles.userIsInRole(this.userId,'parentOrAdvisor')) {
-      var wallIDs = _.pluck(Walls.find({
-        unitID:unitID,
-        type: 'student',
-        createdFor: studentOrSectionID 
-      },{fields:{_id:1}}).fetch(),'_id');
-      selector.wallID = {$in: wallIDs};
+      selector.wallType = 'student';
       selector.access = {$in: [studentOrSectionID]}; 
       slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
     } else {
@@ -383,16 +350,10 @@ Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {  //change t
   var slideIDs = slideIDs.slice(0,limit);
 
   return [
-    Blocks.find({_id:{$in:slideIDs}},{fields:{text:0}}),
+    Blocks.find({_id:{$in:slideIDs}}),
     Files.find({blockID:{$in:slideIDs}}),
-    SlideStars.find({blockID:{$in:slideIDs},userID:userID})
+    SlideStars.find({blockID:{$in:slideIDs}})
   ]
-
-});
-
-Meteor.publish('blockTextForSlides',function(slideIDs) {
-  check(slideIDs,[Match.idString]);
-  return Blocks.find({_id:{$in:slideIDs}},{fields:{text:1}});
 });
 
 Meteor.publish('blocks',function(studentOrSectionID,activityID)  {  //change to user or section ID in order to generate summary page for whole activity and section ... later!

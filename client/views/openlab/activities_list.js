@@ -74,9 +74,8 @@ percentCompleted = function() {
  /*** UNIT NAVIGATION  ****/
 /*************************/
 
-Template.unitNavigation.onRendered(function() {
+Template.unitNavigation.onCreated(function() {
   var instance = this;
-  $('.fa.fa-question-circle[data-toggle="tooltip"]').tooltip();
 
   instance.autorun(function() {
     var activeUnitID = openlabSession.get('activeUnit');
@@ -93,7 +92,12 @@ Template.unitNavigation.onRendered(function() {
         Meteor.subscribe('activityStatuses',studentOrSectionID,null); //all units
       });
     }
-  });
+  });  
+})
+
+Template.unitNavigation.onRendered(function() {
+  var instance = this;
+  $('.fa.fa-question-circle[data-toggle="tooltip"]').tooltip();
 });
 
 Template.unitNavigation.helpers({

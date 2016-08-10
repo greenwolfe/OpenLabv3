@@ -38,27 +38,39 @@ Template.slideShow.onRendered(function() {
     if (unitID && studentOrSectionID) {
       instance.subscribe('slides',studentOrSectionID,unitID,limit,function() { //things to do only when a new subscription is first ready
         instance.loaded.set(limit);
-     }); 
+      }); 
 
       if (instance.subscriptionsReady()) {  //things to do when a new subscription is first ready, or when items are changed or added to an existing subscription
         var selector = {
           unitID: unitID,
           type: {$in: ['text','file','embed']}
         };
-        if (Roles.userIsInRole(studentID,'teacher')) {
-          if (sectionID) {
-            selector.$or = [{createdFor:sectionID}, //if viewing a section, draw in blocks posted to its walls
-                      {access:{$in:[studentID]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
+        var slideIDs = [];
+        var userID = studentOrSectionID;
+        var cU = Meteor.userId();
+        if (Roles.userIsInRole(studentOrSectionID,'student')) {
+          if (Roles.userIsInRole(cU,'parentOrAdvisor')) { //not
+            selector.wallType = 'student';
+            selector.access = {$in: [studentOrSectionID]}; 
+            slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
           } else {
-            selector.access = {$in:[studentID]};
+            if (Roles.userIsInRole(cU,'teacher')) {
+              selector.access = {$in: [studentOrSectionID,cU]};
+            } else {
+              selector.access = {$in: [studentOrSectionID]};
+            }
           }
-        } else if (Roles.userIsInRole(studentID,'student')) {
-          selector.access = {$in: [studentID]};
-        } 
-        var slideIDs = _.pluck(Blocks.find(selector).fetch(),'_id');
+          slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
+        } else if (Roles.userIsInRole(cU,'teacher')) { //and are not impersonating a student
+          userID = cU;
+          selector.$or = [{createdFor:studentOrSectionID}, //if viewing a section, draw in blocks posted to its walls
+                          {access:{$in:[cU]}}];  //also draw in blocks with this particular teacher ID in the access field (which means the teacher selected it for his/her stack of slides)
+          slideIDs = _.pluck(Blocks.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
+        }
+
         slideIDs =  slideIDs.sort(function(slideID1,slideID2) {
-          var star1 = SlideStars.findOne({blockID:slideID1,userID:studentID}) || {value:8};
-          var star2 = SlideStars.findOne({blockID:slideID2,userID:studentID}) || {value:8};
+          var star1 = SlideStars.findOne({blockID:slideID1,userID:userID}) || {value:8};
+          var star2 = SlideStars.findOne({blockID:slideID2,userID:userID}) || {value:8};
           if (star1.value != star2.value) {
             return star2.value - star1.value;
           } else { 
@@ -67,7 +79,6 @@ Template.slideShow.onRendered(function() {
             return slide2.modifiedOn - slide1.modifiedOn;
           }
         })
-        Meteor.subscribe('blockTextForSlides',slideIDs); //can be removed once we start fresh with no images stored in the text field
         instance.slideIDs.set(slideIDs)
         if (instance.resetActiveSlide.get()) {
           instance.activeSlideID.set(slideIDs[0]);
