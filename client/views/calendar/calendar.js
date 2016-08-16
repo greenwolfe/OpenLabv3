@@ -148,15 +148,19 @@ Template.daysActivities.helpers({
     var sectionID = Meteor.currentSectionId() || Meteor.selectedSectionId() || null;
     if (!sectionID)
       return '';
-    var twelveAM = moment(weekDay.date,'MM/DD/YYYY').hour(0).toDate();
-    var twelvePM = moment(weekDay.date,'MM/DD/YYYY').hour(24).toDate();
+    var twelveAM = moment(weekDay.date,'MM/DD/YYYY').hour(0).subtract(1,'second').toDate();
+    var twelvePM = moment(weekDay.date,'MM/DD/YYYY').hour(24).add(1,'second').toDate();
     //endDate > twelveAM and startDate < twelvePM 
     //guarantees that part of the workperiod happens on this day
+    //overlap of 1 second on beginning and end of day guarantees that no activities are excluded
     var workPeriods = WorkPeriods.find({
-        endDate: {$gt: twelveAM},
-        startDate: {$lt: twelvePM},
-        sectionID: sectionID
-      });
+      sectionID: sectionID,
+      $or: [
+        {endDate: {$gt: twelveAM},startDate: {$lt: twelvePM}},
+        {endDate: {$gt: twelveAM,$lt:twelvePM},startDate: null},
+        {endDate: null,startDate:{$gt: twelveAM,$lt:twelvePM}}
+      ]
+    });
     var activities = [];
     workPeriods.forEach(function(wP) {
       var activity = Activities.findOne(wP.activityID);
