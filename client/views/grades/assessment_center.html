@@ -1,0 +1,49 @@
+<Template name="assessmentCenter">
+  <div class='assessmentCenter'>
+    {{#if assessmentsCount}}
+      {{#if Template.subscriptionsReady}}
+        {{#with activeAssessment}}
+          <div class="assessmentCenterTitle">
+            <h4>
+              Assessment {{assessmentNumber}} of {{assessmentsCount}}
+              {{#if hasMoreAssessments}}
+                <i class="fa fa-plus-square-o" title="load more"></i>
+              {{/if}}
+            </h4>
+            <div id="assessmentCenterControls">
+              <i class="fa fa-fast-backward"></i>
+              <i class="fa fa-step-backward"></i>
+              <i class="fa fa-step-forward"></i>
+              <i class="fa fa-fast-forward"></i>
+            </div>
+          </div>
+          {{> block}}
+        {{/with}}
+      {{else}}
+        {{>noAssessments title="<h4 class='bg-info'> Loading assessments ... </h4>"}}
+      {{/if}}
+    {{else}}
+      {{#if currentUser}}
+        {{#if Template.subscriptionsReady}}
+          {{>noAssessments title='<h4>No assessments found.</h4>'}}
+        {{else}}
+          {{>noAssessments title="<h4 class='bg-info'> Loading assessments ... </h4>"}}
+        {{/if}}
+      {{else}}
+        {{>noAssessments title="<h4 class='bg-info'>Logged out.</h4>"}}
+      {{/if}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="noAssessments">
+  {{{title}}}
+  <div class="block block-{{type}} panel panel-default">
+    <div class="panel-heading">
+        <div class="blockTitle">&nbsp;</div>
+    </div>
+    <div class="panel-body">
+      <p> Your teacher will add assessments for the whole class here.  You can also use it to request a reassessment and put together a to-do list for it.</p>
+    </div>
+  </div>
+</template>

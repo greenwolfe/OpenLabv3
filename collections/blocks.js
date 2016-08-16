@@ -10,7 +10,7 @@ Meteor.methods({
       /*fields that will be initially filled based on the information passed in
       createdBy: Match.idString,              //current user
       createdOn: Match.Optional(Date),            //today's date
-      createdFor: Match.idString, //must = siteID if teacher teacher (only one Site object, so only one id possible)
+      createdFor: Match.idString, //must = siteID if teacher wall (only one Site object, so only one id possible)
                                   //userID of a student if student wall
                                   //id of a group if group wall
                                   //id of a section if section wall

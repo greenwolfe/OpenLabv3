@@ -1,4 +1,5 @@
 .meteorup*/
 .uploads/
-deploy_all.sh
+deploy*.sh
 backups/
+.duply/

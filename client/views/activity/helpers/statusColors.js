@@ -1,3 +1,4 @@
+//not sure if these are still used
 /* currentStatus */
 var currentStatus = function(activityID) {
   var studentID = Meteor.impersonatedOrUserId();

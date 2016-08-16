@@ -1,0 +1,9 @@
+Meteor.startup(function () {
+  Walls.find({type:{$ne:'teacher'}}).forEach(function(wall) {
+    Walls.remove(wall._id);
+    Columns.find({wallID:wall._id}).fetch().forEach(function(column) {
+      Columns.remove(column._id);
+    });
+  });
+
+});

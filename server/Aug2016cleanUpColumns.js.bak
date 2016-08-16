@@ -1,0 +1,7 @@
+Meteor.startup(function() {
+  Columns.find().forEach(function(column) {
+    var wall = Walls.findOne(column.wallID);
+    if (!wall)
+      Columns.remove(column._id);
+  });
+});

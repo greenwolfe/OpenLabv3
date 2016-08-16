@@ -1,47 +1,18 @@
-#startDatePicker, #endDatePicker {
-  /*display: inline-block;
-  box-sizing: border-box;*/
-  max-width: 100%;
-  margin: 0 auto;
+.editWorkPeriod {
+  display: inline-block;
 }
-#startDatePicker input[disabled], #endDatePicker input[disabled] {
-  cursor: default;
-  border-style: none;
-  box-shadow: none;
+.editWorkPeriod .input-group-addon {
+  display: inline-block;
+  padding: 0;
 }
-#startDatePicker input[disabled] + span.input-group-addon, 
-#endDatePicker input[disabled] + span.input-group-addon {
-  border-style: none;
+.editWorkPeriod .input-group.date {
+  display: inline-block;
 }
-#startDatePicker input[disabled] + span.input-group-addon span.glyphicon.glyphicon-calendar, 
-#endDatePicker input[disabled] + span.input-group-addon span.glyphicon.glyphicon-calendar {
-  visibility: hidden;
+.editWorkPeriod i.fa-copy:hover {
+  cursor: pointer;
 }
-#workPeriodPopoverX.popover.popover-default {
-  min-width: 350px;
-}
-#workPeriodPopoverX .popover-content .date-range {
-  background-color: #EFEFEF;
-  border-radius: 6px;
-  width: 300px;
-  padding: 0px 6px 12px;
-}
-#workPeriodPopoverX .popover-content .date-range.completed {
-  background-color: #5BC0DE;
-}
-#workPeriodPopoverX .popover-content .date-range.expected {
-  background-color: #F0AD4E;
-}
-#workPeriodPopoverX .popover-content .date-range.completed * {
-  background-color: #5BC0DE;
-}
-#workPeriodPopoverX .popover-content .date-range.expected * {
-  background-color: #F0AD4E;
-}
-#workPeriodPopoverX .popover-content .unit-date-range {
-  background-color: #AFAFAF;
-  border-radius: 6px;
-}
+
+
 .popover-default {
   background-color: #FBFBFB;
 }
@@ -59,9 +30,4 @@
 }
 .popover-danger {
   background-color: #F2DEDE;
-}
-.btn.workPeriod-gauge {
-  padding: 0;
-  margin: 0;
-  line-height: 0;
 }

@@ -5,7 +5,8 @@
 var getBlocks = function(column) {
   var selector = {
     columnID:column._id,
-    type: {$ne: 'subactivities'} //deprecated march 16, 2016
+    type: {$ne:'subactivities'}
+    //type: {$nin: ['subactivities','assessment']} //deprecated march 16, 2016 and Aug 2016
   };
   var studentID = Meteor.impersonatedOrUserId();
   var siteID = Site.findOne()._id;

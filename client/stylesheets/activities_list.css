@@ -12,6 +12,15 @@
 p.aItem a.deleteActivity {
   font-size: small;
 }
+p.aItem span.glyphicon-calendar.completed {
+  background-color: #5BC0DE;
+}
+p.aItem span.glyphicon-calendar.expected {
+  background-color: #F0AD4E;
+}
+p.aItem span.glyphicon-calendar.current {
+  background-color: #00ff00;
+}
 
 #units { /* makes bootstrap nav-pills equal height so they wrap in distinct rows */
   display: flex;

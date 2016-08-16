@@ -139,12 +139,26 @@
           <a>
           {{{tags}}}
           </a>
+          {{#with workPeriod}}
+            {{>editWorkPeriod}}
+          {{else}}
+            {{#if selectedSection}}
+              {{>newWorkPeriod}}
+            {{/if}}
+          {{/with}}
           {{>plaintexteditor collection='Activities' field='title' _id=_id editable=editingMainPageTFtext}} 
         {{/unless}}
       {{else}}
         {{#if _id}}
-          {{> workPeriodButton workPeriod}}
-          <!--not useful here ... moving to calendar event and linking to todo list<i class="activityProgress {{progress}}" title="{{progressTitle}}"></i>-->
+          <!--{{> workPeriodButton workPeriod}}-->
+          {{#with workPeriod}}
+            {{#if endDate}}
+              <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="deadline: {{formatDateTime endDate}}"></span>
+            {{/if}}
+            {{#if startDate}}
+              <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="start date: {{formatDateTime startDate}}"></span>
+            {{/if}}
+          {{/with}}
           <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
           <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
           <a  href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}"> 

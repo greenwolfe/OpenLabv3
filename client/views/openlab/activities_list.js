@@ -303,6 +303,12 @@ var currentStatus = function(activityID) {
   }
 }
 
+Template.activityItem.onRendered(function() {
+  $('span.glyphicon-calendar[data-toggle="tooltip"]').tooltip();
+})
+
+var dateTimeFormat = "ddd, MMM D YYYY [at] h:mm a";
+
 Template.activityItem.helpers({
   canDelete: function() {
     var cU = Meteor.userId();
@@ -389,44 +395,32 @@ Template.activityItem.helpers({
   },
   workPeriod: function () {
     //find existing workPeriod
-    var workPeriod =  WorkPeriods.findOne({
+    return workPeriod =  WorkPeriods.findOne({
       activityID: this._id,
       sectionID: Meteor.selectedSectionId()
     });
-    if (workPeriod) 
-      return workPeriod;
-
-    //else get unit dates off a workPeriod for another activity from the same unit and section
-    //unitDatesWithoutSelf are by definition the unitDates for the other workPeriod
-    workPeriod = WorkPeriods.findOne({
-      unitID: this.unitID,
-      sectionID: Meteor.selectedSectionId()
-    });
-    if (workPeriod) {
-      //keep existing unitID, sectionID, unitDates 
-      workPeriod.activityID = this._id;
-      workPeriod.activityVisible = this.visible;
-      workPeriod.startDate = longLongAgo();
-      workPeriod.endDate = longLongAgo();
-      workPeriod.unitStartDateWithoutSelf = workPeriod.unitStartDate;
-      workPeriod.unitEndDateWithoutSelf = workPeriod.unitEndDate;
-      return workPeriod;
-    }
-
-    //else make up a stub with all null values
-    workPeriod = {
-      activityID: this._id, //passed in for later use
-      unitID: this.unitID, //passed in for completeness, probably not used to display data
-      activityVisible: this.visible, //passed in for completeness, probably not used to display data
-      sectionID: 'applyToAll', //default value
-      startDate: longLongAgo(),
-      endDate: longLongAgo(),
-      unitStartDate: longLongAgo(),
-      unitEndDate: notSoLongAgo(),
-      unitStartDateWithoutSelf: wayWayInTheFuture(),
-      unitEndDateWithoutSelf: notSoLongAgo()
-    };
-    return workPeriod;
+  },
+  formatDateTime: function(date) {
+    return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
+  },
+  currentLateComplete: function() {
+    var parentData = Template.parentData();
+    var status = currentStatus(parentData._id);
+    status = status || {level:'nostatus'}
+    if (_.str.contains(status.level,'done'))
+      return 'completed';
+    var today = new Date();
+    if ((this.endDate) && (today > this.endDate))
+      return 'expected';
+    var longLongAgo = new Date(0);
+    var wayWayInTheFuture = new Date(8640000000000000);
+    var endDate = this.endDate || longLongAgo;
+    var startDate = this.startDate || wayWayInTheFuture;
+    if ((this.endDate) && (!this.startDate))
+      startDate = moment(this.endDate).subtract(1,'week').toDate();
+    if ((startDate < today) && (today < endDate))
+      return 'current'
+    return '';
   },
   tags: function() {
     var studentID = Meteor.impersonatedOrUserId();

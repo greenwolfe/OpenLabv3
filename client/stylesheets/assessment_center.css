@@ -1,0 +1,15 @@
+div.assessmentCenterTitle h4 {
+  display: inline-block;
+}
+div.assessmentCenterTitle div#assessmentCenterControls {
+  display: inline-block;
+  float: right;
+}
+div.assessmentCenter i.fa-step-backward,
+div.assessmentCenter i.fa-step-forward,
+div.assessmentCenter i.fa-fast-backward,
+div.assessmentCenter i.fa-fast-forward {
+  font-size: x-large;
+  margin-right: 4px;
+  margin-left: 4px;
+}
