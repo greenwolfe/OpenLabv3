@@ -188,3 +188,216 @@ Template.subActivitiesList.events({
     tmpl.editingList.set(false);
   }
 })
+
+  /**************************/
+ /*** SUBACTIVITY ITEM  ****/
+/**************************/
+
+/* currentStatus */
+var currentStatus = function(activityID) {
+  var studentID = Meteor.impersonatedOrUserId();
+  var data = Template.parentData(function(data){return ('createdFor' in data)});
+  if ((data) && Meteor.users.find(data.createdFor).count())
+    studentID = data.createdFor;
+  var studentID = ((data) && Meteor.users.find(data.createdFor).count()) ? data.createdFor : Meteor.impersonatedOrUserId();
+  if (!Roles.userIsInRole(studentID,'student'))
+    return undefined;
+  return ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+}
+
+Template.subactivityItem.onRendered(function() {
+  $('span.glyphicon-calendar[data-toggle="tooltip"]').tooltip();
+})
+
+var dateTimeFormat = "ddd, MMM D YYYY [at] h:mm a";
+
+Template.subactivityItem.helpers({
+  currentlyEditing: function() {
+    var parent = Template.parentData();
+    if ('wallID' in parent)
+      return (activityPageSession.get('editedWall') == parent.wallID);
+    var instance = Template.instance();
+    parent = instance.parent();
+    if ('editingList' in parent)
+      return parent.editingList.get();
+    return false;
+  },
+  canDelete: function() {
+    var cU = Meteor.userId();
+    if (!Roles.userIsInRole(cU,'teacher')) return false;
+    var numBlocks = Blocks.find({activityID:this._id,type:{$ne:'subactivities'}}).count();
+    var numSubActivities = Activities.find({pointsTo:this._id}).count();
+    return ((this._id != this.pointsTo) || ((numBlocks == 0) && (numSubActivities == 1)) );
+  },
+  subactivities: function() {
+    return Activities.find({pointsTo:this.pointsTo});
+  },
+  workPeriod: function () {
+    //find existing workPeriod
+    return workPeriod =  WorkPeriods.findOne({
+      activityID: this._id,
+      sectionID: Meteor.selectedSectionId()
+    });
+  },
+  formatDateTime: function(date) {
+    return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
+  },
+  currentLateComplete: function() {
+    var parentData = Template.parentData();
+    var status = currentStatus(parentData._id);
+    status = status || {level:'nostatus'}
+    if (_.str.contains(status.level,'done'))
+      return 'completed';
+    var today = new Date();
+    if ((this.endDate) && (today > this.endDate))
+      return 'expected';
+    var longLongAgo = new Date(0);
+    var wayWayInTheFuture = new Date(8640000000000000);
+    var endDate = this.endDate || longLongAgo;
+    var startDate = this.startDate || wayWayInTheFuture;
+    if ((this.endDate) && (!this.startDate))
+      startDate = moment(this.endDate).subtract(1,'week').toDate();
+    if ((startDate < today) && (today < endDate))
+      return 'current'
+    return '';
+  },
+  status: function() {
+    var status = currentStatus(this._id);
+    if (!status)
+      return 'icon-nostatus'
+    return 'icon-' + status.level;
+  },
+  statusTitle: function() {
+    var status = currentStatus(this._id);
+    if (!status)
+      return 'not started';
+    var titleDict = {
+      'nostatus':'empty inbox: not started',
+      'submitted':'full inbox: work submitted, waiting for teacher response',
+      'returned':'full outbox:  Returned with comments by your teacher.  Please revise and resubmit.',
+      'donewithcomments':'Done.  Revisions not required but review comments by your teacher before taking an assessment',
+      'done':'Done.'};
+    return titleDict[status.level];
+  },
+  late: function() {
+    var status = currentStatus(this._id);
+    if (!status)
+      return '';
+    return (status.late) ? 'icon-late' : '';  
+  },
+  studentOrSectionID: function() {
+    var cU = Meteor.userId();
+    if (Roles.userIsInRole(cU,'teacher')) {
+      var studentID = Meteor.impersonatedId();
+      if (studentID)
+        return 'id=' + studentID;
+      var sectionID = Meteor.selectedSectionId();
+      if (sectionID)
+        return 'id=' + sectionID;
+      return '';
+    } else {
+      var studentID = Meteor.impersonatedOrUserId(); //in case is parent viewing as student
+      if (studentID)
+        return 'id=' + studentID; 
+      return '';     
+    }
+  },
+  tags: function() {
+    var studentID = Meteor.impersonatedOrUserId();
+    var data = Template.parentData(function(data){return ('createdFor' in data)});
+    if ((data) && Meteor.users.find(data.createdFor).count())
+      studentID = data.createdFor;
+    var activityID = this._id;
+    var status = ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+    var tags = '';
+    if (this.tag) 
+      tags += ' (' + this.tag + ')';
+    var block = Template.parentData();
+    var wall = Walls.findOne(block.wallID);
+    if ((wall) && (wall.type == 'teacher') && (this.inBlockHeader))
+      return tags;
+    if ((status) && (status.tag))
+      tags += '<strong> (' + status.tag + ')</strong>';
+    return tags;    
+  }
+});
+
+Template.subactivityItem.events({
+  'click .deleteActivity':function(event,tmpl) {
+    var isNotSubActivity = (tmpl.data._id == tmpl.data.pointsTo);
+    if (confirm('Are you sure you want to delete this activity?')) {
+      Meteor.call('deleteActivity', tmpl.data._id,function(error,num){
+        if (error) {
+          alert(error.reason);
+        } else {
+          alert('Activity deleted');
+          if (isNotSubActivity)
+            FlowRouter.go('/');
+        }
+      });
+    }
+  },
+  'click li.subactivityChoice': function(event,tmpl) {
+    var block = Template.parentData();
+    var subactivity = this;
+    if (subactivity._id != block.subActivityID) 
+      Meteor.call('updateBlock',{_id:block._id,subActivityID:subactivity._id},alertOnError);
+    event.preventDefault();
+  },
+  'click li.chooseNoSubactivity': function(event,tmpl) {
+    var block = Template.parentData();
+    Meteor.call('updateBlock',{_id:block._id,subActivityID:''},alertOnError);
+    event.preventDefault();
+  },
+  'click .activityProgress': function(event,tmpl) {
+    var studentID = Meteor.impersonatedOrUserId();
+    var data = Template.parentData(function(data){return ('createdFor' in data)});
+    if ((data) && Meteor.users.find(data.createdFor).count())
+      studentID = data.createdFor;
+    if (!Roles.userIsInRole(studentID,'student'))
+      return; 
+    Meteor.call('incrementProgress',studentID,tmpl.data._id,alertOnError);  
+  },
+  'click .activityStatus': function(event,tmpl) {
+    var studentID = Meteor.impersonatedOrUserId();
+    var data = Template.parentData(function(data){return ('createdFor' in data)});
+    if ((data) && Meteor.users.find(data.createdFor).count())
+      studentID = data.createdFor;
+    if (!Roles.userIsInRole(studentID,'student'))
+      return; 
+    Meteor.call('incrementStatus',studentID,tmpl.data._id,alertOnError);  
+  },
+  'click .activityPunctual': function(event,tmpl) {
+    var studentID = Meteor.impersonatedOrUserId();
+    var data = Template.parentData(function(data){return ('createdFor' in data)});
+    if ((data) && Meteor.users.find(data.createdFor).count())
+      studentID = data.createdFor;
+    if (!Roles.userIsInRole(studentID,'student'))
+      return; 
+    Meteor.call('markOnTime',studentID,tmpl.data._id,alertOnError);  
+  },
+  'click .tagActivity': function(event,tmpl) {
+    Session.set('activityForTagModal',this);
+    var studentID = Meteor.impersonatedOrUserId();
+    var data = Template.parentData(function(data){return ('createdFor' in data)});
+    if ((data) && Meteor.users.find(data.createdFor).count())
+      studentID = data.createdFor;
+    Session.set('studentIDForTagModal',studentID);
+  }
+})
+
+  /*************************/
+ /*** NEW SUBACTIVITY  ****/
+/*************************/
+
+Template.newSubactivity.helpers({
+  fixedFields: function() {
+    var activity = Activities.findOne(this.activityID);
+    if (!activity) 
+      activity = Activities.findOne(Activities.findOne(FlowRouter.getParam('_id')));
+    return {
+      unitID:activity.unitID,
+      pointsTo:activity._id
+    }
+  }
+})

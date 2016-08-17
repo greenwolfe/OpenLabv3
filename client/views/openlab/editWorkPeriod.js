@@ -43,6 +43,8 @@ Template.editWorkPeriod.events({
     wP.sectionID = Meteor.selectedSectionId();
     var $endDatePicker = tmpl.$('.endDatePicker').data("DateTimePicker");
     if (event.date) {
+      if ((event.oldDate === null) && (event.date.hours() == 0))
+        event.date.hours(8);
       wP.startDate = event.date.toDate();
       Meteor.call('setWorkPeriod',wP,alertOnError);
       if ($endDatePicker)
@@ -59,6 +61,8 @@ Template.editWorkPeriod.events({
     wP.sectionID = Meteor.selectedSectionId();
     var $startDatePicker = tmpl.$('.startDatePicker').data("DateTimePicker");    
     if (event.date) {
+      if ((event.oldDate === null) && (event.date.hours() == 0))
+        event.date.hours(8);
       wP.endDate = event.date.toDate();
       Meteor.call('setWorkPeriod',wP,alertOnError);
       if ($startDatePicker)

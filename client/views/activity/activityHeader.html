@@ -124,6 +124,86 @@
   </div>
 </template>
 
+<template name = 'subactivityItem'>
+    <p class="aItem">
+      {{#if inBlockHeader}}
+        {{#if isInRole 'teacher'}}
+          <div class="dropdown">
+            <a class="glyphicon glyphicon-triangle-bottom assessmentAssociateSubactivity pull-right dropdown-toggle" data-toggle="dropdown" title="Associate this assessment with a different subactivity."></a>
+            <ul class="dropdown-menu">
+              {{#each subactivities}}
+                <li class="subactivityChoice"><a href="#">{{{title}}}{{#if tag}} ({{{tag}}}){{/if}}</a></li>
+              {{/each}}
+              <li class="chooseNoSubactivity"><a href="#">None</a></li>
+            </ul>
+          </div> 
+        {{/if}}    
+        {{#if _id}} <!-- means is an actual activity and not a  placeholder for the list -->
+          {{#with workPeriod}}
+            {{#if endDate}}
+              <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="deadline: {{formatDateTime endDate}}"></span>
+            {{/if}}
+            {{#if startDate}}
+              <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="start date: {{formatDateTime startDate}}"></span>
+            {{/if}}
+          {{/with}}
+          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+          <i class="activityPunctual {{late}}" title="late"></i>
+          {{#if isInRole 'teacher'}}
+            {{#if inEditedWall ../wallID}}
+              <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
+            {{/if}}
+          {{/if}}
+        {{/if}}
+        <a  href="{{pathFor 'activityPage' _id=pointsTo  query=studentOrSectionID}}">
+          {{{title}}}{{{tags}}}
+        </a>           
+      {{else}}
+        {{#if currentlyEditing}}
+          {{#if inEditedWall ../wallID}}
+            <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder."></a>
+          {{/if}}
+          {{>showHide collection='Activities' itemName='activity' item=this}}
+          {{#if canDelete}}
+            <a class="glyphicon glyphicon-remove deleteActivity" title="Delete Activity"></a>
+          {{/if}}
+          {{#if isInRole 'teacher'}}
+            <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
+          {{/if}}
+          <a>{{{tags}}}</a>
+          {{#with workPeriod}}
+            {{>editWorkPeriod}}
+          {{else}}
+            {{#if selectedSection}}
+              {{>newWorkPeriod}}
+            {{/if}}
+          {{/with}}
+          {{>plaintexteditor collection='Activities' field='title' _id=_id editable='true'}}      
+        {{else}}
+          {{#with workPeriod}}
+            {{#if endDate}}
+              <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="deadline: {{formatDateTime endDate}}"></span>
+            {{/if}}
+            {{#if startDate}}
+              <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="start date: {{formatDateTime startDate}}"></span>
+            {{/if}}
+          {{/with}}
+          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+          <i class="activityPunctual {{late}}" title="late"></i>
+          <a  href="{{pathFor 'activityPage' _id=pointsTo query=studentOrSectionID}}">
+            {{{title}}}{{{tags}}}
+          </a>        
+        {{/if}}
+      {{/if}}
+    </p>
+</template>
+
+<template name='newSubactivity'>
+  <p class='newItem'>
+    {{>plaintexteditor collection='Activities' field='title' editable='true' placeholder='Add new subactivity.  Type title here.' clearOnSave=true fixedFields=fixedFields}}
+  </p>
+</template>
+
 
 
 

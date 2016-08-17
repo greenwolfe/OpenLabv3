@@ -11,8 +11,6 @@ Meteor.methods({
       pointsTo: Match.Optional(Match.idString),
       title: Match.nonEmptyString,
       unitID: Match.idString,
-      studentID: Match.Optional(Match.idString), //deprecated??? in case is reassessment for an individual student      
-        //automatically make a subactivity for any assessment?
 
       /*set below, value not passed in
       tag: Match.Optional(String),
