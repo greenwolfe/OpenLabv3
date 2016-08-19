@@ -89,17 +89,6 @@ var addDefaultWalls = function(activityID) {
       createdFor: siteID
     }
 
-    foundEmptyWall = false;
-    Walls.find(wall).fetch().forEach(function(w) {
-      if (!Blocks.find({wallID:w._id}).count())  { //wall is empty
-        if (foundEmptyWall) {
-          Walls.remove(w._id)
-        } else {
-          foundEmptyWall = true;
-        }
-      }
-    })  
-
     if((Walls.find(wall).count() == 0)) {
       delete wall.access;
       insertWall(wall);
@@ -126,10 +115,10 @@ var addDefaultWalls = function(activityID) {
           Columns.update({wallID:w._id},{$set:{access:memberIds}},{multi:true});
           Walls.update(w._id,{$set:{access:memberIds}});
 
- //         Meteor.call('wallChangeAccess',w._id,Meteor.sectionMemberIds(section._id),'set',function(error,id) {
- //           if (error)
- //             throw new Meteor.Error(error);
- //         });
+/*          Meteor.call('wallChangeAccess',w._id,Meteor.sectionMemberIds(section._id),'set',function(error,id) {
+            if (error)
+              throw new Meteor.Error(error);
+          });*/
         }
       }
     })
@@ -179,18 +168,19 @@ var addDefaultWalls = function(activityID) {
           Walls.remove(w._id)
         } else {
           foundEmptyWall = true;
-          if (currentGroupID)
+          if (currentGroupID) {
             var newGroupMemberIds = Meteor.groupMemberIds('current,final',currentGroupID);
             Columns.update({wallID:w._id},{$set:{access:newGroupMemberIds}},{multi:true});
-            Walls.update(w._id,{$set:{access:newGroupMemberIds}});
-
-//            Meteor.call('wallChangeGroup',w._id,currentGroupID,function(error,id) {
-//              if (error)
-//                throw new Meteor.Error(error);
-//            });
-        }
+            Walls.update(w._id,{$set:{createdFor:currentGroupID,access:newGroupMemberIds}});
+          }
+ /*           Meteor.call('wallChangeGroup',w._id,currentGroupID,function(error,id) {
+              if (error)
+                throw new Meteor.Error(error);
+            });
+        }*/
       }
-    })
+    }
+  })
 
     if ((Walls.find(wall).count() == 0) && (currentGroupID)) { 
       wall.createdFor = currentGroupID; 
@@ -208,8 +198,8 @@ Meteor.startup(function() {
   Activities.find().forEach(function(activity) {
     addDefaultWalls(activity._id);
   })
-  Walls.find().forEach(function(wall) {
+  /*Walls.find().forEach(function(wall) {
     var wallIsEmpty = !Blocks.find({wallID:wall._id}).count();
     Walls.update(wall._id,{$set:{wallIsEmpty:wallIsEmpty}});
-  })
+  })*/
 });
