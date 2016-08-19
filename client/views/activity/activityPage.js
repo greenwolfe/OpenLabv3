@@ -44,7 +44,7 @@ Template.activityPage.onCreated(function() {
   instance.requestedGroupWallAccess = reactiveArray(studentID);
   instance.loadedGroupWallAccess = reactiveArray([]);
 
-  Meteor.call('addDefaultWalls',activityID);
+  //Meteor.call('addDefaultWalls',activityID);
   instance.subscribe('subActivities',activityID);
   instance.subscribe('teacherWalls',activityID);
   //get all groups walls for this activity to create the group list for browsing

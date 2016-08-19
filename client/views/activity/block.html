@@ -16,13 +16,14 @@
         {{#if editingBlock}}  <!-- in edited wall AND have permissions to edit it -->
           <div class="pull-right">
             <a class="glyphicon glyphicon-copy copyBlock" title='Copy to clipboard.  Holding "Ctrl" adds to existing list.'></a>
-            {{>showHide collection='Blocks' itemName='block' item=this}}
+            {{#if isInRole 'teacher'}}
+              {{>showHide collection='Blocks' itemName='block' item=this}}
+            {{/if}}
             {{#unless fileCount}}
               {{#unless LoMcount}}
                 <a class="glyphicon glyphicon-remove deleteBlock" title="Delete Block"></a>
               {{/unless}}
             {{/unless}}
-            <!--<i class="icon-raise-virtual-hand-small buttonRaiseVirtualHand"></i>-->
           </div>
           <div>&nbsp;</div>
         {{/if}}
@@ -81,11 +82,11 @@
 </Template>
 
 <Template name="textBlock">
-  {{#if Template.subscriptionsReady}}
+  <!--{{#if Template.subscriptionsReady}}-->
     {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
-  {{else}}
+  <!--{{else}}
     <p> Loading text and images ... </p>
-  {{/if}}
+  {{/if}}-->
 </Template>
 
 <Template name="embedBlock">
@@ -104,11 +105,11 @@
     Add/edit a description.
   {{/if}}
   <p>
-    {{#if blockTextSubscriptionLoaded}}
+    <!--{{#if blockTextSubscriptionLoaded}}-->
       {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
-    {{else}}
+    <!--{{else}}
       <p> Loading text and images ... </p>
-    {{/if}}
+    {{/if}}-->
   </p>
 </Template>
 
@@ -121,11 +122,7 @@
 
 <Template name="fileBlock">
   <p>
-    {{#if Template.subscriptionsReady}}
-      {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
-    {{else}}
-      <p> Loading text and images ... </p>
-    {{/if}}
+    {{>summernote collection='Blocks' field='text' _id=_id enabled=editingBlock options=summernoteOptions}}
   </p>
   {{#sortable1c items=files  options=sortableOpts}} 
     {{>fileLink}}

@@ -143,7 +143,7 @@ Template.unitTitle.helpers({
 Template.unitTitle.events({
   'click li > a': function(event,tmpl) {
     event.preventDefault();
-    $('#workPeriodPopoverX').modal('hide'); // fixes bug in workPeriodPopoverX ... see notes there
+    //$('#workPeriodPopoverX').modal('hide'); // fixes bug in workPeriodPopoverX ... see notes there
     if (event.ctrlKey) {
       var activeUnit2 = openlabSession.get('activeUnit2');
       var activeUnit = openlabSession.get('activeUnit');

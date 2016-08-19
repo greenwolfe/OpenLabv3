@@ -110,7 +110,9 @@ Meteor.methods({
     var ids = _.pluck(Blocks.find({columnID:block.columnID},{fields: {_id: 1}}).fetch(), '_id');
     Blocks.update({_id: {$in: ids}}, {$inc: {order:1}}, {multi: true});
     //add new block at top
-    return Blocks.insert(block);      
+    return Blocks.insert(block,function(error,id) {
+      Walls.update(wall._id,{$set:{wallIsEmpty:false}});
+    });      
   },
   //make a pasteBlock method pasteBlock: function(blockID,columnID)
   //is it necessary to pass in anything else?
@@ -174,6 +176,7 @@ Meteor.methods({
     Blocks.update({_id: {$in: ids}}, {$inc: {order:1}}, {multi: true});
     //add new block at top
     return Blocks.insert(block, function(error,id) {
+      Walls.update(block.wallID,{$set:{wallIsEmpty:false}});
       //copy links to any associated files
       Files.find({blockID:blockID}).forEach(function(file) {
         file.blockID = id;
@@ -213,6 +216,8 @@ Meteor.methods({
 
     var ids = _.pluck(Blocks.find({columnID:block.columnID,order:{$gt: block.order}},{fields: {_id: 1}}).fetch(), '_id');
     var numberRemoved = Blocks.remove(blockID); 
+    var wallIsEmpty = !Blocks.find({wallID:block.wallID}).count();
+    Walls.update(block.wallID,{$set:{wallIsEmpty:wallIsEmpty}});
     Blocks.update({_id: {$in: ids}}, {$inc: {order:-1}}, {multi: true});
     return numberRemoved; 
   },

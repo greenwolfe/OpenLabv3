@@ -14,6 +14,7 @@ Meteor.methods({
       wallType: wall.type, //denormalized value for ease of publication functions
       unitID: activity.unitID,
       visible: activity.wallVisible[wall.type],
+      wallIsEmpty: true,
       wallVisible: wall.Visible, //denormalized value for ease of publication functions
       order: activity.wallOrder.indexOf(wall.type);
       */
@@ -32,6 +33,7 @@ Meteor.methods({
     wall.order = activity.wallOrder.indexOf(wall.type);
     wall.wallType = wall.type; //denormalized for ease of publication functions
     wall.visible = activity.wallVisible[wall.type];
+    wall.wallIsEmpty = true;
     wall.wallVisible = wall.visible; //denormalizing for ease of publication functions
 
     //validate createdFor collection and specific item 
@@ -152,6 +154,7 @@ Meteor.methods({
     }
     return Walls.remove(wallID);
   },
+  //can be simplified if only called at wall creation
   addDefaultWalls: function(activityID) {
     if (Meteor.isSimulation)
       return;
@@ -289,6 +292,23 @@ Meteor.methods({
       });
 
     return wallsCreated;
+  },
+  addDefaultStudentWalls: function() {
+    var cU = Meteor.userId();
+    if (!Roles.userIsInRole(cU,'student'))
+      throw new Meteor.Error('notAstudent','Cannot create student walls for a user who is not a student.');
+    var studentWall = Walls.findOne({createdFor:cU,type:'student',access:[cU._id]})//checking for random student wall to see if student's walls have been created
+    if (!studentWall) { //student walls not yet created, probably first time this student has logged in
+      Activities.find().forEach(function(activity) {
+        var wall = {
+          activityID:activity._id,
+          createdFor: cU,
+          type: 'student'
+        }
+        if (!Walls.find(wall).count())
+          Meteor.call('insertWall',wall);
+      })
+    } 
   }
 });
 

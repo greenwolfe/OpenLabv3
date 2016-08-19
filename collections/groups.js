@@ -21,6 +21,14 @@ Meteor.methods({
       if (error) {
         throw new Meteor.Error('failedToAddGroup',error)
       } else {
+        Activities.find().forEach(function(activity) {
+          var wall = {
+            activityID:activity._id,
+            createdFor:groupID,
+            type: 'group'
+          }
+          Meteor.call('insertWall',wall);
+        })
         Meteor.call('addMember',{ //add first member
           memberID:  studentID,
           itemID: groupID,

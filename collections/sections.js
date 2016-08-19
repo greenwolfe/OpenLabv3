@@ -18,7 +18,15 @@ Meteor.methods({
 
     today = new Date();
     section.latestActivity = today;
-    Sections.insert(section);
+    var sectionID = Sections.insert(section);
+    Activities.find().forEach(function(activity) {
+      var wall = {
+        activityID:activity._id,
+        createdFor:sectionID,
+        type: 'section'
+      }
+      Meteor.call('insertWall',wall);
+    })
   },
 
   /***** UPDATE SECTION ****/
@@ -88,7 +96,7 @@ Meteor.methods({
       errorMessage += '. Move or remove the blocks from the section wall of these activities before deleting the section.';
       throw new Meteor.Error('sectionHasContent',errorMessage);
     }
-
+    //remove the section's empty walls?
     return Sections.remove(sectionID);
   }
 });

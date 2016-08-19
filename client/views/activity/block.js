@@ -179,10 +179,6 @@ Template.block.events({
   /**********************/
  /***** TEXTBLOCK ******/
 /**********************/
-Template.textBlock.onCreated(function() {
-  this.blockTextSubscription = this.subscribe('blockText',this.data._id);
-})
-
 Template.textBlock.helpers({
   editingBlock:editingBlock
 })
@@ -253,10 +249,6 @@ Template.codemirror.events({
   /**********************/
  /**** FILEBLOCK *******/
 /**********************/
-
-Template.fileBlock.onCreated(function() {
-  this.blockTextSubscription = this.subscribe('blockText',this.data._id);
-})
 
 Template.fileBlock.helpers({
   files: function() {
@@ -421,10 +413,6 @@ Template.subactivitiesBlock.helpers({
   /***************************/
  /**** ASSESSMENT BLOCK *****/
 /***************************/
-
-Template.assessmentBlock.onCreated(function() {
-  this.blockTextSubscription = this.subscribe('blockText',this.data._id);
-})
 
 Template.assessmentBlock.onRendered(function() {
   instance = this;

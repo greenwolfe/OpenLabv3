@@ -1,3 +1,22 @@
+Template._renderedInstancesOfEditProfileForm = [];
+
+Template.onRendered(function() {
+  if (this.view.name == "Template.editProfileForm") {
+    console.log('adding ' + this.view.name);
+    Template._renderedInstancesOfEditProfileForm.push(this);
+  }
+})
+
+Template.onDestroyed(function() {
+  if (this.view.name == "Template.editProfileForm") {
+    console.log('removing ' + this.view.name);
+    var i = Template._renderedInstancesOfEditProfileForm.indexOf(this);
+    if (i > -1) {
+      Template._renderedInstancesOfEditProfileForm.splice(i, 1);
+    }
+  }
+})
+
 Template.validateAccounts.helpers({
   helpMessages: function() { 
     return [
@@ -35,5 +54,22 @@ Template.validateAccounts.helpers({
       return !verified;  //keep only users without a verified email
     })
     return users;
+  }
+})
+
+Template.validateAccounts.events({
+  'click button#login-buttons-send-all-vemails': function(event,template) {
+    event.stopPropagation();
+    Template._renderedInstancesOfEditProfileForm.forEach(function(tmpl) {
+      console.log('sending e-mail for ' + tmpl.data.username);
+      var user = tmpl.data;
+      Meteor.call('sendEnrollmentEmail',user._id,function(error) {
+        if (error) {
+          tmpl.Session.set('message',{type:'danger',text:error.reason || 'Could not send enrollment e-mail.  Unknown error.'});
+        } else {
+          tmpl.Session.set('message',{type:'success',text:'Enrollment e-mail sent.'});
+        }
+      });
+    })
   }
 })

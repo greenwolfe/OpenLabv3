@@ -113,9 +113,11 @@ Accounts.onLogin(function(){
   }
 
 
-  //students cannot impersonate
-  if (Roles.userIsInRole(cU,'student'))
-    loginButtonsSession.set('viewAs',null);
+  
+  if (Roles.userIsInRole(cU,'student')) {
+    loginButtonsSession.set('viewAs',null); //students cannot impersonate
+    Meteor.call('addDefaultStudentWalls');
+  }
 
   //select lastViewed or a random section ID for teacher's initial view
   var sectionID = Meteor.currentSectionId();
