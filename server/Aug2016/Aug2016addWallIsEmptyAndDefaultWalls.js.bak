@@ -195,9 +195,9 @@ var addDefaultWalls = function(activityID) {
 
 
 Meteor.startup(function() {
-  /*Activities.find().forEach(function(activity) {
+  Activities.find().forEach(function(activity) {
     addDefaultWalls(activity._id);
-  })*/
+  })
   Walls.find().forEach(function(wall) {
     var wallIsEmpty = !Blocks.find({wallID:wall._id}).count();
     Walls.update(wall._id,{$set:{wallIsEmpty:wallIsEmpty}});

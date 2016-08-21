@@ -6,11 +6,13 @@ Template.activityHeader.helpers({
   siteTitle: function() {
     return Site.findOne().title;
   },
-  sectionOnlySelected: function() {
+  //sectionOnlySelected: function() {}
+  noStudentSelected: function() {
     var studentID = Meteor.impersonatedId();
-    var sectionID = Meteor.selectedSectionId();
+    //var sectionID = Meteor.selectedSectionId();
     var cU = Meteor.userId();
-    return (Roles.userIsInRole(cU,'teacher') && (!studentID) && (sectionID));
+    //return (Roles.userIsInRole(cU,'teacher') && (!studentID) && (sectionID));
+    return (Roles.userIsInRole(cU,'teacher') && (!studentID));
   },
   showingStudentOrGroupWalls: function() {
     return _.contains(['student','group'],activityPageSession.get('showWalls'));
@@ -267,6 +269,9 @@ Template.subactivityItem.helpers({
       return 'icon-nostatus'
     return 'icon-' + status.level;
   },
+  showStatusText: function() {
+    return (this.showStatus) ? 'icon-done' : 'icon-nostatus';
+  },
   statusTitle: function() {
     var status = currentStatus(this._id);
     if (!status)
@@ -285,7 +290,8 @@ Template.subactivityItem.helpers({
       return '';
     return (status.late) ? 'icon-late' : '';  
   },
-  studentOrSectionID: function() {
+  //deprecated Aug 2016
+  /*studentOrSectionID: function() {
     var cU = Meteor.userId();
     if (Roles.userIsInRole(cU,'teacher')) {
       var studentID = Meteor.impersonatedId();
@@ -301,7 +307,7 @@ Template.subactivityItem.helpers({
         return 'id=' + studentID; 
       return '';     
     }
-  },
+  },*/ 
   tags: function() {
     var studentID = Meteor.impersonatedOrUserId();
     var data = Template.parentData(function(data){return ('createdFor' in data)});
@@ -375,6 +381,18 @@ Template.subactivityItem.events({
     if (!Roles.userIsInRole(studentID,'student'))
       return; 
     Meteor.call('markOnTime',studentID,tmpl.data._id,alertOnError);  
+  },
+  'click .showActivityStatus.icon-nostatus, click .showActivityStatus': function(event,tmpl) {
+    Meteor.call('updateActivity',{
+      _id:tmpl.data._id,
+      showStatus: true
+    },alertOnError);  
+  },
+  'click .showActivityStatus.icon-done': function(event,tmpl) {
+    Meteor.call('updateActivity',{
+      _id:tmpl.data._id,
+      showStatus: false
+    },alertOnError);  
   },
   'click .tagActivity': function(event,tmpl) {
     Session.set('activityForTagModal',this);

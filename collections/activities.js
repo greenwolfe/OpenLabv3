@@ -15,6 +15,7 @@ Meteor.methods({
       /*set below, value not passed in
       tag: Match.Optional(String),
       visible:  Match.Optional(Boolean),
+      showStatus: Match.Optional(Boolean),
       order: Match.Optional(Match.Integer), //for now, new activity always placed at end of list
       suborder: Match.Optional(Match.Integer),
       wallOrder: ['teacher','student','group','section'],
@@ -26,6 +27,7 @@ Meteor.methods({
     activity.studentID = activity.studentID || ''; //add default values for optional parameters
     activity.tag = '';
     activity.visible = true;
+    activity.showStatus = true;
     //don't want order passed in.  Always add new activity at end of list
     var unit = Units.findOne(activity.unitID); //verify unit first
     if (!unit)
@@ -150,11 +152,12 @@ Meteor.methods({
   /* list of properties of activity object and where/how set
 
   pointsTo: Match.Optional(Match.idString), //cannot be changed
-  title: Match.Optional(Match.nonEmptyString), //see method below
+  title: Match.Optional(Match.nonEmptyString), //set by updateActivity below
   unitID: Match.Optional(Match.idString), //set by sortable1c and drag/drop
   studentID: Match.Optional(String), //cannot be changed
   tag: Match.Optional(String), //set in activitySetTag
   visible:  Match.Optional(Boolean), //set by show/hide methods
+  showStatus: Match.Optional(Boolean), //set by updateActivity below
   order: Match.Optional(Match.Integer), //set by sortable1c and drag/drop
   suborder: Match.Optional(Match.Integer), //set by sortable1c and drag/drop
   wallOrder: [Match.OneOf('teacher','student','group','section')], //set in collection Hook after sortable1c reorders walls
@@ -164,7 +167,8 @@ Meteor.methods({
   updateActivity: function(newActivity) {
     check(newActivity,{
       _id:Match.idString,
-      title:Match.nonEmptyString
+      title:Match.Optional(Match.nonEmptyString),
+      showStatus: Match.Optional(Boolean)
     })
 
     var cU = Meteor.user(); //currentUser
@@ -179,10 +183,18 @@ Meteor.methods({
     if (!activity)
       throw new Meteor.Error('activityNotFound','Cannot update activity title.  Activity not found.');
 
-    if (newActivity.title != activity.title)
-      Activities.update(newActivity._id,{$set: {title:newActivity.title}});
-
+    var fields = ['title','showStatus'];
+    fields.forEach(function(field) {
+      if ((field in newActivity) && (newActivity[field] != activity[field])) {
+        var set = {};
+        set[field] = newActivity[field];
+        Activities.update(newActivity._id,{$set: set});
+      }
+    });
+    return newActivity._id; 
   },
+  
+  /**** ACTIVITY SET TAG ****/
   activitySetTag: function(activityID,tag) {
     check(activityID,Match.idString);
     check(tag,String);

@@ -41,6 +41,10 @@ Template.wall.helpers({
   sectionActive: function() {
     return ((this.createdFor != Meteor.impersonatedId()) && (Meteor.currentSectionId(this.createdFor) == Meteor.selectedSectionId())) ? 'bg-primary text-white' : '';
   },
+  allActive: function() {
+    var teacher = Meteor.userId();
+    return (Roles.userIsInRole(teacher,'teacher') && (!Meteor.impersonatedId()) && (!Meteor.selectedSectionId())) ? 'bg-primary text-white' : '';    
+  },
   wallIsNotEmpty: function() {
     return Blocks.find({wallID:this._id}).count();
   },
@@ -202,6 +206,12 @@ Template.wall.events({
     var wall = tmpl.data;
     var section = Meteor.currentSectionId(wall.createdFor);
     loginButtonsSession.set('viewAs',section);
+  },
+  'click .setViewAll': function(event,tmpl) {
+    event.preventDefault();
+    var teacher = Meteor.userId();
+    if (Roles.userIsInRole(teacher,'teacher'))
+      loginButtonsSession.set('viewAs',teacher);
   },
   'click .addGroupWall': function(event,tmpl) {
     var wall = tmpl.data;

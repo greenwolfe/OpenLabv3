@@ -1,16 +1,13 @@
 <Template name='block'>
   <!--<div class="raiseHands avoidwrap {{raiseHand}}">
       <i class="{{virtualWorkStatus}}"></i>
-  </div>-->
-  {{#with subactivity}}
-    <div class="block">
+  </div>--> 
+  <div class="block block-{{type}} panel panel-default row">
+    {{#with subactivity}}
       <div class="subactivityItemInHeader">
         {{> subactivityItem}}
       </div>
-    </div>
-  {{/with}}  
-  <div class="block block-{{type}} panel panel-default row">
-    <!--<div class="panel-heading" assessment={{isAssessmentBlock}}> -->
+    {{/with}} 
     <div class="panel-heading">
       <div>
         {{#if editingBlock}}  <!-- in edited wall AND have permissions to edit it -->

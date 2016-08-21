@@ -60,34 +60,34 @@
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/collections/levelsOfMastery.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/grades/assessment_center.html",
 			"settings":
 			{
-				"buffer_size": 12051,
+				"buffer_size": 1712,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/server/publications.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
 			"settings":
 			{
-				"buffer_size": 15964,
+				"buffer_size": 2089,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.html",
 			"settings":
 			{
-				"buffer_size": 16809,
+				"buffer_size": 2262,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
 			"settings":
 			{
-				"buffer_size": 6986,
+				"buffer_size": 1163,
 				"line_ending": "Unix"
 			}
 		},
@@ -100,18 +100,34 @@
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/stylesheets/assessment_center.css",
 			"settings":
 			{
-				"buffer_size": 7018,
+				"buffer_size": 385,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
 			"settings":
 			{
-				"buffer_size": 6297,
+				"buffer_size": 6986,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.js",
+			"settings":
+			{
+				"buffer_size": 4758,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.js",
+			"settings":
+			{
+				"buffer_size": 1870,
 				"line_ending": "Unix"
 			}
 		}
@@ -153,7 +169,11 @@
 	},
 	"file_history":
 	[
+		"/home/solargreen/meteor/OpenLabv3/collections/levelsOfMastery.js",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/slideShow.css",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/walls.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/columns.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/sections.js",
@@ -175,7 +195,6 @@
 		"/home/solargreen/meteor/OpenLabv2/client/views/activity/block.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.js",
 		"/home/solargreen/meteor/OpenLabv3/server/publications.js",
@@ -192,7 +211,6 @@
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
 		"/home/solargreen/meteor/OpenLabv3/collections/summaries.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/summary.css",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
@@ -205,7 +223,6 @@
 		"/home/solargreen/meteor/OpenLabv3/client/workPeriod/workPeriodPopoverX/workPeriodPopoverX.js",
 		"/home/solargreen/meteor/OpenLabv3/client/summernote/summernote.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/workPeriods.js",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/slideShow.css",
 		"/home/solargreen/meteor/OpenLabv3/collections/activityStatuses.js",
 		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/section_helpers.js",
 		"/home/solargreen/meteor/OpenLabv3/server/ActivityStatusForSection.js",
@@ -279,8 +296,7 @@
 		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/groups.html",
 		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/groups.js",
 		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/group_helpers.js",
-		"/home/solargreen/meteor/OpenLabv2/collections/activities.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/column.html"
+		"/home/solargreen/meteor/OpenLabv2/collections/activities.js"
 	],
 	"find":
 	{
@@ -448,7 +464,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 4,
 			"sheets":
 			[
 				{
@@ -478,16 +494,76 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "/home/solargreen/meteor/OpenLabv3/collections/levelsOfMastery.js",
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/grades/assessment_center.html",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12051,
+						"buffer_size": 1712,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								407,
+								407
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2089,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2089,
+								2089
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2262,
 						"regions":
 						{
 						},
@@ -500,7 +576,7 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
@@ -508,105 +584,45 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "/home/solargreen/meteor/OpenLabv3/server/publications.js",
+					"buffer": 4,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 15964,
+						"buffer_size": 1163,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								11580,
-								11580
+								672,
+								672
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 5202.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 16809,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2408,
-								2408
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 256.0,
-						"translation.y": 1122.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 3,
+			"selected": 4,
 			"sheets":
 			[
-				{
-					"buffer": 4,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6986,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3598,
-								3598
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 867.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
 				{
 					"buffer": 5,
 					"file": "/home/solargreen/meteor/OpenLabv3/client/views/grades/grades.js",
@@ -634,24 +650,52 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
 					"buffer": 6,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+					"file": "/home/solargreen/meteor/OpenLabv3/client/stylesheets/assessment_center.css",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7018,
+						"buffer_size": 385,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6595,
-								6595
+								300,
+								300
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CSS/CSS.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6986,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3772,
+								3772
 							]
 						],
 						"settings":
@@ -661,27 +705,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2159.0,
+						"translation.y": 867.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
-					"file": "/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
+					"buffer": 8,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6297,
+						"buffer_size": 4758,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								189,
-								189
+								0,
+								0
 							]
 						],
 						"settings":
@@ -694,7 +738,37 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1870,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
@@ -780,7 +854,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},

@@ -128,6 +128,7 @@
       {{/if}}
       {{#if editingMainPage}}
         {{#unless inSummaryHeader}}
+          <i class="showActivityStatus {{showStatusText}}" title="Choose whether to show status indicators for this activity."></i>
           <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder or move to another model (in side-by-side view).">
           </a>
           {{>showHide collection='Activities' itemName='activity' item=this}}
@@ -159,9 +160,11 @@
               <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="start date: {{formatDateTime startDate}}"></span>
             {{/if}}
           {{/with}}
-          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
-          <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
-          <a  href="{{pathFor 'activityPage' _id=pointsToOrID query=studentOrSectionID}}"> 
+          {{#if showStatus}}
+            <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+            <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
+          {{/if}}
+          <a  href="{{pathFor 'activityPage' _id=pointsToOrID}}"> 
             {{{title}}}{{{tags}}}
           </a> 
         {{else}}

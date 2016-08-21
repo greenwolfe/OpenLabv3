@@ -13,7 +13,8 @@
           <ul class="nav navbar-nav">
             {{>showWalls}}
             {{>viewAs}}
-            {{#if sectionOnlySelected}}
+            <!--{{#if sectionOnlySelected}}-->
+            {{#if noStudentSelected}}
               {{#if showingStudentOrGroupWalls}}
                 {{>filterStudents}}
               {{/if}}
@@ -147,19 +148,22 @@
               <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="start date: {{formatDateTime startDate}}"></span>
             {{/if}}
           {{/with}}
-          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
-          <i class="activityPunctual {{late}}" title="late"></i>
+          {{#if showStatus}}
+            <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+            <i class="activityPunctual {{late}}" title="late"></i>
+          {{/if}}
           {{#if isInRole 'teacher'}}
             {{#if inEditedWall ../wallID}}
               <a href="#activityTagsPopoverX" class="glyphicon glyphicon-tag tagActivity" data-toggle="modal" data-backdrop=false title="Click to add tag."></a>
             {{/if}}
           {{/if}}
         {{/if}}
-        <a  href="{{pathFor 'activityPage' _id=pointsTo  query=studentOrSectionID}}">
+        <a  href="{{pathFor 'activityPage' _id=pointsTo}}">
           {{{title}}}{{{tags}}}
         </a>           
       {{else}}
         {{#if currentlyEditing}}
+          <i class="showActivityStatus {{showStatusText}}" title="Choose whether to show status indicators for this activity."></i>
           {{#if inEditedWall ../wallID}}
             <a class="glyphicon glyphicon-move sortActivity" title="Drag to reorder."></a>
           {{/if}}
@@ -188,9 +192,11 @@
               <span class="glyphicon glyphicon-calendar pull-right {{currentLateComplete}}" data-toggle="tooltip" title="start date: {{formatDateTime startDate}}"></span>
             {{/if}}
           {{/with}}
-          <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
-          <i class="activityPunctual {{late}}" title="late"></i>
-          <a  href="{{pathFor 'activityPage' _id=pointsTo query=studentOrSectionID}}">
+          {{#if showStatus}}
+            <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
+            <i class="activityPunctual {{late}}" title="late"></i>
+          {{/if}}
+          <a  href="{{pathFor 'activityPage' _id=pointsTo}}">
             {{{title}}}{{{tags}}}
           </a>        
         {{/if}}

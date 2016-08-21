@@ -342,6 +342,9 @@ Template.activityItem.helpers({
       return 'icon-nostatus';
     return 'icon-' + status.level;
   },
+  showStatusText: function() {
+    return (this.showStatus) ? 'icon-done' : 'icon-nostatus';
+  },
   statusTitle: function() {
     var status = currentStatus(this._id);
     if (!status)
@@ -461,6 +464,18 @@ Template.activityItem.events({
     if (!Roles.userIsInRole(studentID,'student'))
       return; 
     Meteor.call('markOnTime',studentID,tmpl.data._id,alertOnError);  
+  },
+  'click .showActivityStatus.icon-nostatus, click .showActivityStatus': function(event,tmpl) {
+    Meteor.call('updateActivity',{
+      _id:tmpl.data._id,
+      showStatus: true
+    },alertOnError);  
+  },
+  'click .showActivityStatus.icon-done': function(event,tmpl) {
+    Meteor.call('updateActivity',{
+      _id:tmpl.data._id,
+      showStatus: false
+    },alertOnError);  
   },
   'click .tagActivity': function(event,tmpl) {
     Session.set('activityForTagModal',this);

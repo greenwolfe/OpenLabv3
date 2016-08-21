@@ -100,7 +100,10 @@ Template.activityPage.onCreated(function() {
 
 Template.activityPage.helpers({
   walls: function() {
-    var selector = {activityID:FlowRouter.getParam('_id')}
+    var selector = {
+      activityID:FlowRouter.getParam('_id'),
+      access:{$in:[]}
+    }
     var cU = Meteor.userId();
     if (!Roles.userIsInRole(cU,'teacher'))
       selector.visible = true;
@@ -141,7 +144,7 @@ Template.activityPage.helpers({
     }
     if ((showWalls == 'allTypes') || (showWalls == 'teacher'))
       selector.access.$in.push(Site.findOne()._id);
-    //make sure student walls are included even if there are no students
+    //make sure section walls are included even if there are no students
     if (Roles.userIsInRole(cU,'teacher') && !Roles.userIsInRole(studentID,'student') && ((showWalls == 'section') || (showWalls == 'allTypes'))) {
       var sectionselector = _.clone(selector);
       delete sectionselector.access;
