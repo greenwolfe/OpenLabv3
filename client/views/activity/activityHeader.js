@@ -159,9 +159,14 @@ Template.subActivitiesList.helpers({
   },
   subactivities: function() {
     var activity = Activities.findOne(FlowRouter.getParam('_id'));
-    return Activities.find({
-      pointsTo:FlowRouter.getParam('_id') //activity._id
-    },{sort: {suborder: 1}});
+    var selector = {
+      pointsTo:FlowRouter.getParam('_id'), //activity._id
+    }
+    var instance = Template.instance();
+    var editingList = instance.editingList.get();
+    if (!editingList) //show only visible activities
+      selector.visible = true;
+    return Activities.find(selector,{sort: {suborder: 1}});
   },
   sortableOpts: function() {
     var instance = Template.instance();
@@ -245,13 +250,13 @@ Template.subactivityItem.helpers({
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
   },
   currentLateComplete: function() {
-    var parentData = Template.parentData();
-    var status = currentStatus(parentData._id);
+    var activity = Template.parentData();
+    var status = currentStatus(activity._id);
     status = status || {level:'nostatus'}
     if (_.str.contains(status.level,'done'))
       return 'completed';
     var today = new Date();
-    if ((this.endDate) && (today > this.endDate))
+    if ((this.endDate) && (today > this.endDate) && (activity.showStatus))
       return 'expected';
     var longLongAgo = new Date(0);
     var wayWayInTheFuture = new Date(8640000000000000);

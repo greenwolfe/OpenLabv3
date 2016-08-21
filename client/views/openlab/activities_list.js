@@ -407,13 +407,13 @@ Template.activityItem.helpers({
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
   },
   currentLateComplete: function() {
-    var parentData = Template.parentData();
-    var status = currentStatus(parentData._id);
+    var activity = Template.parentData();
+    var status = currentStatus(activity._id);
     status = status || {level:'nostatus'}
     if (_.str.contains(status.level,'done'))
       return 'completed';
     var today = new Date();
-    if ((this.endDate) && (today > this.endDate))
+    if ((this.endDate) && (today > this.endDate) && (activity.showStatus))
       return 'expected';
     var longLongAgo = new Date(0);
     var wayWayInTheFuture = new Date(8640000000000000);
