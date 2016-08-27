@@ -18,15 +18,22 @@ Meteor.methods({
 
     today = new Date();
     section.latestActivity = today;
-    var sectionID = Sections.insert(section);
-    Activities.find().forEach(function(activity) {
-      var wall = {
-        activityID:activity._id,
-        createdFor:sectionID,
-        type: 'section'
+    return Sections.insert(section,function(error,id) {
+      if (error) {
+        throw new Meteor.Error('failedToAddSection',error)
+      } else if (Meteor.isServer) {
+        Meteor.defer(function() {  //create default walls for this group
+          Activities.find().forEach(function(activity) {
+            var wall = {
+              activityID:activity._id,
+              createdFor:id,
+              type: 'section'
+            }
+            Walls.mutate.insertWall(wall);
+          })
+        });
       }
-      Meteor.call('insertWall',wall);
-    })
+    });
   },
 
   /***** UPDATE SECTION ****/
@@ -96,7 +103,35 @@ Meteor.methods({
       errorMessage += '. Move or remove the blocks from the section wall of these activities before deleting the section.';
       throw new Meteor.Error('sectionHasContent',errorMessage);
     }
-    //remove the section's empty walls?
-    return Sections.remove(sectionID);
+    
+    return Sections.remove(sectionID,function(error,num) {
+      if (Meteor.isServer) {
+        Meteor.defer(function() {
+          var wall = {
+            createdFor:sectionID,
+            type: 'section',
+            wallIsEmpty:true
+          }    
+          var wallIDs = _.pluck(Walls.find(wall,{fields:{_id:1}}).fetch(),'_id');
+          Columns.remove({wallID:{$in:wallIDs}});
+          Walls.remove({_id:{$in:wallIDs}});  
+        });
+      }
+    });
+  },
+  deleteSectionWalls: function(sectionID) {
+    check(sectionID,Match.idString);
+    if (Meteor.isServer) {
+      Meteor.defer(function() {
+        var wall = {
+          createdFor:sectionID,
+          type: 'section',
+          wallIsEmpty:true
+        }    
+        var wallIDs = _.pluck(Walls.find(wall,{fields:{_id:1}}).fetch(),'_id');
+        Columns.remove({wallID:{$in:wallIDs}});
+        Walls.remove({_id:{$in:wallIDs}});  
+      });
+    }
   }
 });

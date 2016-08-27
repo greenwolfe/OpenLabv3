@@ -110,7 +110,8 @@ Meteor.methods({
           //this places it on equal footing with the other subactivities
           Activities.update(_id,{$set: {pointsTo:_id}});
           Activities.update(_id,{$set: {suborder:0}});
-          Meteor.call('addDefaultWalls',_id);
+          if (Meteor.isServer)
+            Walls.mutate.addDefaultWalls(_id);
         }
       }
     });

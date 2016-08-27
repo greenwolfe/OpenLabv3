@@ -18,12 +18,7 @@ Template.wall.helpers({
         return 'Student Wall for ' + Meteor.getname(student,'full');
     }
     if (this.type == 'group') {
-      var groupies = Meteor.groupies('current',this.createdFor);
-      if (groupies == 'none')
-        groupies = Meteor.groupies('final',this.createdFor);
-      if (groupies == 'none') 
-        groupies = Meteor.groupies('former',this.createdFor);
-      return 'Group Wall for ' +  groupies;
+      return Meteor.listNamesFromAccess(this.access);
     }
     if (this.type == 'section') {
       var section = Sections.findOne(this.createdFor);

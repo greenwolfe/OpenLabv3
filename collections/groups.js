@@ -21,15 +21,7 @@ Meteor.methods({
       if (error) {
         throw new Meteor.Error('failedToAddGroup',error)
       } else {
-        Activities.find().forEach(function(activity) {
-          var wall = {
-            activityID:activity._id,
-            createdFor:groupID,
-            type: 'group'
-          }
-          Meteor.call('insertWall',wall);
-        })
-        Meteor.call('addMember',{ //add first member
+        Meteor.call('addMember',{ //add first member immediately before returning
           memberID:  studentID,
           itemID: groupID,
           collectionName: 'Groups'
@@ -37,6 +29,35 @@ Meteor.methods({
           if (error)
             throw new Meteor.Error('failedToAddMember',error)
         });
+        if (Meteor.isServer) {
+          Meteor.defer(function() {  //create default walls for this group
+            Activities.find().forEach(function(activity) {
+              var wall = {
+                activityID:activity._id,
+                wallType: 'group',
+                access: {$in: [studentID]},
+                wallIsEmpty: true
+              }
+              Walls.find(wall).forEach(function(w) {  //user's empty group walls on this page
+                var groupMemberIds = Meteor.groupMemberIds('current',w.createdFor);
+                if (w.access.length <= 1) { //last person will be leaving group so delete it
+                  Walls.mutate.deleteWallIfEmpty(w._id);
+                } else {
+                  Walls.mutate.wallChangeAccess(w._id,[studentID],'remove');
+                }
+              });
+              wall.wallIsEmpty = false;
+              if (!Walls.find(wall).count()) { //user has no group wall with any contents for this activity
+                wall = {
+                  activityID:activity._id,
+                  createdFor:groupID,
+                  type: 'group'
+                }
+                Walls.mutate.insertWall(wall);  
+              }
+            })
+          });
+        }
       }
     });
     return groupID

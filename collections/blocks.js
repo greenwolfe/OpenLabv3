@@ -117,73 +117,114 @@ Meteor.methods({
   //make a pasteBlock method pasteBlock: function(blockID,columnID)
   //is it necessary to pass in anything else?
   /* REVISE THIS to past contents of block at time it was copied */
-  pasteBlock: function(blockID,columnID) {
-    //validation ... rights to copy this specific block to another wall?
-    check(blockID,Match.idString);
-    check(columnID,Match.idString);
+  pasteBlock: function(block) {
+    check(block,{
+      //required fields to paste the block
+      columnID: Match.idString, //NEW column ID
+      type: Match.OneOf('file','embed'), //deprecated 'workSubmit','text','subactivities','assessment'
+      //optional fields that may be passed in with new block
+      modifiedBy: Match.Optional(Match.idString), //current user
+      modifiedOn: Match.Optional(Date),           //current date
+      title: Match.Optional(String),        //all
+      text: Match.Optional(String),         //text, embed, file
+      embedCode: Match.Optional(String),    //embed
+      subActivityID: Match.Optional(Match.OneOf(Match.idString,'')), //assessment
+      visible: Match.Optional(Boolean),          //true
 
-    var block = Blocks.findOne(blockID);
-    if (!block)
-      throw new Meteor.Error('blockNotFound','Cannot past block.  Block not found.');
-    if (block.type == 'subactivities') 
-      throw new Meteor.Error('cannotCopyActivityBlock',"Error, cannot copy and paste an activity block.  Only one allowed per activity page.")
-    var originalWall = Walls.findOne(block.wallID);
+
+      //fields that will be filled with values based on above information
+      //anything passedin will be ignored
+      _id: Match.Optional(Match.idString),
+      createdBy: Match.Optional(Match.idString),              //current user
+      createdOn: Match.Optional(Date),            //today's date
+      createdFor: Match.Optional(Match.idString), //must = siteID if teacher wall (only one Site object, so only one id possible)
+                                  //userID of a student if student wall
+                                  //id of a group if group wall
+                                  //id of a section if section wall
+
+      wallID: Match.Optional(Match.idString),     //denormalized value from column
+      wallType: Match.Optional(Match.OneOf('teacher','student','group','section')), //denormalize value from wall
+      wallVisible: Match.Optional(Boolean),
+      activityID: Match.Optional(Match.idString), //same as above
+      unitID: Match.Optional(Match.idString),     //same as above
+      order: Match.Optional(Match.Integer),        //0 new blocks always added at top of column
+      access: Match.Optional([Match.idString]),   // [studentID] | [groupMemberIDs] | [sectionMemberIDs]
+      studentText: Match.Optional(String),  //workSubmit
+      teacherText: Match.Optional(String),  //workSubmit
+      raiseHand: Match.Optional(Match.OneOf('visible','')), //only partially implemented (all?)
+      standardIDs: Match.Optional([Match.idString])          //assessment
+    });
+    //validate user and set permissions
+    var blockID = block._id; //for finding and copying links to attached files
     delete block._id;
-
-    var column = Columns.findOne(columnID)
-    if (!column)
-      throw new Meteor.Error('column-not-found', "Cannot add block, not a valid column");
-    block.columnID = columnID;
-    block.wallID = column.wallID; //denormalize block
-    if (block.activityID != column.activityID) {
-      var subActivity = Activities.findOne(block.activityID);
-      if (subActivity.pointsTo != column.activityID) { //pasted onto a completely different activity page
-        //only if assessment block, otherwise set to null
-        block.subActivityID = column.activityID;
-        block.activityID = column.activityID;
-        var activity = Activities.findOne(block.activityID);
-        block.unitID = activity.unitID;
-      }
-    }
-
-    var wall = Walls.findOne(column.wallID);
-    if (!wall)
-      throw new Meteor.Error('wall-not-found', "Cannot paste block, not a valid wall");
-    block.wallType = wall.type;
-    block.wallVisible = wall.visible;
     var cU = Meteor.user();
     if (!cU)  
       throw new Meteor.Error('notLoggedIn', "You must be logged in to paste a block.");
     if (Roles.userIsInRole(cU,'parentOrAdvisor'))
       throw new Meteor.Error('parentNotAllowed', "Parents may only observe.  They cannot create new content.");
-    if (Roles.userIsInRole(cU,'student')) {
-      if (!Meteor.studentCanEditWall(cU._id,wall))
-        throw new Meteor.Error('cannotEditWall', "You do not have permissions to edit this wall.");
-      if (!Meteor.studentCanEditBlock(cU._id,block))
-        throw new Meteor.Error('cannotCopyBlock',"You do not have permissions to copy this block.");
-    }
+    block.createdBy = cU._id;
+    block.modifiedBy = block.modifiedBy || cU._id;
+    var today = new Date();
+    block.createdOn = today;
+    block.modifiedOn = block.modifiedOn || today;
 
-    if (originalWall) { //handle case of teacher copying from one student wall to another, one group wall to another or one section wall to another
-      if (_.contains(['student','group','section'],originalWall.type) && (originalWall.type == wall.type) && Roles.userIsInRole(cU,'teacher')) {
-        block.createdFor = wall.createdFor,
-        block.access = wall.access
-      }
+    //validate column and wall
+    var column = Columns.findOne(block.columnID)
+    if (!column)
+      throw new Meteor.Error('column-not-found', "Cannot add block, not a valid column");
+    var wall = Walls.findOne(column.wallID);
+    if (!wall)
+      throw new Meteor.Error('wall-not-found', "Cannot add block, not a valid wall");
+    var activity = Activities.findOne(wall.activityID);
+    if (!activity)
+      throw new Meteor.Error('activityNotFound',"Cannot add block, activity not found.");
+    if (Roles.userIsInRole(cU,'student') && !Meteor.studentCanEditWall(cU._id,wall))
+      throw new Meteor.Error('cannodEditWall', "You do not have permissions to edit this wall.");
+    block.wallID = column.wallID; //denormalize block
+    block.activityID = column.activityID;
+    block.unitID = activity.unitID;
+    block.createdFor = wall.createdFor;
+    block.wallType = wall.type;
+    block.wallVisible = wall.visible;
+    if (wall.type == 'group') {
+      block.access = Meteor.groupMemberIds('current,final',wall.createdFor);
+    } else if (wall.type == 'section') {
+      block.access = Meteor.sectionMemberIds(wall.createdFor);
+    } else {
+      block.access = wall.access;
     }
 
     block.order = 0;  //always insert at top of column
+    block.raiseHand = '';
+    block.visible = ('visible' in block) ? block.visible : true;
+
+    block.title = block.title || '';
+    block.text = block.text || '';
+    block.studentText = ''; //probably deprecated
+    block.teacherText = ''; //probably deprecated
+    block.embedCode = block.embedCode || '';
+    block.standardIDs = [];
+    if ('subActivityID' in block) {
+      var subactivity = Activities.findOne(block.subActivityID);
+      if ((!subactivity) || (subactivity.pointsTo != block.activityID)) { //block pasted into an entirely different activity page, subactivity not available on new page
+        block.subactivityID = '';
+      }
+    } else {
+      block.subactivityID = '';
+    }
+
     //move other blocks in column down to make room
-    var ids = _.pluck(Blocks.find({columnID:columnID},{fields: {_id: 1}}).fetch(), '_id');
+    var ids = _.pluck(Blocks.find({columnID:block.columnID},{fields: {_id: 1}}).fetch(), '_id');
     Blocks.update({_id: {$in: ids}}, {$inc: {order:1}}, {multi: true});
     //add new block at top
-    return Blocks.insert(block, function(error,id) {
-      Walls.update(block.wallID,{$set:{wallIsEmpty:false}});
-      //copy links to any associated files
+    return Blocks.insert(block,function(error,id) {
+      Walls.update(wall._id,{$set:{wallIsEmpty:false}});
       Files.find({blockID:blockID}).forEach(function(file) {
         file.blockID = id;
         delete file._id;
         Meteor.call('insertFile',file);
-      });      
-    });
+      });  
+    });   
   },
   deleteBlock: function(blockID) {
     check(blockID,Match.idString);

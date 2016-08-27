@@ -2,14 +2,12 @@ Template._renderedInstancesOfEditProfileForm = [];
 
 Template.onRendered(function() {
   if (this.view.name == "Template.editProfileForm") {
-    console.log('adding ' + this.view.name);
     Template._renderedInstancesOfEditProfileForm.push(this);
   }
 })
 
 Template.onDestroyed(function() {
   if (this.view.name == "Template.editProfileForm") {
-    console.log('removing ' + this.view.name);
     var i = Template._renderedInstancesOfEditProfileForm.indexOf(this);
     if (i > -1) {
       Template._renderedInstancesOfEditProfileForm.splice(i, 1);

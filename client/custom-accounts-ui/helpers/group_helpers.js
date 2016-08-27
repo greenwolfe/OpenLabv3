@@ -49,6 +49,27 @@ Meteor.groupies = function(status,groupID) {
 }
 Template.registerHelper('groupies',Meteor.groupies);
 
+Meteor.listNamesFromAccess = function(access) {
+  var list = '';
+  var memberCount = access.length;
+  if (!memberCount)
+    return 'no one';
+  access.forEach(function(id,ndex,g) {
+    var user = Meteor.users.findOne(id);
+    if (!user)
+      return;
+    var fullname =  user.profile.firstName + " " + user.profile.lastName;
+    list += "<span title='" + fullname  + "'>" + user.profile.firstName + "</span>";
+    if (ndex == memberCount - 2) {
+      list += ' and ';
+    } else if (ndex < memberCount - 2) {
+      list += ', ';
+    } 
+  }) 
+  return list;
+}
+Template.registerHelper('listNamesFromAccess',Meteor.listNamesFromAccess);
+
 Meteor.groupFirstNames = function(status,groupID) { 
   var groupies = '';
   var groupMembers = Meteor.groupMembers(status,groupID);

@@ -119,8 +119,8 @@ Template.block.helpers({
     if (student)
       return Meteor.getname(this.createdFor,'full');
     var group = Groups.findOne(this.createdFor);
-    if (group)
-      return Meteor.groupies(this.createdFor);
+    if (group) 
+      return Meteor.listNamesFromAccess(this.access);
     var section = Sections.findOne(this.createdFor);
     if (section)
       return section.name;

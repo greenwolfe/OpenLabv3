@@ -41,10 +41,13 @@ Meteor.methods({
       type:getType[membership.collectionName],
       wallIsEmpty: true
     }
-    Walls.update(selector,{$addToSet:{access:membership.memberID}},{multi:true});
-    var wallIDs = _.pluck(Walls.find(selector,{fields:{_id:1}}).fetch(),'_id');
-    Columns.update({wallID:{$in:wallIDs}},{$addToSet:{access:membership.memberID}},{multi:true});
-
+    if (Meteor.isServer) {
+      Meteor.defer(function() {
+        Walls.update(selector,{$addToSet:{access:membership.memberID}},{multi:true});
+        var wallIDs = _.pluck(Walls.find(selector,{fields:{_id:1}}).fetch(),'_id');
+        Columns.update({wallID:{$in:wallIDs}},{$addToSet:{access:membership.memberID}},{multi:true});
+      });
+    }
     var formerMembership = Memberships.findOne({
       memberID:membership.memberID,
       collectionName:membership.collectionName,
@@ -88,10 +91,13 @@ Meteor.methods({
       type:getType[membership.collectionName],
       wallIsEmpty: true
     }
-    Walls.update(selector,{$pull:{access:membership.memberID}},{multi:true});
-    var wallIDs = _.pluck(Walls.find(selector,{fields:{_id:1}}).fetch(),'_id');
-    Columns.update({wallID:{$in:wallIDs}},{$pull:{access:membership.memberID}},{multi:true});
-
+    if (Meteor.isServer) {
+      Meteor.defer(function() {
+        Walls.update(selector,{$pull:{access:membership.memberID}},{multi:true});
+        var wallIDs = _.pluck(Walls.find(selector,{fields:{_id:1}}).fetch(),'_id');
+        Columns.update({wallID:{$in:wallIDs}},{$pull:{access:membership.memberID}},{multi:true});
+      });
+    }
     //Indicate when the member left this group, and keep record rather than deleting it.
     var aLittleWhileAgo = moment(today).subtract(1,'minutes').toDate();
     return Memberships.update(membershipID,{$set: {

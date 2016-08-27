@@ -116,7 +116,7 @@ Accounts.onLogin(function(){
   
   if (Roles.userIsInRole(cU,'student')) {
     loginButtonsSession.set('viewAs',null); //students cannot impersonate
-    Meteor.call('addDefaultStudentWalls');
+    Meteor.call('addDefaultStudentWalls'); //server method checks to see if this is first login and only creates walls the first time
   }
 
   //select lastViewed or a random section ID for teacher's initial view
