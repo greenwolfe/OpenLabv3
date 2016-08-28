@@ -1,6 +1,6 @@
 Template.openlab.onCreated(function() {
   var instance = this;
-  instance.showing = new ReactiveVar('summary'); //slides or summary or concept
+  instance.showing = new ReactiveVar('summary'); //slides or summary or concept or teacherNotes
 })
 
 Template.openlab.onRendered(function() {
@@ -43,6 +43,14 @@ Template.openlab.helpers({
     var instance = Template.instance();
     return (instance.showing.get() == 'concept') ? 'active' : '';
   },
+  showingTeacherNotes: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'teacherNotes')
+  },
+  teacherNotesActive: function() {
+    var instance = Template.instance();
+    return (instance.showing.get() == 'teacherNotes') ? 'active' : '';    
+  },
   site: function() {
     return Site.findOne();
   },
@@ -60,5 +68,8 @@ Template.openlab.events({
   },
   'click button.showConceptMap': function(event,tmpl) {
     tmpl.showing.set('concept');
+  },
+  'click button.showTeacherNotes': function(event,tmpl) {
+    tmpl.showing.set('teacherNotes');
   }
 })

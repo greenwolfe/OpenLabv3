@@ -9,6 +9,9 @@
             <button class="btn btn-primary showSlides {{slidesActive}}">Slides</button>
             <button class="btn btn-primary showSummary {{summaryActive}}">Unit Summary</button>
             <button class="btn btn-primary showConceptMap {{conceptMapActive}}">Course Summary</button>
+            {{#if isInRole 'teacher'}}
+              <button class="btn btn-primary showTeacherNotes {{teacherNotesActive}}">Teacher Notes</button>
+            {{/if}}
         </div>
         {{#if showingConceptMap}}
           {{#with site}}
@@ -20,7 +23,11 @@
           {{/with}}
         {{else}} {{#if showingSlides}}
           {{>slideShow}}
-        {{/if}} {{/if}}  {{/if}}
+        {{else}} {{#if showingTeacherNotes}}
+          {{#with activeUnit}}
+            {{>teacherNotes}}
+          {{/with}}
+        {{/if}} {{/if}}  {{/if}} {{/if}}
       </div>
 	    <div class='col-md-7'>
         <div class='col-md-12'>
@@ -30,6 +37,20 @@
           {{/with}}
         </div>
 	    </div>
+    </div>
+  </div>
+</template>
+
+<template name="teacherNotes">
+  <div class="block block-{{type}} panel panel-default row">
+    <div class="panel-heading">
+      <div class="blockTitle">Teacher Notes for {{longname}} </div>
+    </div>
+    <div class="panel-body">
+      {{>summernote collection='Units' field='teacherNotes' _id=_id enabled=true options=summernoteOptions}}
+    </div>
+    <div class="panel-footer">
+      <br/>
     </div>
   </div>
 </template>

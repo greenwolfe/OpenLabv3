@@ -386,7 +386,7 @@ Template.activityItem.helpers({
       return 'late';
     } else if (status.sectionID || status.siteID) {
       var message = (status.studentsNotSubmitted > 1) ? ' students have' : ' student has';
-      message = 'The deadline has passed and ' + status.studentsNotSubmitted + message + ' not yet submitted this assignment. ';
+      message = 'The deadline has passed and ' + status.lateStudents.length + message + ' not yet submitted this assignment. ';
       status.lateStudents.forEach(function(studentID,i) {
         message += Meteor.getname(studentID,'full');
         if (i == status.studentsNotSubmitted - 2) {

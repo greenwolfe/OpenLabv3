@@ -144,6 +144,7 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
     actStatus.level = 'returned';
   }
 
+  var today = new Date();
   var oldStatus = ActivityStatuses.findOne({siteID:siteID,activityID:activityID});
   if (oldStatus) {
     var id = ActivityStatuses.update(oldStatus._id,{$set:actStatus});

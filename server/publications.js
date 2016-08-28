@@ -84,7 +84,11 @@ Meteor.publish('units',function(showHidden) {
     return Units.find({visible:true});
   }*/
   check(showHidden,Boolean);
-  return Units.find();
+  if (Roles.userIsInRole(this.userId,'teacher')) {
+    return Units.find();
+  } else {
+    return Units.find({},{fields:{teacherNotes:0}});
+  }
 });
 
 Meteor.publish('categories',function(showHidden) {

@@ -9,13 +9,14 @@ Meteor.methods({
       longname:  Match.Optional(String), 
       visible:  Match.Optional(Boolean),
       /* fields filled in below
-      app: 'openlab' //redundant field, the same for all units, because sortable 1c needs a field to match to find a subset of items in a collection
+      app: 'openlab' //switch to siteID? //redundant field, the same for all units, because sortable 1c needs a field to match to find a subset of items in a collection
       order: 0 //end of list or 0
+      teacherNotes: Match.Optional(String)
       */
     });
     unit.visible = unit.visible || true;
     unit.longname = unit.longname || '';
-    unit.app = 'openlab'; //redundant field, the same for all units, because sortable 1c needs a field to match to find a subset of items in a collection
+    unit.app = 'openlab'; //switch to siteID? //redundant field, the same for all units, because sortable 1c needs a field to match to find a subset of items in a collection
     //don't want order passed in.  Always add new unit at end of list
     var LastUnit = Units.findOne({},{
         fields:{order:1},
@@ -23,6 +24,7 @@ Meteor.methods({
         limit:1
       });
     unit.order = (LastUnit) ? LastUnit.order + 1 : 0; 
+    unit.teacherNotes = '';
 
     var cU = Meteor.user(); //currentUser
     if (!cU)  
@@ -65,7 +67,8 @@ Meteor.methods({
       title: Match.Optional(Match.nonEmptyString),
       longname:  Match.Optional(String), 
       visible:  Match.Optional(Boolean),
-      app: Match.Optional(Match.OneOf('openlab'))
+      app: Match.Optional(Match.OneOf('openlab')),
+      teacherNotes: Match.Optional(String)
     });
 
     var cU = Meteor.user(); //currentUser
