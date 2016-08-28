@@ -44,7 +44,7 @@ Template.activityPage.onCreated(function() {
   instance.requestedGroupWallAccess = reactiveArray(studentID);
   instance.loadedGroupWallAccess = reactiveArray([]);
 
-  instance.subscribe('subActivities',activityID);
+  //instance.subscribe('subActivities',activityID); //moved to header Aug 2016
   instance.subscribe('teacherWalls',activityID);
   //get all groups walls for this activity to create the group list for browsing
   if (Roles.userIsInRole(cU,'teacher')) {
@@ -62,18 +62,18 @@ Template.activityPage.onCreated(function() {
       instance.requestedStudentWallAccess.add(iU);
       instance.requestedGroupWallAccess.add(iU);
       instance.subscribe('sectionWalls',activityID,iU);
-      instance.subscribe('subActivityStatuses',activityID,iU);      
+      //instance.subscribe('subActivityStatuses',activityID,iU);      
     } else if (Roles.userIsInRole(cU,'teacher')) {
       if (sectionID) { //teacher viewing a single section
         instance.subscribe('sectionWalls',activityID,sectionID);
-        instance.subscribe('subActivityStatuses',activityID,sectionID);
+        //instance.subscribe('subActivityStatuses',activityID,sectionID);
         if (showWalls == 'student')
           instance.requestedStudentWallAccess.add(Meteor.sectionMemberIds(sectionID));
         if (showWalls == 'group')
           instance.requestedGroupWallAccess.add(Meteor.sectionMemberIds(sectionID));
       } else { //teacher viewing with no specific student or section selected
         instance.subscribe('sectionWalls',activityID,null);
-        instance.subscribe('subActivityStatuses',activityID,null);
+        //instance.subscribe('subActivityStatuses',activityID,null);
         if (showWalls == 'student')
           instance.requestedStudentWallAccess.add(Meteor.allStudentIds());
         if (showWalls == 'group')

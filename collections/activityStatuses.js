@@ -1,21 +1,30 @@
 ActivityStatuses = new Meteor.Collection('ActivityStatuses');
+ActivityStatuses.mutate = {};
 
 //create or update status for this activity for this sectoin
+//at end, calls itself with siteID to create status for whole class
 //denormalized in: memberships, workPeriods, and here whenever student status is updated or inserted
 //NOTE:  "status" appears to be a javascript, html, or windows reserved word
 //and its use in this function threw an error when executing the stub in the browser
 //should this type of error recur, consider switching from "status" to "actStatus" everywhere.
-Meteor.updateSectionStatus = function(studentOrSectionID,activityID) {
-  check(studentOrSectionID,Match.idString);
+ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activityID) {
+  check(studentOrSectionID,Match.idString); //studentID, sectionID, or siteID
   check(activityID,Match.idString);
-  var sectionID = (Sections.findOne(studentOrSectionID)) ? studentOrSectionID : Meteor.currentSectionId(studentOrSectionID);
+
+  var sectionID = null;
+  if (Roles.userIsInRole(studentOrSectionID,'student')) {
+    sectionID = Meteor.currentSectionId(studentOrSectionID);
+  } else if (Sections.findOne(studentOrSectionID)) {
+    sectionID = studentOrSectionID;
+  }
+
   if (!sectionID)
     return; //throw error?
   var activity = Activities.findOne(activityID);
   if (!activity)
     return; //throw error?
 
-  actStatus = { 
+  var actStatus = { 
     studentsTotal: 0,     //total students in section
     studentsDone: 0,      //number of students whose status.level = done or doneWithComments
     studentsSubmitted: 0, //number of students whose status.level = submitted
@@ -67,7 +76,7 @@ Meteor.updateSectionStatus = function(studentOrSectionID,activityID) {
     activityID:activityID,
     sectionID:sectionID
   });
-  if ((workPeriod) && (today > workPeriod.endDate) && (actStatus.studentsNotSubmitted)) {
+  if ((workPeriod) && (workPeriod.endDate) && (today > workPeriod.endDate) && (actStatus.studentsNotSubmitted)) {
     actStatus.late = true;
     var studentsOnTime = _.pluck(ActivityStatuses.find({
         studentID:{$in:sectionMemberIds},
@@ -79,11 +88,12 @@ Meteor.updateSectionStatus = function(studentOrSectionID,activityID) {
 
   var oldStatus = ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID});
   if (oldStatus) {
-    return ActivityStatuses.update(oldStatus._id,{$set:actStatus});
+    var id = ActivityStatuses.update(oldStatus._id,{$set:actStatus});
   } else { //no status exists yet, level has been displayed as 0 by default  
     _.extend(actStatus,{
       sectionID: sectionID,
-      studentID:null,
+      siteID: null,
+      studentID: null,
       activityID:activityID,
       unitID: activity.unitID,
       pointsTo: activity.pointsTo,
@@ -92,7 +102,65 @@ Meteor.updateSectionStatus = function(studentOrSectionID,activityID) {
       increment: 0, 
       tag: ''
     });
-    return ActivityStatuses.insert(actStatus);
+    var id = ActivityStatuses.insert(actStatus);
+  }
+  ActivityStatuses.mutate.updateClassStatus(activityID);
+  return id;
+}
+ActivityStatuses.mutate.updateClassStatus = function(activityID) {
+  var activity = Activities.findOne(activityID);
+  if (!activity)
+    return; //throw error?
+  var siteID = Site.findOne()._id;
+
+  var actStatus = { 
+    studentsTotal: 0,     //total students in section
+    studentsDone: 0,      //number of students whose status.level = done or doneWithComments
+    studentsSubmitted: 0, //number of students whose status.level = submitted
+    studentsReturned: 0,  //number of students whose status.level = returned
+    studentsNotSubmitted: 0, //number of students who have no status yet
+    level: 'nostatus',
+    lateStudents: [],     //[studentIDs]  IDs of students who have not yet submitted work after expected date has passed
+    late: false           //true if due date has passed and some students still have not submitted their work, else false
+  }
+
+  var sectionIDs = _.pluck(Sections.find().fetch(),'_id')
+  ActivityStatuses.find({activityID:activityID,sectionID:{$in:sectionIDs}}).forEach(function(sectionStatus) {
+    actStatus.studentsTotal += sectionStatus.studentsTotal;
+    actStatus.studentsDone += sectionStatus.studentsDone;
+    actStatus.studentsSubmitted += sectionStatus.studentsSubmitted;
+    actStatus.studentsReturned += sectionStatus.studentsReturned;
+    actStatus.studentsNotSubmitted += sectionStatus.studentsNotSubmitted;
+    actStatus.late = actStatus.late || sectionStatus.late;
+    actStatus.lateStudents = _.union(actStatus.lateStudents,sectionStatus.lateStudents);
+  })
+  //level
+  if (actStatus.studentsSubmitted) { //at least one student has submitted something which the teacher has not yet returned
+    actStatus.level = 'submitted';
+  } else if (actStatus.studentsDone == actStatus.studentsTotal) { //every student marked done
+    actStatus.level = 'done';
+  } else if ( (actStatus.studentsReturned + actStatus.studentsDone > 0) &&
+              (actStatus.studentsReturned + actStatus.studentsDone + actStatus.studentsNotSubmitted == actStatus.studentsTotal) ) { //teacher has returned all submissions
+    actStatus.level = 'returned';
+  }
+
+  var oldStatus = ActivityStatuses.findOne({siteID:siteID,activityID:activityID});
+  if (oldStatus) {
+    var id = ActivityStatuses.update(oldStatus._id,{$set:actStatus});
+  } else { //no status exists yet, level has been displayed as 0 by default  
+    _.extend(actStatus,{
+      sectionID: null,
+      siteID: siteID,
+      studentID: null,
+      activityID:activityID,
+      unitID: activity.unitID,
+      pointsTo: activity.pointsTo,
+      incrementedBy: siteID, //in lieu of anything else because Meteor.userId() is not accessible a general helper that is not a method
+      incrementedAt: today,
+      increment: 0, 
+      tag: ''
+    });
+    var id = ActivityStatuses.insert(actStatus);
   }
 }
 
@@ -147,7 +215,11 @@ Meteor.methods({
       status.incrementedBy = cU._id;
       status.incrementedAt = new Date();
       return ActivityStatuses.update(oldStatus._id,{$set:status},function() {
-        Meteor.updateSectionStatus(studentID,activityID);
+        if (Meteor.isServer) {
+          Meteor.defer(function() {
+            ActivityStatuses.mutate.updateSectionStatus(studentID,activityID);
+          });
+        }
       });
     } else { //no status exists yet, level has been displayed as 0 by default  
       status = {
@@ -163,7 +235,7 @@ Meteor.methods({
         tag: '',
       }
       return ActivityStatuses.insert(status,function() {
-        Meteor.updateSectionStatus(studentID,activityID);
+        ActivityStatuses.mutate.updateSectionStatus(studentID,activityID);
       });
     }
   },
@@ -192,7 +264,11 @@ Meteor.methods({
       throw new Meteor.Error('statusNotFound','There should already be a status if you are trying to mark it as on time.'); 
     
     ActivityStatuses.update(status._id,{$set: {late:false}},function() {
-      Meteor.updateSectionStatus(studentID,activityID);
+      if (Meteor.isServer) {
+        Meteor.defer(function() {
+          ActivityStatuses.mutate.updateSectionStatus(studentID,activityID);
+        });
+      }
     });
   },
   statusSetTag: function(studentID,activityID,tag) {

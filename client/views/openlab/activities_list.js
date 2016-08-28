@@ -298,8 +298,10 @@ var currentStatus = function(activityID) {
   var cU = Meteor.userId();
   if (Roles.userIsInRole(studentID,'student')) {
     return ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
-  } else if (Roles.userIsInRole(cU,'teacher') && (sectionID)) {
-    return ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID});
+  } else if (Roles.userIsInRole(cU,'teacher')) {
+    if (sectionID)
+      return ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID});
+    return ActivityStatuses.findOne({siteID:Site.findOne()._id,activityID:activityID});
   }
 }
 
@@ -357,7 +359,7 @@ Template.activityItem.helpers({
         'donewithcomments':'Done.  Revisions not required but review comments by your teacher before taking an assessment',
         'done':'Done.'
       };
-    } else if (status.sectionID) {
+    } else if (status.sectionID || status.siteID) {
       var message = status.studentsSubmitted + ' submitted. ' + status.studentsReturned + ' returned to students for resubmission. ' + status.studentsDone + ' done. ' + status.studentsNotSubmitted + ' not yet submitted.';
       var titleDict = {
         'nostatus':'empty inbox. ' + message,
@@ -382,9 +384,9 @@ Template.activityItem.helpers({
       return '';
     if (status.studentID) {
       return 'late';
-    } else if (status.sectionID) {
+    } else if (status.sectionID || status.siteID) {
       var message = (status.studentsNotSubmitted > 1) ? ' students have' : ' student has';
-      var message = 'The deadline has passed and ' + status.studentsNotSubmitted + message + ' not yet submitted this assignment. ';
+      message = 'The deadline has passed and ' + status.studentsNotSubmitted + message + ' not yet submitted this assignment. ';
       status.lateStudents.forEach(function(studentID,i) {
         message += Meteor.getname(studentID,'full');
         if (i == status.studentsNotSubmitted - 2) {

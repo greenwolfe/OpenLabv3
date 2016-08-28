@@ -177,7 +177,10 @@ Meteor.publish('subActivityStatuses',function(activityID,studentOrSectionID) {
         {studentID:{$in:Meteor.sectionMemberIds(sectionID)}}
       ];
     } else {
-      selector.studentID = {$in:Meteor.allStudentIds()};
+      selector.$or = [
+        {siteID:Site.findOne()._id},
+        {studentID: {$in:Meteor.allStudentIds()}}
+      ];
     }
   } else {
     return this.ready();
@@ -408,7 +411,7 @@ Meteor.publish('activityStatuses',function(studentOrSectionID,unitID) {
   } else if (Roles.userIsInRole(this.userId,'teacher') && sectionID) {
     selector.sectionID = sectionID;
   } else {
-    return this.ready();
+    selector.siteID = Site.findOne()._id;
   }
   if (unitID)
     selector.unitID = unitID;

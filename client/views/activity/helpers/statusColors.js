@@ -1,6 +1,7 @@
 //not sure if these are still used
 /* currentStatus */
 var currentStatus = function(activityID) {
+  console.log('wrong version of currentStatus!')
   var studentID = Meteor.impersonatedOrUserId();
   if (!Roles.userIsInRole(studentID,'student'))
     return undefined;

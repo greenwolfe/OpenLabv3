@@ -150,7 +150,7 @@
           {{/with}}
           {{#if showStatus}}
             <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
-            <i class="activityPunctual {{late}}" title="late"></i>
+            <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
           {{/if}}
           {{#if isInRole 'teacher'}}
             {{#if inEditedWall ../wallID}}
@@ -194,7 +194,7 @@
           {{/with}}
           {{#if showStatus}}
             <i class="activityStatus {{status}}" title="{{statusTitle}}"></i>
-            <i class="activityPunctual {{late}}" title="late"></i>
+            <i class="activityPunctual {{late}}" title="{{lateHoverText}}"></i>
           {{/if}}
           <a  href="{{pathFor 'activityPage' _id=pointsTo}}">
             {{{title}}}{{{tags}}}

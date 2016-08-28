@@ -1,6 +1,26 @@
   /******************************/
  /******* ACTIVITY HEADER ******/
 /******************************/
+Template.activityHeader.onCreated(function() {
+  var instance = this;
+  var activityID = FlowRouter.getParam('_id');
+  instance.subscribe('subActivities',activityID);
+
+  instance.autorun(function() {
+    var iU = Meteor.impersonatedOrUserId();
+    var cU = Meteor.userId();
+    var sectionID = Meteor.selectedSectionId();
+    if (Roles.userIsInRole(iU,'student')) { //viewing single student
+      instance.subscribe('subActivityStatuses',activityID,iU);      
+    } else if (Roles.userIsInRole(cU,'teacher')) {
+      if (sectionID) { //teacher viewing a single section
+        instance.subscribe('subActivityStatuses',activityID,sectionID);
+      } else { //teacher viewing with no specific student or section selected
+        instance.subscribe('subActivityStatuses',activityID,null);
+      }
+    }
+  });
+})
 
 Template.activityHeader.helpers({
   siteTitle: function() {
@@ -206,10 +226,17 @@ var currentStatus = function(activityID) {
   var data = Template.parentData(function(data){return ('createdFor' in data)});
   if ((data) && Meteor.users.find(data.createdFor).count())
     studentID = data.createdFor;
-  var studentID = ((data) && Meteor.users.find(data.createdFor).count()) ? data.createdFor : Meteor.impersonatedOrUserId();
-  if (!Roles.userIsInRole(studentID,'student'))
+  var sectionID = Meteor.selectedSectionId();
+  var cU = Meteor.userId();
+  if (Roles.userIsInRole(studentID,'student')) {
+    return ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+  } else if (Roles.userIsInRole(cU,'teacher')) {
+    if (sectionID)
+      return ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID});
+    return ActivityStatuses.findOne({siteID:Site.findOne()._id,activityID:activityID});
+  } else {
     return undefined;
-  return ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+  }
 }
 
 Template.subactivityItem.onRendered(function() {
@@ -281,12 +308,24 @@ Template.subactivityItem.helpers({
     var status = currentStatus(this._id);
     if (!status)
       return 'not started';
-    var titleDict = {
-      'nostatus':'empty inbox: not started',
-      'submitted':'full inbox: work submitted, waiting for teacher response',
-      'returned':'full outbox:  Returned with comments by your teacher.  Please revise and resubmit.',
-      'donewithcomments':'Done.  Revisions not required but review comments by your teacher before taking an assessment',
-      'done':'Done.'};
+    if (status.studentID) {
+      var titleDict = {
+        'nostatus':'empty inbox: not started',
+        'submitted':'full inbox: work submitted, waiting for teacher response',
+        'returned':'full outbox:  Returned with comments by your teacher.  Please revise and resubmit.',
+        'donewithcomments':'Done.  Revisions not required but review comments by your teacher before taking an assessment',
+        'done':'Done.'
+      };
+    } else if (status.sectionID || status.siteID) {
+      var message = status.studentsSubmitted + ' submitted. ' + status.studentsReturned + ' returned to students for resubmission. ' + status.studentsDone + ' done. ' + status.studentsNotSubmitted + ' not yet submitted.';
+      var titleDict = {
+        'nostatus':'empty inbox. ' + message,
+        'submitted': 'Inbox has submissions. ' + message,
+        'returned':'Outbox has returned work. ' + message,
+        'donewithcomments':"All students marked done.",
+        'done':"All students marked done."
+      };
+    }
     return titleDict[status.level];
   },
   late: function() {
@@ -294,6 +333,27 @@ Template.subactivityItem.helpers({
     if (!status)
       return '';
     return (status.late) ? 'icon-late' : '';  
+  },
+  lateHoverText: function() {
+    //needs own popup ... mark all as late?
+    var status = currentStatus(this._id);
+    if (!status || !status.late)
+      return '';
+    if (status.studentID) {
+      return 'late';
+    } else if (status.sectionID || status.siteID) {
+      var message = (status.studentsNotSubmitted > 1) ? ' students have' : ' student has';
+      message = 'The deadline has passed and ' + status.studentsNotSubmitted + message + ' not yet submitted this assignment. ';
+      status.lateStudents.forEach(function(studentID,i) {
+        message += Meteor.getname(studentID,'full');
+        if (i == status.studentsNotSubmitted - 2) {
+          message += ' and ';
+        } else if (i < status.studentsNotSubmitted - 2) {
+          message += ', ';
+        }
+      })
+      return message;
+    }
   },
   //deprecated Aug 2016
   /*studentOrSectionID: function() {
