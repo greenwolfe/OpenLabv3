@@ -263,6 +263,19 @@ Template.subactivityItem.helpers({
     var numSubActivities = Activities.find({pointsTo:this._id}).count();
     return ((this._id != this.pointsTo) || ((numBlocks == 0) && (numSubActivities == 1)) );
   },
+  canLinkWithSubactivity: function() {
+    var cU = Meteor.userId();
+    if (Roles.userIsInRole(cU,'teacher'))
+      return true;
+    if (!Roles.userIsInRole(cU,'student'))
+      return false;
+    var block = Template.parentData(function(data) {return ('access' in data)});
+    if (!block)
+      return false;
+    if (Roles.userIsInRole(block.createdBy,'teacher'))
+      return false;
+    return (_.contains(block.access,cU));
+  },
   subactivities: function() {
     return Activities.find({pointsTo:this.pointsTo});
   },

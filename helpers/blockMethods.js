@@ -1,13 +1,9 @@
 Meteor.studentCanEditBlock = function(studentID,block) {
+  if (block.wallType == 'teacher')
+    return false;
   if (Roles.userIsInRole(block.createdBy,'teacher'))
     return false;
-  if (studentID == block.createdBy)
-    return true;
-  if (Meteor.isGroupMember(studentID,block.createdFor) && _.contains(wall.access,studentID))
-    return true;
-  if (Meteor.isSectionMember(studentID,block.createdFor) && _.contains(wall.access,studentID))
-    return true;
-  return false;
+  return (_.contains(block.access,studentID))
 }
 
 Meteor.studentCanEditWall = function(studentID,wall) {

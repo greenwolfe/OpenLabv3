@@ -110,6 +110,7 @@ Template.column.events({
     } //else do nothing ... add block to clipboard
     getBlocks(tmpl.data).forEach(function(block) {
       block.order = ClipboardBlocks.find().count() + 1;
+      block.fileIDs = _.pluck(Files.find({blockID:block._id},{fields:{_id:1}}).fetch(),'_id');
       ClipboardBlocks.insert(block);
     });
   },

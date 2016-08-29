@@ -62,7 +62,9 @@ Template.block.helpers({
     }
     //null activity to hold place for dropdown list for teacher when editing
     var cU = Meteor.userId();
-    if (inEditedWall(this.wallID) && Roles.userIsInRole(cU,'teacher')) {
+    if (inEditedWall(this.wallID) && 
+      (Roles.userIsInRole(cU,'teacher') || 
+        (Roles.userIsInRole(cU,'student') && Roles.userIsInRole(this.createdBy,'student') && _.contains(this.access,cU)))) {
       subactivity = Activities.findOne(FlowRouter.getParam('_id'));
       if (subactivity) {
         subactivity.inBlockHeader = true;
@@ -165,6 +167,7 @@ Template.block.events({
     } //else do nothing ... add block to clipboard
     var block = Blocks.findOne(this._id);
     block.order = ClipboardBlocks.find().count() + 1;
+    block.fileIDs = _.pluck(Files.find({blockID:block._id},{fields:{_id:1}}).fetch(),'_id');
     ClipboardBlocks.insert(block);
   },
   'click .buttonRaiseVirtualHand': function() {

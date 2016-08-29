@@ -122,6 +122,7 @@ Meteor.methods({
       //required fields to paste the block
       columnID: Match.idString, //NEW column ID
       type: Match.OneOf('file','embed'), //deprecated 'workSubmit','text','subactivities','assessment'
+      fileIDs: [Match.idString], //required, but could be an empty array
       //optional fields that may be passed in with new block
       modifiedBy: Match.Optional(Match.idString), //current user
       modifiedOn: Match.Optional(Date),           //current date
@@ -130,6 +131,7 @@ Meteor.methods({
       embedCode: Match.Optional(String),    //embed
       subActivityID: Match.Optional(Match.OneOf(Match.idString,'')), //assessment
       visible: Match.Optional(Boolean),          //true
+
 
 
       //fields that will be filled with values based on above information
@@ -217,9 +219,11 @@ Meteor.methods({
     var ids = _.pluck(Blocks.find({columnID:block.columnID},{fields: {_id: 1}}).fetch(), '_id');
     Blocks.update({_id: {$in: ids}}, {$inc: {order:1}}, {multi: true});
     //add new block at top
+    var fileIDs = block.fileIDs;
+    delete block.fileIDs;
     return Blocks.insert(block,function(error,id) {
       Walls.update(wall._id,{$set:{wallIsEmpty:false}});
-      Files.find({blockID:blockID}).forEach(function(file) {
+      Files.find({_id:{$in:fileIDs}}).forEach(function(file) {
         file.blockID = id;
         delete file._id;
         Meteor.call('insertFile',file);
@@ -348,7 +352,7 @@ Meteor.methods({
       throw new Meteor.Error('parentNotAllowed', "Parents may only observe.  They cannot create new content.");
     if (Roles.userIsInRole(cU,'student')) {
       if (!Meteor.studentCanEditBlock(cU._id,originalBlock))
-        throw new Meteor.Error('noPermissions','You did not create this block, and do not have permissions to change its contents.');
+        throw new Meteor.Error('noPermissions','You do not have access to edit this block.');
     }    
     block.modifiedBy = cU._id;
     block.modifiedOn = new Date();

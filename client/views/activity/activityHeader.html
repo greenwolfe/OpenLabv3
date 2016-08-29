@@ -128,7 +128,7 @@
 <template name = 'subactivityItem'>
     <p class="aItem">
       {{#if inBlockHeader}}
-        {{#if isInRole 'teacher'}}
+        {{#if canLinkWithSubactivity}}
           <div class="dropdown">
             <a class="glyphicon glyphicon-triangle-bottom assessmentAssociateSubactivity pull-right dropdown-toggle" data-toggle="dropdown" title="Associate this assessment with a different subactivity."></a>
             <ul class="dropdown-menu">
