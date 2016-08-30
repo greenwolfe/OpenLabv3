@@ -78,7 +78,7 @@ Meteor.methods({
       title: Match.Optional(String),
       text: Match.Optional(String),
 
-      //may passed in, but will not be updated
+      //may be passed in, but will not be updated
       createdFor: Match.Optional(Match.idString),
       createdBy: Match.Optional(Match.idString),
       createdOn: Match.Optional(Date),

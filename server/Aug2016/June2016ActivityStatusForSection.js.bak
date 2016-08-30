@@ -1,7 +1,7 @@
 Meteor.startup(function () {
   Activities.find().forEach(function(activity) {
     Sections.find().forEach(function(section) {
-      Meteor.updateSectionStatus(section._id,activity._id);
+      ActivityStatuses.mutate.updateSectionStatus(section._id,activity._id);
     })
   }) 
 });

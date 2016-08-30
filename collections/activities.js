@@ -138,9 +138,12 @@ Meteor.methods({
       throw new Meteor.Error('notTeacher', 'You must be a teacher to delete a whole class activity.')
       
     var numBlocks = Blocks.find({activityID:activityID,type:{$ne:'subactivities'}}).count();
-    var numSubActivities = Activities.find({pointsTo:this._id}).count();
+    var numSubActivities = Activities.find({pointsTo:activity._id}).count();
     if ((activity.pointsTo == activity._id) && ((numBlocks > 0) || (numSubActivities > 1)))
       throw new Meteor.Error('notEmpty','This activity cannot be deleted because it is not empty.  Your options are to just hide it (and move it to a hidden unit to get it out of the way), or clear all of the blocks anyone has posted to the activity and then delete it.');
+    var assessment = Assessments.findOne(activity.pointsTo);
+    if (assessment)
+      throw new Meteor.Error('isAssessment','Cannot delete this activity, because it is associated with an assessment.');
 
     var ids = _.pluck(Activities.find({unitID:activity.unitID,order:{$gt: activity.order}},{fields: {_id: 1}}).fetch(), '_id');
     var numberRemoved = Activities.remove(activityID); 

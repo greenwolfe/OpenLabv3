@@ -1,7 +1,7 @@
   /*****************************/
  /**** EDIT WORK PERIOD *******/
 /*****************************/
-
+/****MAKE ONE TEMPLATE ... add copycolor****/
 var dateTimeFormat = "ddd, MMM D YYYY [at] h:mm a";
 
 Template.editWorkPeriod.onRendered(function() {
@@ -62,7 +62,7 @@ Template.editWorkPeriod.events({
     var $startDatePicker = tmpl.$('.startDatePicker').data("DateTimePicker");    
     if (event.date) {
       if ((event.oldDate === null) && (event.date.hours() == 0))
-        event.date.hours(8);
+        event.date.hours(16);
       wP.endDate = event.date.toDate();
       Meteor.call('setWorkPeriod',wP,alertOnError);
       if ($startDatePicker)
@@ -122,17 +122,19 @@ Template.newWorkPeriod.onRendered(function() {
 
 Template.newWorkPeriod.events({
   'dp.change .startDatePicker': function(event,tmpl) {
-    var activity = this;
+    var activityID = (Activities.findOne(this._id)) ? this._id : null;
     var sectionID = Meteor.selectedSectionId();
-    if (('_id' in activity) && (activity._id) && (sectionID)) {
+    if ((activityID) && (sectionID)) {
       var wP = {
-        activityID: activity._id,
+        activityID: activityID,
         sectionID: sectionID,
         endDate: null
       }
     
       var $endDatePicker = tmpl.$('.endDatePicker').data("DateTimePicker");
       if (event.date) {
+        if (event.date.hours() == 0)
+          event.date.hours(8);
         wP.startDate = event.date.toDate();
         Meteor.call('setWorkPeriod',wP,alertOnError);
         if ($endDatePicker)
@@ -146,17 +148,19 @@ Template.newWorkPeriod.events({
     }
   },
   'dp.change .endDatePicker': function(event,tmpl) {
-    var activity = this;
+    var activityID = (Activities.findOne(this._id)) ? this._id : null;
     var sectionID = Meteor.selectedSectionId();
-    if (('_id' in activity) && (activity._id) && (sectionID)) {
+    if ((activityID) && (sectionID)) {
       var wP = {
-        activityID: activity._id,
+        activityID: activityID,
         sectionID: sectionID,
         startDate: null
       }
 
       var $startDatePicker = tmpl.$('.startDatePicker').data("DateTimePicker");    
       if (event.date) {
+        if (event.date.hours() == 0)
+          event.date.hours(16);
         wP.endDate = event.date.toDate();
         Meteor.call('setWorkPeriod',wP,alertOnError);
         if ($startDatePicker)

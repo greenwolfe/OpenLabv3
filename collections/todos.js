@@ -1,4 +1,23 @@
 Todos = new Meteor.Collection('Todos');
+Todos.check = {};
+
+Todos.check.userCanEdit = function(todoID,studentID) {
+  check(todoID,Match.idString);
+  check(userID,match.idString);
+  var todo = Todos.findOne(todoID);
+  if (!todo)
+    return false;
+  if (Roles.userIsInRole(userID,'teacher'))
+    return true;
+  if (!Roles.userIsInRole(userID,'student'))
+    return false;
+
+  //must include check of assessment as well ... but for now just calendarEvent
+  var calendarEvent = CalendarEvents.findOne(todo.calendarEventID);
+  if (!calendarEvent)
+    return false;
+  return (_.contains(calendarEvent.participants,userID))
+}
 
 Meteor.methods({
   insertTodo: function(todo) {
