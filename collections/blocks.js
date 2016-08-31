@@ -366,8 +366,8 @@ Meteor.methods({
       }
     });
     return block._id; 
-  },
-  assessmentAddStandard: function(assessmentID,standardID) {
+  }//,
+  /*assessmentAddStandard: function(assessmentID,standardID) {
     check(assessmentID,Match.idString);
     check(standardID,Match.idString);
 
@@ -395,8 +395,8 @@ Meteor.methods({
     Blocks.update(assessmentID,{$set:{modifiedOn: today}});
 
     return assessmentID;
-  },
-  assessmentRemoveStandard: function(assessmentID,standardID) {
+  },*/
+/*  assessmentRemoveStandard: function(assessmentID,standardID) {
     check(assessmentID,Match.idString);
     check(standardID,Match.idString);
 
@@ -429,7 +429,7 @@ Meteor.methods({
     Blocks.update(assessmentId,{$set:{modifiedOn: today}}); 
     
     return assessmentID;   
-  }
+  }*/
 });
 
 /**** HOOKS *****/

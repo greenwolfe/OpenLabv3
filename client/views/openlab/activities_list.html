@@ -142,10 +142,6 @@
           </a>
           {{#with workPeriod}}
             {{>editWorkPeriod}}
-          {{else}}
-            {{#if selectedSection}}
-              {{>newWorkPeriod}}
-            {{/if}}
           {{/with}}
           {{>plaintexteditor collection='Activities' field='title' _id=_id editable=editingMainPageTFtext}} 
         {{/unless}}

@@ -65,7 +65,7 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
       actStatus.level = 'submitted';
     } else if (actStatus.studentsDone == actStatus.studentsTotal) { //every student marked done
       actStatus.level = 'done';
-    } else if (actStatus.studentsReturned + actStatus.studentsDone == levels.length) { //teacher has returned all submissions
+    } else if ((actStatus.studentsReturned) && (actStatus.studentsReturned + actStatus.studentsDone == levels.length)) { //teacher has returned all submissions
       actStatus.level = 'returned';
     }
   }

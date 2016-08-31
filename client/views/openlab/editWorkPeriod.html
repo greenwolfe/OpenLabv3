@@ -12,23 +12,8 @@
         <span class="glyphicon glyphicon-calendar" title="deadline: {{formatDateTime endDate}}"></span>
       </span>
     </div>
-    <i class="fa fa-copy {{copyColor}}" data-toggle = "tooltip" title="Copy start date and/or deadline to all sections."></i>
-  </div>
-</template>
-
-<template name="newWorkPeriod">
-  <div class='editWorkPeriod'>
-    <div class='input-group date startDatePicker'>
-      <input type='hidden' class="form-control"  {{disabled}}/>
-      <span class="input-group-addon">
-        <span class="glyphicon glyphicon-calendar" title="Set start date."></span>
-      </span>
-    </div>
-    <div class='input-group date endDatePicker'>
-      <input type='hidden' class="form-control" {{disabled}}/>
-      <span class="input-group-addon">
-        <span class="glyphicon glyphicon-calendar" title="Set deadline."></span>
-      </span>
-    </div>
+    {{#if _id}}
+      <i class="fa fa-copy {{copyColor}}" data-toggle = "tooltip" title="{{copyMessage}}"></i>
+    {{/if}}
   </div>
 </template>

@@ -400,10 +400,20 @@ Template.activityItem.helpers({
   },
   workPeriod: function () {
     //find existing workPeriod
-    return workPeriod =  WorkPeriods.findOne({
+    var activityID = (Activities.findOne(this._id)) ? this._id : null;
+    var sectionID = Meteor.selectedSectionId();
+    if (!activityID || !sectionID)
+      return null;
+    var workPeriod =  WorkPeriods.findOne({
       activityID: this._id,
       sectionID: Meteor.selectedSectionId()
     });
+    return workPeriod || {
+      activityID: activityID,
+      sectionID: sectionID,
+      startDate: null,
+      endDate: null
+    }
   },
   formatDateTime: function(date) {
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';

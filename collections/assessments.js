@@ -6,9 +6,12 @@ Assessments = new Meteor.Collection('Assessments');
   on assessment page, do a sortable1c on standardsForAssessment,
   and inside that, call the specific standard for presentation
 
-  auto-create an activity whose pointTo field points back to
+  auto-create an activity whose pointsTo field points back to
   the grades page with this particular assessment visible
   how to pass in the unit for it???  units and activities are not loaded on the grades page?
+  PASS IN creating users last viewed unit or else the unit with lowest order
+  then provide for changing that either by moving the activity or selecting a different unit
+  in the assessment ... move some of these functions to mutate objects for the standard
   so must load them for this page just in order to link?
   option to create on standards page, but then have to load assessments in order to choose one
 */
@@ -27,8 +30,9 @@ Meteor.methods({
 
     */
     /* linked objects
+       assessmentStandard, linked to standard and assessment
        activity, (pointsTo field) ... auto-created here
-       workperiod, linked to both the assessment and the activity?
+       assessmentDate, linked to both the assessment and the activity?
           assessmentID field, so activityID or assessmentID can be null, but not both
        todo items, (with their own workperiods ... ?)
     */
