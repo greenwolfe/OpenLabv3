@@ -1,9 +1,5 @@
 AssessmentStandards = new Meteor.Collection('AssessmentStandards');
 
-//update due date on standard, no longer allow direct
-//editing of that date ... just defaults to earliest 
-//assessment date
-/////update modified fields of assessment
 ////LOM's now point to assessmentStandard by ID as well?
 Meteor.methods({
   'assessmentAddStandard':function(assessmentStandard) {
@@ -33,6 +29,15 @@ Meteor.methods({
     });
     assessmentStandard.order = (lastStandard) ? lastStandard.order + 1 : 0; 
 
+    var today = new Date();
+    Assessments.update(assessmentStandard.assessmentID,{$set:{
+      modifiedBy: cU,
+      modifiedOn: today
+    }})
+
+    if (assessment.testDate)
+      StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
+
     return AssessmentStandards.insert(assessmentStandard);
   },
   'assessmentRemoveStandard': function(assessmentStandardID) {
@@ -49,12 +54,26 @@ Meteor.methods({
       throw new Meteor.Error('assessmentStandardNotFound',"Cannot remove standard with id = , " + assessmentStandardID + " from it's assessment.  AssessmentStandard not found.")
 
     var assessment = Assessments.findOne(assessmentStandard.assessmentID);
-    if ((assessment) && Roles.userIsInRole(cU,'student') && (cU != assessment.createdFor))
+    if (!assessment)
+      throw new Meteor.Error('assessmentNotFound','Cannot add standard.  Assessment not found.');
+    if (Roles.userIsInRole(cU,'student') && (cU != assessment.createdFor))
       throw new Meteor.Error('notYours','A student can only remove a standard from his/her own reassessment.');
 
     var LoMcount = LevelsOfMastery.find({assessmentID:assessmentStandard.assessmentID,standardID:assessmentStandard.standardID}).count();
     if (LoMcount > 0)
       throw new Meteor.Error('alreadyAssessed','Cannot remove standard from assessment.  At least one student has already received a grade for this standard on this assessment. Deleting it will orphan those grades.');
+
+    if (assessment) {
+      var today = new Date();
+      Assessments.update(assessmentStandard.assessmentID,{$set:{
+        modifiedBy: cU,
+        modifiedOn: today
+      }})
+    }
+
+    var standard = Standards.findOne(assessmentStandard.standardID);
+    if (standard)
+      StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
 
     var ids = _.pluck(AssessmentStandards.find({assessmentID:assessmentStandard.assessmentID,order:{$gt: assessmentStandard.order}},{fields: {_id: 1}}).fetch(), '_id');
     var numberRemoved = AssessmentStandards.remove(assessmentStandardID); 

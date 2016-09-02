@@ -23,6 +23,12 @@ Meteor.methods({
     if (Roles.userIsInRole(cU,'student') && (cU != assessment.createdFor))
       throw new Meteor.Error('notYours','A student can only set a date for his/her own reassessment.');
 
+    var today = new Date();
+    Assessments.update(assessmentDate.assessmentID,{$set:{
+      modifiedBy: cU,
+      modifiedOn: today
+    }})
+
     delete assessmentDate._id;
     var selector = (assessmentDate.sectionID == 'applyToAll') ? {} : {_id:assessmentDate.sectionID};
     Sections.find(selector).forEach(function(section) {
@@ -33,6 +39,10 @@ Meteor.methods({
         assessmentDate.sectionID = section._id;
         AssessmentDates.insert(assessmentDate);
       }
+    });
+
+    AssessmentStandards.find({assessmentID:assessmentDate.assessmentID}).forEach(function(assessmentStandard) {
+      StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');      
     });
   },
   'deleteAssessmentDate': function(assessmentDate) {
@@ -56,12 +66,24 @@ Meteor.methods({
     if (!aD)
       throw new Meteor.Error('assessmentDateNotFound',"Cannot delete assessment date with id = , " + assessmentDate._id + " assessment date not found.")
 
+    if (assessment) {
+      var today = new Date();
+      Assessments.update(assessmentDate.assessmentID,{$set:{
+        modifiedBy: cU,
+        modifiedOn: today
+      }})
+    }
+
     var selector =  (workPeriod.sectionID == 'applyToAll') ? {} : {_id:workPeriod.sectionID};
     Sections.find(selector).forEach(function(section) {
       var aD = AssessmentDates.findOne({sectionID:section._id,activityID:workPeriod.activityID});
       if (aD) {
         AssessmentDates.remove(aD._id);
       }
+    });
+
+    AssessmentStandards.find({assessmentID:assessmentDate.assessmentID}).forEach(function(assessmentStandard) {
+      StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');      
     });
   }
 })

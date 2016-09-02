@@ -43,17 +43,7 @@ Template.categoryTitle.helpers({
     return ((this._id == activeCategory) || (this._id == activeCategory2)) ? '' : 'hidden';
   },
   percentExpected: function() { 
-    var selector = {
-      categoryID: this._id,
-      visible: true //only visible standards count
-    }
-    var total = Standards.find(selector).count(); 
-    if (total == 0)
-      return 0;
-    var today = new Date();
-    selector.masteryExpected = {$lt:today};
-    var expected = Standards.find(selector).count(); 
-    return expected*100/total;
+    return percentExpected(Meteor.selectedSectionId());
   },
   percentCompleted: function() { 
     var studentID = Meteor.impersonatedOrUserId();
@@ -129,17 +119,7 @@ Template.standardListHeader.helpers({
     return openlabSession.get('activeCategory2') ? 'bgprimary' : '';
   },
   percentExpected: function() { 
-    var selector = {
-      categoryID: this._id,
-      visible: true //only visible standards count
-    }
-    var total = Standards.find(selector).count(); 
-    if (total == 0)
-      return 0;
-    var today = new Date();
-    selector.masteryExpected = {$lt:today};
-    var expected = Standards.find(selector).count(); 
-    return expected*100/total;
+    return percentExpected(Meteor.selectedSectionId());
   },
   percentCompleted: function() { 
     var studentID = Meteor.impersonatedOrUserId();
@@ -233,6 +213,8 @@ Template.standardList.helpers({
  /** STANDARD ITEM  *******/
 /*************************/
 
+var dateTimeFormat = "ddd, MMM D YYYY [at] h:mm a";
+
 Template.standardItem.onRendered(function() {
   instance = this;
   instance.$('[data-toggle="tooltip"]').tooltip();
@@ -251,15 +233,30 @@ Template.standardItem.helpers({
       sort:{submitted:-1}
     });
   },
-  dateset: function() {
-    var wayInTheFuture = moment(wayWayInTheFuture()).subtract(1,'days').toDate();
-    return (this.masteryExpected < wayInTheFuture) ? 'dateset' : '';
-  }
-});
-
-Template.standardItem.events({
-  'click .standardSetCompletionDate': function(event,tmpl) {
-    Session.set('completionDate', this);
+  standardDate: function() {
+    var selector = {standardID:this.standardID};
+    var sectionID = Meteor.selectedSectionId();
+    if (sectionID) {
+      selector.sectionID = sectionID;
+      var standardDate = StandardDates.findOne(selector);
+    } else {
+      var standardDate = StandardDates.findOne(selector,{sort:{masteryExpected:-1}});
+    }
+    if ((standardDate) && (standardDate.masteryExpected < wayWayInTheFuture()))
+      return standardDate;
+    return '';
+  },
+  upcomingExpected: function() {
+    var today = new Date();
+    var aWeekFromNow = moment().add(1,'week').toDate();
+    if ((today < this.masteryExpected) && (this.masteryExepcted < aWeekFromNow))
+      return 'upcoming';
+    if (this.masteryExpected < today)
+      return 'expected';
+    return '';
+  },
+  formatDateTime: function(date) {
+    return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
   }
 });
 
@@ -317,65 +314,6 @@ Template.LoMbadgeForStandardItem.helpers({
   }
 })
 
-  /********************************/
- /*** SET COMPLETION DATE  *******/
-/********************************/
-
-var dateTimeFormat = "ddd, MMM D YYYY [at] h:mm a";
-var dateFormat = "ddd, MMM D YYYY";
-
-Template.setCompletionDate.onRendered(function() {
-  var instance = this;
-  instance.$('#completionDatePicker').datetimepicker({
-    inline: true,
-    format: "MM/DD/YYYY",
-    showClear: true
-  });
-})
-
-Template.setCompletionDate.helpers({
-  title: function() {
-    var standard = Session.get('completionDate');
-    var title = 'Set Completion Date';
-    if (standard)
-      title = standard.title;
-    return title;
-  }
-})
-
-Template.setCompletionDate.events({
-  'shown.bs.modal #setCompletionDate': function(event,tmpl) {
-    //position the modal as a popover and show the cartoon bubble arrow
-    var setCompletionDateButton = $(event.relatedTarget);
-    var setCompletionDatePopover = tmpl.$('#setCompletionDate');
-    setCompletionDatePopover.positionOn(setCompletionDateButton,'left');
-    $('body').css({overflow:'auto'}); //default modal behavior restricts scrolling
-   },
-   'show.bs.modal #setCompletionDate': function(event,tmpl) {
-     var standard = Session.get('completionDate');
-     var date = null;
-     if (standard) {
-      var wayInTheFuture = moment(wayWayInTheFuture()).subtract(1,'days').toDate();
-      if (standard.masteryExpected < wayInTheFuture) 
-        date = standard.masteryExpected;
-    }
-    tmpl.$('#completionDatePicker').data('DateTimePicker').date(date);
-   },
-  'dp.change #completionDatePicker': function(event,tmpl) {
-    var date = (event.date) ? event.date.startOf('day').toDate() : wayWayInTheFuture(); //the dateIsNull function treats longLongAgo as a null value
-    var standard = Session.get('completionDate');
-    if (!standard) return;
-    Meteor.call('updateStandard',{
-      _id:standard._id,
-      masteryExpected: date
-    },alertOnError);
-  },
-  'hide.bs.modal #setCompletionDate': function(event,tmpl) {
-    Session.set('completionDate',null);
-    tmpl.$('#completionDatePicker').data('DateTimePicker').date(null);
-  }
-})
-
   /*************************/
  /*** NEW STANDARD  *******/
 /*************************/
@@ -390,17 +328,29 @@ Template.newStandard.helpers({
  /*** UTILITIES  *******/
 /**********************/
 
-var percentExpected = function() { 
+var percentExpected = function(sectionID) { 
   var selector = {
     categoryID: this._id,
     visible: true //only visible standards count
   }
-  var total = Standards.find(selector).count(); 
+  var standardIDs = _.pluck(Standards.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
+  var total = standardIDs.length;
   if (total == 0)
     return 0;
   var today = new Date();
-  selector.masteryExpected = {$lt:today};
-  var expected = Standards.find(selector).count(); 
+  selector = {
+    standardID:{$in:standardIDs},
+    masteryExpected:{$lt:today}
+  };
+  if (sectionID) {
+    selector.sectionID = sectionID;
+    var expected = StandardDates.find(selector).count();
+  } else {
+    standardIDs = _.pluck(StandardDates.find(selector,{fields:{standardID:1}}).fetch(),'standardID');
+    standardIDs = _.unique(standardIDs);
+    var expected = standardIDs.length;
+  }
+
   return expected*100/total;
 };
 

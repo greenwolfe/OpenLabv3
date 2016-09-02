@@ -17,7 +17,7 @@
               <i class="fa fa-fast-forward"></i>
             </div>
           </div>
-          {{> block}}
+          {{> assessmentCenter}}
         {{/with}}
       {{else}}
         {{>noAssessments title="<h4 class='bg-info'> Loading assessments ... </h4>"}}
@@ -43,7 +43,11 @@
         <div class="blockTitle">&nbsp;</div>
     </div>
     <div class="panel-body">
-      <p> Your teacher will add assessments for the whole class here.  You can also use it to request a reassessment and put together a to-do list for it.</p>
+      {{#if isInRole 'teacher'}}
+        <button class="btn btn-primary createAssessment">Create Assessment</button>
+      {{else}} {{#if isInRole 'student'}}
+        <button class="btn btn-primary createAssessment">Create Reassessment</button>
+      {{/if}}{{/if}}
     </div>
   </div>
 </template>

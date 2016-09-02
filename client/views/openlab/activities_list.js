@@ -357,7 +357,8 @@ Template.activityItem.helpers({
         'submitted':'full inbox: work submitted, waiting for teacher response',
         'returned':'full outbox:  Returned with comments by your teacher.  Please revise and resubmit.',
         'donewithcomments':'Done.  Revisions not required but review comments by your teacher before taking an assessment',
-        'done':'Done.'
+        'done':'Done.',
+        'donebutresubmitted': 'Done, but resubmitted for teacher comments.'
       };
     } else if (status.sectionID || status.siteID) {
       var message = status.studentsSubmitted + ' submitted. ' + status.studentsReturned + ' returned to students for resubmission. ' + status.studentsDone + ' done. ' + status.studentsNotSubmitted + ' not yet submitted.';

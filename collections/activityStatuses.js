@@ -30,6 +30,7 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
     studentsSubmitted: 0, //number of students whose status.level = submitted
     studentsReturned: 0,  //number of students whose status.level = returned
     studentsNotSubmitted: 0, //number of students who have no status yet
+    studentsReSubmitted: 0, //number of students who are done, but chose to resubmit for teacher comments
     level: 'nostatus',
     lateStudents: [],     //[studentIDs]  IDs of students who have not yet submitted work after expected date has passed
     late: false           //true if due date has passed and some students still have not submitted their work, else false
@@ -57,8 +58,12 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
     actStatus.studentsReturned = levels.reduce(function(n,l){
       return n + _.str.count(l,'return');
     },0)
+    actStatus.studentsResubmitted = levels.reduce(function(n,l){
+      return n + _.str.count(l,'resubmitted');
+    },0) //these students counted in both done and submitted above
+    var firstSubmissionCount = actStatus.studentsSubmitted - actStatus.studentsResubmitted;
     //studentsNotSubmitted
-    actStatus.studentsNotSubmitted = actStatus.studentsTotal - actStatus.studentsSubmitted - actStatus.studentsReturned - actStatus.studentsDone;
+    actStatus.studentsNotSubmitted = actStatus.studentsTotal - firstSubmissionCount - actStatus.studentsReturned - actStatus.studentsDone;
 
     //level
     if (actStatus.studentsSubmitted) { //at least one student has submitted something which the teacher has not yet returned
@@ -107,6 +112,7 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
   ActivityStatuses.mutate.updateClassStatus(activityID);
   return id;
 }
+
 ActivityStatuses.mutate.updateClassStatus = function(activityID) {
   var activity = Activities.findOne(activityID);
   if (!activity)
@@ -119,6 +125,7 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
     studentsSubmitted: 0, //number of students whose status.level = submitted
     studentsReturned: 0,  //number of students whose status.level = returned
     studentsNotSubmitted: 0, //number of students who have no status yet
+    studentsReSubmitted: 0, //number of students who are done, but chose to resubmit for teacher comments
     level: 'nostatus',
     lateStudents: [],     //[studentIDs]  IDs of students who have not yet submitted work after expected date has passed
     late: false           //true if due date has passed and some students still have not submitted their work, else false
@@ -131,6 +138,7 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
     actStatus.studentsSubmitted += sectionStatus.studentsSubmitted;
     actStatus.studentsReturned += sectionStatus.studentsReturned;
     actStatus.studentsNotSubmitted += sectionStatus.studentsNotSubmitted;
+    actStatus.studentsResubmitted += sectionStatus.studentsResubmitted;
     actStatus.late = actStatus.late || sectionStatus.late;
     actStatus.lateStudents = _.union(actStatus.lateStudents,sectionStatus.lateStudents);
   })
@@ -140,7 +148,7 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
   } else if (actStatus.studentsDone == actStatus.studentsTotal) { //every student marked done
     actStatus.level = 'done';
   } else if ( (actStatus.studentsReturned + actStatus.studentsDone > 0) &&
-              (actStatus.studentsReturned + actStatus.studentsDone + actStatus.studentsNotSubmitted == actStatus.studentsTotal) ) { //teacher has returned all submissions
+              (actStatus.studentsReturned + actStatus.studentsDone + actStatus.studentsNotSubmitted - actStatus.studentsResubmitted == actStatus.studentsTotal) ) { //teacher has returned all submissions
     actStatus.level = 'returned';
   }
 
@@ -187,30 +195,33 @@ Meteor.methods({
     if (cUisStudent && (cU._id != student._id))
       throw new Meteor.Error('onlyChangeOwnStatus',"Only a teacher can change someone else's activity status.")
 
-    var statuses = ['nostatus','submitted','returned','donewithcomments','done']
+    var statuses = ['nostatus','submitted','returned','donewithcomments','done','donebutresubmitted']
     var oldStatus = ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
     var oneMinuteAgo = moment().subtract(1,'minute').toDate();
     var rightNow = new Date();
     if (oldStatus) {
       var status = {increment:oldStatus.increment};
       var i = statuses.indexOf(oldStatus.level);
-      doneIndex = statuses.length - 1;
+      doneIndex = statuses.length - 2;
       if (oldStatus.incrementedAt < oneMinuteAgo) status.increment = 1; //going up by default
       if (i == 0) status.increment = 1; //only way to go
       if (cUisTeacher) {
-        if (i == doneIndex) { /*DONE*/
+        if (i == doneIndex + 1) {
+          status.increment = -1; //only way to go
+        } else if (i == doneIndex) { /*DONE*/
           if ((status.increment == 1) && !status.late) {
             status.late = true; //mark as late (can mark as on time again by clicking on late icon)
             status.increment = 0; //and don't increment this time
           } else {
-            status.increment = -1; //no where else to go
+            status.increment = -1; //teacher goes back down rather than on up to resubmit
           } 
         }
       } else if (cUisStudent) {
-        if (i == doneIndex) /*DONE*/ status.increment = 0; //once teacher marks as done, student cannot change
-        if (i == doneIndex - 1) /*DONEWITHCOMMENTS*/ status.increment = 1; //student can increment from donewithcomments to done, but cannot decrement from here
-        if (i == doneIndex - 2) /*RETURNED*/ status.increment = -1; //teacher returned work, so student decrements to indicate they are working on revisions or have submitted them
-        if (i == doneIndex - 3) /*SUBMITTED*/ status.increment = -1; //only teacher marks as returned or done
+        if (i == doneIndex + 1) /*DONEBUTRESUBMITED*/ status.increment = -1; //if marked resubmit, then another click goes back to done
+        if (i == doneIndex)     /*DONE*/              status.increment =  1;  //clicking on done sends it up to resubmit
+        if (i == doneIndex - 1) /*DONEWITHCOMMENTS*/  status.increment =  1;  //student can increment from donewithcomments to done, but cannot decrement from here
+        if (i == doneIndex - 2) /*RETURNED*/          status.increment = -1; //teacher returned work, so student decrements to indicate they are working on revisions or have submitted them
+        if (i == doneIndex - 3) /*SUBMITTED*/         status.increment = -1; //only teacher marks as returned or done
       }
       status.level = statuses[i + status.increment];
       status.incrementedBy = cU._id;

@@ -24,7 +24,6 @@ Meteor.methods({
     standard.scaleHelp = "NM (no mastery), DM (developing mastery), M (mastery)";
     standard.calcMethod = 'mostRecent';
     standard.visible = true;
-    standard.masteryExpected = wayWayInTheFuture();
     //don't want order passed in.  Always add new activity at end of list
     var category = Categories.findOne(standard.categoryID); //verify unit first
     if (!category)
@@ -93,8 +92,7 @@ Meteor.methods({
       description: Match.Optional(String),
       scaleHelp: Match.Optional(Match.scaleString), // a single integer or the form of "NM(no mastery),DM(developing mastery),M(mastery)"
       //scale: Match.Optional(Match.OneOf(Match.scaleString,Match.Integer)),
-      calcMethod: Match.Optional(Match.calcMethodString),    
-      masteryExpected: Match.Optional(Date)
+      calcMethod: Match.Optional(Match.calcMethodString)
     })
 
     var cU = Meteor.user(); //currentUser
@@ -112,9 +110,6 @@ Meteor.methods({
 
     if (('description' in newStandard) && (newStandard.description != standard.description))
       Standards.update(newStandard._id,{$set: {description:newStandard.description}});
-
-    if (('masteryExpected' in newStandard) && (newStandard.masteryExpected != standard.masteryExpected))
-      Standards.update(newStandard._id,{$set: {masteryExpected:newStandard.masteryExpected}});
 
     if (('scaleHelp' in newStandard) && (newStandard.scaleHelp != standard.scaleHelp)) {
       newStandard.scale = getScale(newStandard.scaleHelp);

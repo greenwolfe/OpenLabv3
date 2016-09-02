@@ -132,6 +132,12 @@ li.categorytitle.active2 > a {
   border-right-width: 4px;
   border-right-color: #FAA732;
 }
+p.sItem span.glyphicon-calendar.expected {
+  background-color: #F0AD4E;
+}
+p.sItem span.glyphicon-calendar.upcoming {
+  background-color: #00ff00;
+}
 #standardList p div[contenteditable="true"][class~='plaintexteditor'] {
   width: 80%;
   float: right;

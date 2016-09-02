@@ -1,7 +1,3 @@
-<body>
-  {{>setCompletionDate}}
-</body>
-
 <template name = 'standardsList'> 
   <div id="standardsListTitle">
     <h4>standards</h4>
@@ -111,10 +107,10 @@
 
 <template name = 'standardItem'>
     <p class="sItem">
+      {{#with standardDate}}
+        <span class="glyphicon glyphicon-calendar pull-right {{upcomingExpected}}" data-toggle="tooltip" title="first assessed on: {{formatDateTime masteryExpected}}"></span>
+      {{/with}}
       {{#if editingMainPage}}
-        <a href="#setCompletionDate" class="standardSetCompletionDate pull-right {{dateset}}"  data-toggle="modal" data-backdrop=false>
-          <span class="glyphicon glyphicon-calendar"></span>
-        </a>
         <a class="glyphicon glyphicon-move sortStandard" title="Drag to reorder or move to another category (in side-by-side view).">
         </a>
         {{>showHide collection='Standards' itemName='standard' item=this}}
@@ -132,29 +128,6 @@
 
 <template name='LoMbadgeForStandardItem'>
   <span class='badge badge-inverse {{LoMAveragecolorcode}}' data-original-title="{{latestComment}}" data-toggle="tooltip" data-html=true data-placement="right">{{LoMAveragetext}}</span>
-</template>
-
-<template name='setCompletionDate'>
-  <div id="setCompletionDate" class="popover popover-default">
-    <div class="popover-title">
-      <span class="close" data-dismiss="modal">&times;</span>
-      <div class="text-center">
-        <h4>{{{title}}}</h4>
-      </div>
-    </div>
-    <div class="popover-content">
-      <div style="overflow:hidden;">
-        <div class="form-group">
-          <div class="row">
-              <div class="col-md-12">
-                <div id="completionDatePicker">
-                </div>
-              </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <template name='newStandard'>

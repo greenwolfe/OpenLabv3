@@ -3,7 +3,10 @@ Meteor.publish('activities',function() {
 });
 
 Meteor.publish('standards',function() {  
-  return Standards.find();
+  return [
+    Standards.find(),
+    StandardDates.find()
+  ];
 });
 
 Meteor.publish('calendarEvents',function(userOrSectionID) {

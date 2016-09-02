@@ -1,25 +1,20 @@
 Assessments = new Meteor.Collection('Assessments');
 
 /*
-  make collection standardsForAssessment items will point 
-  to assessment and standard and have an order parameter
-  on assessment page, do a sortable1c on standardsForAssessment,
-  and inside that, call the specific standard for presentation
-
-  auto-create an activity whose pointsTo field points back to
-  the grades page with this particular assessment visible
-  how to pass in the unit for it???  units and activities are not loaded on the grades page?
+  pass units in to grades page, select unit to show assessment in,
+  make new row at bottom of activies list for assessments
   PASS IN creating users last viewed unit or else the unit with lowest order
-  then provide for changing that either by moving the activity or selecting a different unit
+  then provide for changing that selecting a different unit
   in the assessment ... move some of these functions to mutate objects for the standard
+  ???not following notes below now
   so must load them for this page just in order to link?
   option to create on standards page, but then have to load assessments in order to choose one
 */
 Meteor.methods({
-  insertAssessment: function(createdFor,unitID) {
+  insertAssessment: function(createdFor) {
     check(createdFor,Match.idString);
-    check(unitID,Match.Optional(Match.idString));
     /*
+      unitID:Match.idString,
       createdBy: Match.idString,
       createdOn: Date,
       modifiedBy: Match.idString,
@@ -31,16 +26,15 @@ Meteor.methods({
     */
     /* linked objects
        assessmentStandard, linked to standard and assessment
-       activity, (pointsTo field) ... auto-created here
        assessmentDate, linked to both the assessment and the activity?
           assessmentID field, so activityID or assessmentID can be null, but not both
-       todo items, (with their own workperiods ... ?)
+       todo items, (with their own due dates)
     */
     var site = Site.findOne(createdFor);
     var student = Meteor.users.findOne(createdFor);
     if (!site && !student)
       throw new Meteor.Error('invalidAudience','Invalid audience for assessment.  Must be a specific student if its a reassessment or the entire class.');
-    var cU = Meteor.userId();
+    var cU = Meteor.user();
     if (!cU)  
       throw new Meteor.Error('notLoggedIn', "You must be logged in to create an assessment.");
     if (!Roles.userIsInRole(cU,['teacher','student']))
@@ -49,38 +43,39 @@ Meteor.methods({
       throw new Meteor.Error('onlySelf','You cannot create a reassessment for another student.');
     if ((site) && !Roles.userIsInRole(cU,'teacher'))
       throw new Meteor.Error('onlyTeacher','Only a teacher can create an assessment for the whole class.');
-    var unit = Units.findOne(unitID);
-    if ((site) && (!unit))
-      throw new Meteor.Error('unitRequired','To create an assessment, you must specify a unit to put a linked activity in.');
+
+    if (student) {
+      var unitID = student.profile.lastViewedUnit;
+    } else if (site) {
+      var unitID = cU.profile.lastViewedUnit;
+    }
+    if (!unitID) {
+      var unit = Units.findOne({},{sort:{order:-1}});
+      if (!unit)
+        throw new Meteor.Error('unitNotFound','could not find a unit to put the assessment reminder under.');
+      unitID = unit._id;
+    }
 
     var today = new Date();
     var assessment = {
       createdFor: createdFor,
-      createdBy: cU,
+      unitID: unitID,
+      createdBy: cU._id,
       createdOn: today,
-      modifiedBy: cU,
+      modifiedBy: cU._id,
       modifiedOn: today,
       visible: true,
-      title: 'assessment',
+      title: '',
       text: ''
     }
-    return Assessments.insert(assessment,function(error,id) {
-      if (error) {
-        throw new Meteor.Error(error.reason);
-      } else if (site) {
-        Meteor.call('insertActivity',{
-          pointsTo: id,
-          title: 'assessment',
-          unitID: unitID
-        })
-      }
-    })
+    return Assessments.insert(assessment);
   },
   updateAssessment: function(assessment) {
     check(assessment, {
       _id: Match.idString,
       title: Match.Optional(String),
       text: Match.Optional(String),
+      unitID: Match.Optional(Match.idString),
 
       //may be passed in, but will not be updated
       createdFor: Match.Optional(Match.idString),
@@ -118,16 +113,19 @@ Meteor.methods({
       modifiedOn: today,
     }
     if ('title' in assessment) {
-      set.title = assessment.title | 'assessment';
+      set.title = assessment.title;
+    }
+    if ('unitID' in assessment) {
+      var unit = Units.findOne(unitID);
+      if (!unit)
+        throw new Meteor.Error('unitNotFound','could not find a unit to put the assessment reminder under.');        
+      set.unitID = unitID;
     }
     var fields = ['text']; //all the rest, which is just text for now
     fields.forEach(function(field) {
       if (field in assessment) 
         set[field] = assessment[field];
     });
-    if ((site) && ('title' in assessment)) {
-      Activities.update({pointsTo:assessment._id},{$set:{title:set.title}});
-    }
     return Assessments.update(assessment._id,{$set:set});
   }
 });
