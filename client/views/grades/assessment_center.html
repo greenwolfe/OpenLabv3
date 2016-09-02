@@ -1,5 +1,17 @@
 <Template name="assessmentCenter">
-  <div class='assessmentCenter'>
+  <div class="col-md-12">
+    <div id="createAssessmentGroup" class="btn-group">
+        Create:
+        {{#if isInRole 'teacher'}}
+          <button class="btn btn-primary createASsessment">Assessment</button>
+        {{/if}}
+        <!-- if impersonatedOrUser is student -->
+          <button class="btn btn-primary createReassessment">Reassessment for {{getname impersonatedOrUserID 'full'}}</button>>
+        <!-- /if -->
+    </div>
+    <!-- create group button group and button -->
+  </div>
+  <div class='assessmentCenter col-md-12'>
     {{#if assessmentsCount}}
       {{#if Template.subscriptionsReady}}
         {{#with activeAssessment}}
@@ -44,9 +56,9 @@
     </div>
     <div class="panel-body">
       {{#if isInRole 'teacher'}}
-        <button class="btn btn-primary createAssessment">Create Assessment</button>
+        <span>Create some assessments using the buttons above.</span>
       {{else}} {{#if isInRole 'student'}}
-        <button class="btn btn-primary createAssessment">Create Reassessment</button>
+        <span>Assessments created by your teacher will show up in this area.  You can also create your own individual assessments here.</span>
       {{/if}}{{/if}}
     </div>
   </div>

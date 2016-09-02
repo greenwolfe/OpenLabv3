@@ -9,16 +9,6 @@
             <button class="btn btn-primary showAssessment {{assessmentsActive}}">Assessments</button>
             <button class="btn btn-primary showStandardGroups {{groupsActive}}">Groups of Standards</button>
         </div>
-        <div id="createAssessmentGroup" class="btn-group">
-            Create:
-            {{#if isInRole 'teacher'}}
-              <button class="btn btn-primary createASsessment">Assessment</button>
-            {{/if}}
-            <!-- if impersonatedOrUser is student -->
-              <button class="btn btn-primary createReassessment">Reassessment for {{getname impersonatedOrUserID 'full'}}</button>>
-            <!-- /if -->
-        </div>
-        <!-- create group button group and button -->
         {{>assessmentCenter}}
       </div>
       <div class='col-md-7'>
