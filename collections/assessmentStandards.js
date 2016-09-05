@@ -6,8 +6,14 @@ Meteor.methods({
     check(assessmentStandard,{
       assessmentID: Match.idString,
       standardID: Match.OneOf(Match.idString,'applyToAll') 
-      //below included to avoid check error in case full record passed in
-      //order: Match.Optional(Match.Integer) //ne standard always placed at end of list
+      //to be denormalized from assessment
+      //visible: Match.Optional(Boolean),
+      //unitID: Match.Optional(Match.idString),
+      //createdFor: Match.Optional(Match.idString),
+      //maxDate: Match.Optional(Date),
+      //minDate: Match.Optional(Date),
+
+       //order: Match.Optional(Match.Integer) //new standard always placed at end of list
     })
 
     var cU = Meteor.userId();
@@ -16,16 +22,20 @@ Meteor.methods({
     if (!Roles.userIsInRole(cU,['teacher','student']))
       throw new Meteor.Error('notTeacherOrStudent','Only a teacher or student can add a standard to an assessment.');
 
-    var assessment = Assessments.findOne(assessmentDate.assessmentID);
+    var assessment = Assessments.findOne(assessmentStandard.assessmentID);
     if (!assessment)
       throw new Meteor.Error('assessmentNotFound','Cannot add standard.  Assessment not found.');
     if (Roles.userIsInRole(cU,'student') && (cU != assessment.createdFor))
       throw new Meteor.Error('notYours','A student can only add a standard to his/her own reassessment.');
+    assessmentStandard.visible = assessment.visible;
+    assessmentStandard.unitID = assessment.unitID;
+    assessmentStandard.createdFor = assessment.createdFor;
+    assessmentStandard.maxTestDate = assessment.maxTestDate;
+    assessmentStandard.minTestDate = assessment.minTestDate;
 
     var lastStandard = AssessmentStandards.findOne({assessmentID: assessmentStandard.assessmentID},{
       fields:{order:1},
-      sort:{order:-1},
-      limit:1
+      sort:{order:-1}
     });
     assessmentStandard.order = (lastStandard) ? lastStandard.order + 1 : 0; 
 
@@ -35,10 +45,13 @@ Meteor.methods({
       modifiedOn: today
     }})
 
-    if (assessment.testDate)
-      StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
-
-    return AssessmentStandards.insert(assessmentStandard);
+    return AssessmentStandards.insert(assessmentStandard,function(error,id) {
+      if (error) {
+        console.log(error);
+      } else {
+        StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
+      }
+    });
   },
   'assessmentRemoveStandard': function(assessmentStandardID) {
     check(assessmentStandardID,Match.idString);

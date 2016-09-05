@@ -409,7 +409,7 @@ Template.pastGroupSelector.helpers({
 Template.pastGroupSelector.events({
   'click .pastGroup': function(event,tmpl) {
     event.preventDefault();
-    wall = Template.parentData();
+    var wall = Template.parentData();
     var group = this;
     Meteor.call('wallChangeGroup',wall._id,group._id);
   }

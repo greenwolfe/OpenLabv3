@@ -31,6 +31,12 @@ Meteor.methods({
             }
             Walls.mutate.insertWall(wall);
           })
+          Assessments.find({createdFor:Site.findOne().id}).forEach(function(assessment) {
+            var assessmentDate = AssessmentDates.findOne({assessmentID:assessment._id},{sort:{testDate:1}});
+            assessmentDate.sectionID = id;
+            delete assessmentDate._id;
+            AssessmentDates.mutate.setAssessmentDate(assessmentDate);
+          })
         });
       }
     });

@@ -1,18 +1,53 @@
 <template name = "grades">
-  <!--{{#unless Template.subscriptionsReady}}
-    <p class='bg-info'> Loading data for {{getname impersonatedOrUserId 'full'}}</p>
-  {{/unless}}-->
   <div class='container-fluid'>
     <div class="row"> <!-- class="modal-body row" to scroll -->
       <div class='col-md-5'>
         <div id="showAssessmentGroup" class='btn-group'>
-            <button class="btn btn-primary showAssessment {{assessmentsActive}}">Assessments</button>
-            <button class="btn btn-primary showStandardGroups {{groupsActive}}">Groups of Standards</button>
+            <button class="btn btn-default btn-xs disabled">
+                Show: 
+            </button>
+            <button class="btn btn-primary showAssessments {{assessmentsActive}}">Assessments</button>
+            <button class="btn btn-primary showStandardGroups disabled {{standardGroupsActive}}">Groups of Standards</button>
+            <button class="btn btn-primary showNone {{noneActive}}">None</button>
         </div>
-        {{>assessmentCenter}}
+        {{#if showingAssessments}}
+          {{>assessmentCenter}}
+        {{/if}}
+        {{#if showingStandardGroups}}
+          {{>standardGroups}}
+        {{/if}}
+        {{#if showingNone}}
+          {{>noAssessmentsNoGroups}}
+        {{/if}}
       </div>
       <div class='col-md-7'>
         {{> standardsList}}
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="noAssessmentsNoGroups">
+  <div id="noAssessmentsNoGroups">
+    {{#unless currentUser}}
+      <h4 class='bg-info'>Logged out.</h4>
+    {{/unless}}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+          <div class="blockTitle">&nbsp;</div>
+      </div>
+      <div class="panel-body">
+        <ul>
+          <li>
+            Click Assessments button above to see information about past or upcoming assessments.  
+          </li>
+          <li>
+            Click Groups button to see grade aggregation for groups of standards. 
+            <ul><li>
+              A common use would be to put all the standards for the grading period in a group and calculate a grade based on mastery of those standards.
+            </li></ul>
+          </li> 
+        </ul>
       </div>
     </div>
   </div>

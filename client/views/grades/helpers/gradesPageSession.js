@@ -1,7 +1,8 @@
 //Must be placed in a subfolder so that it is loaded before
 //the templates that use its global variables
 var VALID_KEYS = [
-  'activeAssessmentID'
+  'activeAssessmentID',
+  'activeStandardgroupID'
 ]
 
 var validateKey = function(key) {
@@ -35,3 +36,8 @@ gradesPageSession = {
     return Session.get(KEY_PREFIX + key);
   }
 }
+
+/*** Template helpers ***/
+Template.registerHelper('activeAssessment',function() {
+  return Assessments.findOne(gradesPageSession.get('activeAssessmentID'));
+});

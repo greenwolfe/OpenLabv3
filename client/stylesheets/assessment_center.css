@@ -13,3 +13,40 @@ div.assessmentCenter i.fa-fast-forward {
   margin-right: 4px;
   margin-left: 4px;
 }
+div#createAssessmentGroup {
+  margin-top: 10px;
+}
+div.assessmentCenter div.panel, div#noAssessmentsNoGroups div.panel {
+  margin-top: 10px;
+}
+.assessmentCenter div.panel-heading button {
+    vertical-align: center;
+}
+.assessmentCenter div.panel-heading div.summernote.note-editable {
+    min-width: 100px;
+    min-height: 14pt;
+    float: left;
+}
+.assessmentCenter div.panel {
+    margin-right: auto;
+    margin-left: auto;
+}
+.assessmentCenter .testDatePicker {
+  display: inline-block;
+}
+.assessmentCenter .testDatePicker .input-group-addon {
+  display: inline-block;
+  padding: 0;
+}
+.assessmentCenter .testDatePicker .input-group.date {
+  display: inline-block;
+}
+.assessmentCenter .testDatePicker i.fa-copy:hover {
+  cursor: pointer;
+}
+.assessmentCenter .testDatePicker i.fa.fa-copy.green {
+  background-color: green;
+}
+.assessmentCenter .testDatePicker i.fa.fa-copy.blue {
+  background-color: blue;
+}

@@ -297,6 +297,9 @@ Meteor.publish('studentWalls',function(activityID,studentIDs) {
   ];
 });
 
+/******* ASSESSMENTS *******/
+
+/***deprecated****/
 Meteor.publish('assessment',function(assessmentID){
   check(assessmentID,Match.idString);
   if (Roles.userIsInRole(this.userId,'teacher')) {
@@ -308,12 +311,59 @@ Meteor.publish('assessment',function(assessmentID){
 });
 
 //deprecated if subscribing to all activities at site default level
+//and further deprecated when assessment move to assessment center and are no longer a block
 Meteor.publish('assessmentSubactivity',function(activityID) {
   check(activityID,Match.idString);
   if (Roles.userIsInRole(this.userId,'teacher')) {
     return Activities.find({_id:activityID});
   }  
 });
+
+//now just need one publish function with a date range?
+Meteor.publish('assessments',function(pastDate,futureDate,studentID) {
+  check(pastDate,Date);
+  check(futureDate,Date);
+  check(studentID,Match.OneOf(Match.idString,null));
+  
+  //select assessments if even one sections test date is in range
+  var selector = {
+    maxTestDate: {$gte:pastDate},
+    minTestDate: {$lte:futureDate}
+  };
+  studentID = ((studentID) && Roles.userIsInRole(studentID,'student')) ? studentID : null;
+  var siteID = Site.findOne()._id;
+  var cU = this.userId;
+  if (Roles.userIsInRole(cU,'teacher')) {
+    if (studentID) {
+      selector.createdFor = {$in:[siteID,studentID]};
+    } else {
+      selector.createdFor = siteID;
+    }
+  } else { //student or parent
+    if (studentID) {
+      selector.$or = [
+        {createdFor:siteID,visible:true},
+        {createdFor:studentID}
+      ];
+    } else {
+      selector.createdFor = siteID
+      selector.visible =true;
+    }
+  }
+
+  var dSelector = _.clone(selector);
+  delete dSelector.minTestDate;
+  delete dSelector.maxTestDate;
+  dSelector.testDate = {$gte:pastDate,$lte:futureDate};
+
+  return [
+    Assessments.find(selector),
+    AssessmentStandards.find(selector),
+    AssessmentDates.find(dSelector)
+  ]
+});
+
+/******* END ASSESSMENT ********/
 
 Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {
   check(studentOrSectionID,Match.idString); 
@@ -357,7 +407,7 @@ Meteor.publish('slides',function(studentOrSectionID,unitID,limit)  {
       return slide2.modifiedOn - slide1.modifiedOn;
     }
   })
-  var slideIDs = slideIDs.slice(0,limit);
+  slideIDs = slideIDs.slice(0,limit);
 
   return [
     Blocks.find({_id:{$in:slideIDs}}),

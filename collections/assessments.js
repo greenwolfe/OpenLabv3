@@ -22,7 +22,7 @@ Meteor.methods({
       visible: Boolean,
       title: String, //a title to refer to the assessment as (denormalize with title of activity?)
       text: String, //any instructions or other info about the assessment
-
+      minTestDate: Date
     */
     /* linked objects
        assessmentStandard, linked to standard and assessment
@@ -39,7 +39,7 @@ Meteor.methods({
       throw new Meteor.Error('notLoggedIn', "You must be logged in to create an assessment.");
     if (!Roles.userIsInRole(cU,['teacher','student']))
       throw new Meteor.Error('notTeacherOrStudent','Only teachers or students can create an assessment.');
-    if (Roles.userIsInRole(cU,'student') && (student) && (cU != createdFor))
+    if (Roles.userIsInRole(cU,'student') && (student) && (cU._id != createdFor))
       throw new Meteor.Error('onlySelf','You cannot create a reassessment for another student.');
     if ((site) && !Roles.userIsInRole(cU,'teacher'))
       throw new Meteor.Error('onlyTeacher','Only a teacher can create an assessment for the whole class.');
@@ -57,6 +57,7 @@ Meteor.methods({
     }
 
     var today = new Date();
+    var deadline = moment().hours(16).toDate();
     var assessment = {
       createdFor: createdFor,
       unitID: unitID,
@@ -66,9 +67,21 @@ Meteor.methods({
       modifiedOn: today,
       visible: true,
       title: '',
-      text: ''
+      text: '',
+      minTestDate: deadline,
+      maxTestDate: deadline
     }
-    return Assessments.insert(assessment);
+    return Assessments.insert(assessment,function(error,id) {
+      if (error) {
+        console.log(error.reason)
+      } else {
+        AssessmentDates.mutate.setAssessmentDate({
+          assessmentID:id,
+          sectionID:'applyToAll',
+          testDate: deadline
+        })
+      }
+    });
   },
   updateAssessment: function(assessment) {
     check(assessment, {
@@ -86,6 +99,8 @@ Meteor.methods({
       modifiedBy: Match.Optional(Match.idString),  //current user
       modifiedOn: Match.Optional(Date), //today's date
       visible: Match.Optional(Boolean), //set in showHideMethod.js
+      minTestDate: Match.Optional(Date), //set in AssessmentDates
+      maxTestDate: Match.Optional(Date), //set in AssessmentDates
     /* linked objects
        activity, (pointsTo field) ... auto-created here
        workperiod, linked to both the assessment and the activity?
@@ -93,8 +108,12 @@ Meteor.methods({
        todo items, (with their own workperiods ... ?)
     */
     })
-    var site = Site.findOne(assessment.createdFor);
-    var student = Meteor.users.findOne(assessment.createdFor);
+    var originalAssessment = Assessments.findOne(assessment._id);
+    if (!originalAssessment)
+      throw new Meteor.Error('assessmentNotFound',"Cannot update assessment.  Assessment not found.");
+
+    var site = Site.findOne(originalAssessment.createdFor);
+    var student = Meteor.users.findOne(originalAssessment.createdFor);
     if (!site && !student)
       throw new Meteor.Error('invalidAudience','Invalid audience for assessment.  Must be a specific student if its a reassessment or the entire class.');
     var cU = Meteor.userId();
@@ -102,7 +121,7 @@ Meteor.methods({
       throw new Meteor.Error('notLoggedIn', "You must be logged in to update an assessment.");
     if (!Roles.userIsInRole(cU,['teacher','student']))
       throw new Meteor.Error('notTeacherOrStudent','Only teachers or students can update an assessment.');
-    if (Roles.userIsInRole(cU,'student') && (student) && (cU != assessment.createdFor))
+    if (Roles.userIsInRole(cU,'student') && (student) && (cU != originalAssessment.createdFor))
       throw new Meteor.Error('onlySelf','You cannot update a reassessment for another student.');
     if ((site) && !Roles.userIsInRole(cU,'teacher'))
       throw new Meteor.Error('onlyTeacher','Only a teacher can update an assessment for the whole class.');
@@ -110,22 +129,42 @@ Meteor.methods({
     var today = new Date();
     var set = {
       modifiedBy: cU,
-      modifiedOn: today,
-    }
-    if ('title' in assessment) {
-      set.title = assessment.title;
+      modifiedOn: today
     }
     if ('unitID' in assessment) {
-      var unit = Units.findOne(unitID);
+      var unit = Units.findOne(assessment.unitID);
       if (!unit)
         throw new Meteor.Error('unitNotFound','could not find a unit to put the assessment reminder under.');        
-      set.unitID = unitID;
+      set.unitID = assessment.unitID;
     }
-    var fields = ['text']; //all the rest, which is just text for now
+    var fields = ['text','title']; //all the rest, which is just text and title for now
     fields.forEach(function(field) {
       if (field in assessment) 
         set[field] = assessment[field];
     });
     return Assessments.update(assessment._id,{$set:set});
+  }
+});
+
+/**** HOOKS ****/
+Assessments.after.update(function (userID, doc, fieldNames, modifier) {
+  var fields = {
+    assessmentID: doc._id, //passed in for query, not changed
+    sectionID: 'applyToAll',
+  }
+  if (doc.visible != this.previous.visible) //denormalize these to keep them the same as their assessment
+    fields.visible = doc.visible;
+  if (doc.unitID != this.previous.unitID)
+    fields.unitID = doc.unitID;
+  if (('visible' in fields) || ('unitID' in fields))
+    AssessmentDates.mutate.setAssessmentDate(fields);
+  if (doc.maxTestDate != this.previous.maxTestDate)
+    fields.maxTestDate = doc.maxTestDate;
+  if (doc.minTestDate != this.previous.minTestDate)
+    fields.minTestDate = doc.minTestDate;
+  if (('visible' in fields) || ('unitID' in fields) || ('minDate' in fields) || ('maxDate' in fields)) {
+    delete fields.assessmentID;
+    delete fields.sectionID;
+    AssessmentStandards.update({assessmentID:doc._id},{$set:fields});
   }
 });

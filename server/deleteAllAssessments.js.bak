@@ -1,0 +1,11 @@
+Meteor.startup(function() {
+  Assessments.find().forEach(function(assessment) {
+    Assessments.remove(assessment._id);
+  })
+  AssessmentDates.find().forEach(function(assessmentDate) {
+    AssessmentDates.remove(assessmentDate._id);
+  })
+  AssessmentStandards.find().forEach(function(assessmentStandard) {
+    AssessmentStandards.remove(assessmentStandard._id);
+  })
+});
