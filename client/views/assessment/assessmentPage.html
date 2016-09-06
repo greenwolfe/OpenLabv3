@@ -30,9 +30,11 @@
       </p>
       <div id="LoMlist">
         {{#if validStudent}}
-          {{#unless editingMainPage}}
-            {{>newLoM}}
-          {{/unless}}
+          {{#if isInRole 'teacher'}}
+            {{#unless editingMainPage}}
+              {{>newLoM}}
+            {{/unless}}
+          {{/if}}
           {{#each LoMs}}
             {{> LoMitem}}
           {{/each}}

@@ -3,7 +3,7 @@
 /****************************/
 
 Template.standardPage.onCreated(function() {
-  instance = this;
+  var instance = this;
   var standardID = FlowRouter.getParam('_id');
 
   instance.autorun(function() {
@@ -113,12 +113,12 @@ Template.standardPage.helpers({
 /***********************/
 
 Template.LoMitem.onCreated(function() {
-  instance = this;
+  var instance = this;
   instance.editingThisLoM = new ReactiveVar(false);
 })
 
 Template.LoMitem.onRendered(function() {
-  instance = this;
+  var instance = this;
   instance.$('[data-toggle="tooltip"]').tooltip();
 })
 
@@ -160,6 +160,14 @@ Template.LoMitem.helpers({
   },
   onActivityPage: function() {
     return _.str.include(FlowRouter.getRouteName(),'activity');
+  },
+  onAssessmentPage: function() {
+    return _.str.include(FlowRouter.getRouteName(),'assessment');
+  },
+  assessmentID: function() {
+    //should not have to do this!  But it corrects a but in
+    //the html where the assessmentID field is not recognized ... wierd
+    return this.assessmentID;
   },
   activity: function() {
     var activityPage = Activities.findOne(FlowRouter.getParam('_id'));

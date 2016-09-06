@@ -63,9 +63,11 @@
         {{>summernote collection='LevelsOfMastery' field='comment' _id=_id enabled=editingThisLoM options=summernoteOptions}} 
         <div class='LoMitemInfo'>
           <form class="form-inline LoMAssessmentVersion" role="form">
-            {{#if assessmentID}}
-              <a href="{{pathFor 'assessmentPage' _id=assessmentID}}" tabindex=-1>go to assessment page</a>
-            {{/if}} 
+            {{#unless onAssessmentPage}}
+              {{#if assessmentID}}
+                <a href="{{pathFor 'assessmentPage' _id=assessmentID}}" tabindex=-1>go to assessment page</a>
+              {{/if}} 
+            {{/unless}}
             (version: 
               {{>plaintexteditor collection='LevelsOfMastery' field='version' _id=_id editable=editingThisLoMTFtext placeholder='enter version'}}
             ) graded by {{getname teacherID 'full'}}  {{formatDateTime submitted}}
@@ -82,9 +84,11 @@
         {{else}}
           <span class=LoMcomment>{{{commentOrNote}}}</span>
           <div class='LoMitemInfo'>
-            {{#if assessmentID}}
-              <a href="{{pathFor 'assessmentPage' _id=assessmentID}}" tabindex=-1>go to assessment page</a>
-            {{/if}}
+            {{#unless onAssessmentPage}}
+              {{#if assessmentID}}
+                <a href="{{pathFor 'assessmentPage' _id=assessmentID}}" tabindex=-1>go to assessment page</a>
+              {{/if}}
+            {{/unless}}
             {{versionWithFormatting}}
             graded by {{getname teacherID 'full'}}  {{formatDateTime submitted}}  
             {{#if isInRole 'teacher'}} 
