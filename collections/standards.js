@@ -181,3 +181,15 @@ var getScale = function(scaleHelp) {
     \) : match closing parentheses
 */
 }
+
+/**** HOOKS ****/
+
+Standards.after.update(function (userID, doc, fieldNames, modifier) {
+  if (doc.visible != this.previous.visible) {
+    AssessmentStandards.update({standardID:doc._id},{$set:{standardVisible:doc.visible}},{multi:true});
+    var assessmentIDs = _.pluck(AssessmentStandards.find({standardID:doc._id},{fields:{assessmentID:1}}).fetch(),'assessmentID');
+    assessmentIDs.forEach(function(assessmentID) {
+      Assessments.mutate.updateStandardsCount(assessmentID);
+    })
+  }
+});

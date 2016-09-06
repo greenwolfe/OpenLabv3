@@ -1,5 +1,7 @@
 Template.grades.onCreated(function() {
   var instance = this;
+  gradesPageSession.set('activeAssessmentID',null);
+  gradesPageSession.set('addingStandards',false);
   instance.showing = new ReactiveVar('none'); //assessments, standardGroups
 
   instance.autorun(function() {

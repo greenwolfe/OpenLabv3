@@ -34,7 +34,7 @@
         <div class="progress-bar progress-bar-info" style="width: {{percentCompleted}}%;"></div>
       </div>
     {{/if}}
-    <a class='displayTitle' lang="en" href="#" title="{{longname}}">      
+    <a class='displayTitle {{roundFlat}}' lang="en" href="#" title="{{longname}}">      
       {{{title}}}
     </a>
     {{#if editingMainPage}}
@@ -106,7 +106,7 @@
 </template>
 
 <template name = 'standardItem'>
-    <p class="sItem">
+    <p class="sItem {{roundFlat}}">
       {{#with standardDate}}
         <span class="glyphicon glyphicon-calendar pull-right {{upcomingExpected}}" data-toggle="tooltip" title="first assessed on: {{formatDateTime masteryExpected}}"></span>
       {{/with}}
@@ -119,9 +119,13 @@
         {{#with latestLoM}}
           {{>LoMbadgeForStandardItem}}
         {{/with}}
-        <a  href="{{pathFor 'standardPage' _id=_id}}" data-toggle="tooltip" title="<div class='text-left'>{{description}}</div>" data-html=true>
-        {{{title}}} 
-        </a>        
+        {{#if addingStandards}}
+          <span>{{{title}}}</span>
+        {{else}}
+          <a  href="{{pathFor 'standardPage' _id=_id}}" data-toggle="tooltip" title="<div class='text-left'>{{description}}</div>" data-html=true>
+            {{{title}}} 
+          </a>  
+        {{/if}}      
       {{/if}}
     </p>
 </template>

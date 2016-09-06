@@ -6,14 +6,14 @@ Template.assessmentCenter.onCreated(function() {
   var instance = this;
   instance.assessmentIDs = new ReactiveVar([]);
   //gradesPageSession.activeAssessmentID
-  instance.pastDate = new ReactiveVar(moment().subtract(2,'weeks').toDate());
-  instance.futureDate = new ReactiveVar(moment().add(2,'weeks').toDate());
+  instance.pastDate = new ReactiveVar(moment().subtract(2,'years').toDate());
+  instance.futureDate = new ReactiveVar(moment().add(2,'years').toDate());
 })
 
   //NOTE: set limits on datepickers so can't select a date that
   //excludes the assessment currently being viewed
 Template.assessmentCenter.onRendered(function() {
-  instance = this;
+  var instance = this;
 
   instance.autorun(function() { //subscribe and then fill assessmentIDs list
     var cU = Meteor.userId();
@@ -159,6 +159,19 @@ Template.assessment.onCreated(function() {
   instance.editingAssessment = new ReactiveVar(false);
 })
 
+Template.assessment.onRendered(function() {
+  var instance = this;
+  instance.assessmentID = Template.currentData()._id;
+
+  instance.autorun(function() { //things to do when assessment switches
+    var assessment = Template.currentData();
+    if (assessment._id != instance.assessmentID) {
+      gradesPageSession.set('addingStandards',false);
+      instance.assessmentID = assessment._id;
+    }
+  })
+})
+
 Template.assessment.helpers({
   editingAssessment: function() {
     var instance = Template.instance();
@@ -203,15 +216,38 @@ Template.assessment.helpers({
   },
   units: function() {
     return Units.find({visible:true});
+  },
+  standardCountMessage: function() {
+    var cU = Meteor.userId();
+    var message = 'This assessment has ';
+    if (Roles.userIsInRole(cU,'teacher') && (this.hiddenStandardsCount)) {
+        message += this.standardsCount + ' visible standards and ' + this.hiddenStandardsCount + ' hidden standards.';
+    } else {
+      message += this.standardsCount + ' standards.';
+    }
+    return message;
+  },
+  addStandardsDone: function() {
+    return (gradesPageSession.get('addingStandards')) ? 'Done adding standards' : 'Add standards';
+  },
+  addingDone: function() {
+    return (gradesPageSession.get('addingStandards')) ? 'done' : 'adding';    
   }
 })
 
 Template.assessment.events({
   'click .editAssessment.Done': function(event,tmpl) {
     tmpl.editingAssessment.set(false);
+    gradesPageSession.set('addingStandards',false);
   },
   'click .editAssessment.Edit': function(event,tmpl) {
     tmpl.editingAssessment.set(true);
+  },
+  'click .addStandards.done': function(event,tmpl) {
+    gradesPageSession.set('addingStandards',false);
+  },
+  'click .addStandards.adding': function(event,tmpl) {
+    gradesPageSession.set('addingStandards',true);
   }
 })
 
@@ -274,8 +310,10 @@ Template.editAssessmentDate.onCreated(function() {
 
 Template.editAssessmentDate.onRendered(function() {
   var instance = this;
+
   var $calIcon = instance.$('.testDatePicker .glyphicon-calendar');
   var aD = Template.currentData();
+  instance.assessmentDateID = aD._id;
   var options = {
     showClose:  true,
     showClear: true,
@@ -295,24 +333,19 @@ Template.editAssessmentDate.onRendered(function() {
     }}
   }
   instance.$('.testDatePicker').datetimepicker(options);
+
+  instance.autorun(function() { //update picker when assessmentDate switches
+    var assessmentDate = Template.currentData();
+    if (assessmentDate._id != instance.assessmentDateID) {
+      instance.assessmentDateID = assessmentDate._id;
+      var $testDatePicker = instance.$('.testDatePicker').data("DateTimePicker");
+      $testDatePicker.date(assessmentDate.testDate);
+    }
+
+  })
 })
 
 Template.editAssessmentDate.helpers({
-  assessmentDate: function() {
-    var sectionID = Meteor.currentSectionId();
-    if (sectionID) {
-      return AssessmentDates.findOne({
-        assessmentID:this._id,
-        sectionID:sectionID
-      })
-    } else {
-      return AssessmentDates.findOne({
-        assessmentID:this._id
-      },{
-        sort:{testDate:1}
-      });
-    }
-  },
   formatDateTime: function(date) {
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
   },

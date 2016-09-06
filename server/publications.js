@@ -299,26 +299,6 @@ Meteor.publish('studentWalls',function(activityID,studentIDs) {
 
 /******* ASSESSMENTS *******/
 
-/***deprecated****/
-Meteor.publish('assessment',function(assessmentID){
-  check(assessmentID,Match.idString);
-  if (Roles.userIsInRole(this.userId,'teacher')) {
-    return Blocks.find({_id:assessmentID});
-  } //else if teacher or student ?
-  //this was intended to load the single assessment for the assessment page
-  //which currently is intended only for the teacher to grade the assessment is not
-  //supposed to be visible to parents or students.  
-});
-
-//deprecated if subscribing to all activities at site default level
-//and further deprecated when assessment move to assessment center and are no longer a block
-Meteor.publish('assessmentSubactivity',function(activityID) {
-  check(activityID,Match.idString);
-  if (Roles.userIsInRole(this.userId,'teacher')) {
-    return Activities.find({_id:activityID});
-  }  
-});
-
 //now just need one publish function with a date range?
 Meteor.publish('assessments',function(pastDate,futureDate,studentID) {
   check(pastDate,Date);
@@ -362,6 +342,15 @@ Meteor.publish('assessments',function(pastDate,futureDate,studentID) {
     AssessmentDates.find(dSelector)
   ]
 });
+
+Meteor.publish('assessmentWithDatesAndStandards',function(assessmentID,studentID) {
+  check(assessmentID,Match.idString);
+  return [
+    Assessments.find({_id:assessmentID}),
+    AssessmentDates.find({assessmentID:assessmentID}),
+    AssessmentStandards.find({assessmentID:assessmentID})
+  ]
+})
 
 /******* END ASSESSMENT ********/
 

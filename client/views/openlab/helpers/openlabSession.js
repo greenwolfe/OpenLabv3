@@ -105,8 +105,10 @@ openlabSession = {
     }
     if (key == 'editingMainPage') {
       cU = Meteor.user(); 
-      if (Roles.userIsInRole(cU,'teacher')) 
+      if (Roles.userIsInRole(cU,'teacher')) {
         this._set(key,value);
+        gradesPageSession.set('addingStandards',false);
+      }
       return;
     }
 

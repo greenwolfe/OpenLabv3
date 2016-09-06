@@ -12,6 +12,7 @@ Meteor.methods({
       //createdFor: Match.Optional(Match.idString),
       //maxDate: Match.Optional(Date),
       //minDate: Match.Optional(Date),
+      //standardVisible: Match.Optional(Boolean),
 
        //order: Match.Optional(Match.Integer) //new standard always placed at end of list
     })
@@ -27,11 +28,16 @@ Meteor.methods({
       throw new Meteor.Error('assessmentNotFound','Cannot add standard.  Assessment not found.');
     if (Roles.userIsInRole(cU,'student') && (cU != assessment.createdFor))
       throw new Meteor.Error('notYours','A student can only add a standard to his/her own reassessment.');
-    assessmentStandard.visible = assessment.visible;
     assessmentStandard.unitID = assessment.unitID;
     assessmentStandard.createdFor = assessment.createdFor;
     assessmentStandard.maxTestDate = assessment.maxTestDate;
     assessmentStandard.minTestDate = assessment.minTestDate;
+
+    var standard = Standards.findOne(assessmentStandard.standardID);
+    if (!standard)
+      throw new Meteor.Error('standardNotFound','Cannot add standard to assessment.  Standard not found.');
+    assessmentStandard.standardVisible = standard.visible;
+    assessmentStandard.visible = standard.visible;
 
     var lastStandard = AssessmentStandards.findOne({assessmentID: assessmentStandard.assessmentID},{
       fields:{order:1},
@@ -50,6 +56,7 @@ Meteor.methods({
         console.log(error);
       } else {
         StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
+        Assessments.mutate.updateStandardsCount(assessmentStandard.assessmentID);
       }
     });
   },
@@ -84,12 +91,15 @@ Meteor.methods({
       }})
     }
 
-    var standard = Standards.findOne(assessmentStandard.standardID);
-    if (standard)
-      StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
-
     var ids = _.pluck(AssessmentStandards.find({assessmentID:assessmentStandard.assessmentID,order:{$gt: assessmentStandard.order}},{fields: {_id: 1}}).fetch(), '_id');
-    var numberRemoved = AssessmentStandards.remove(assessmentStandardID); 
+    var numberRemoved = AssessmentStandards.remove(assessmentStandardID,function(error,id) {
+      if (error) {
+        console.log(error);
+      } else {
+        StandardDates.mutate.setStandardDate(assessmentStandard.standardID,'applyToAll');
+        Assessments.mutate.updateStandardsCount(assessmentStandard.assessmentID);
+      }
+    });
     AssessmentStandards.update({_id: {$in: ids}}, {$inc: {order:-1}}, {multi: true});
     return numberRemoved; 
   }

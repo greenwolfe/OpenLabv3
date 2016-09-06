@@ -7,62 +7,44 @@ Template.assessmentPage.onCreated(function() {
   instance.showAssessment = new ReactiveVar('this'); //or all
   instance.showTimePeriod = new ReactiveVar('mostRecent'); //or all time
 
-  var assessmentSubscription = Meteor.subscribe('assessment',FlowRouter.getParam('_id'));
+  var assessmentSubscription = Meteor.subscribe('assessmentWithDatesAndStandards',FlowRouter.getParam('_id'));
 
   instance.autorun(function() {
     if (!assessmentSubscription.ready())
       return;
-    var assessment = Blocks.findOne(FlowRouter.getParam('_id'));
+    var assessment = Assessments.findOne(FlowRouter.getParam('_id'));
     if (!assessment)
-      return
-    var subactivitySubscription = Meteor.subscribe('assessmentSubactivity',assessment.subActivityID);
-    if (!subactivitySubscription.ready())
       return;
-    var activity = Activities.findOne(assessment.subActivityID);
-    if (!activity) 
-      return;
-    Meteor.subscribe('assessmentSubactivity',activity.pointsTo);
+    var standardIDs = _.pluck(AssessmentStandards.find({assessmentID:FlowRouter.getParam('_id'),standardVisible:true},{fields:{standardID:1}}).fetch(),'standardID');
+    //first get the info that will be immediately shown
     var studentID = Meteor.impersonatedOrUserId();    
     if ((!studentID) || !Roles.userIsInRole(studentID,'student'))
       return;
-    var sectionID = Meteor.selectedSectionId();
-
-    //subscribing to more than is absolutely necessary for this page, but didn't want to write a more specific publish function
-    //can always do that
-    var subActivityStatuses = Meteor.subscribe('subActivityStatuses',studentID,activity.pointsTo);
-    var subActivityProgress = Meteor.subscribe('subActivityProgress',studentID,activity.pointsTo);
-//workPeriod subscription now at site/global level
-//    var thisUnitWorkPeriods = instance.subscribe('workPeriods',sectionID,activity.unitID);
-
-    //first get the info that will be immediately shown
-    var LoMsThisStudentAndAssessment = Meteor.subscribe('levelsOfMastery',assessment.standardIDs,studentID,activity._id);
+    var LoMsThisStudentAndAssessment = Meteor.subscribe('levelsOfMastery',standardIDs,studentID,assessment._id);
 
     if (LoMsThisStudentAndAssessment.ready()) { //then load the rest in the background
-      var LoMsThisStudent = Meteor.subscribe('levelsOfMastery',assessment.standardIDs,studentID,null); //all levels and comments for these standards
+      var LoMsThisStudent = Meteor.subscribe('levelsOfMastery',standardIDs,studentID,null); //all levels and comments for these standards
       
       if (LoMsThisStudent.ready() && Roles.userIsInRole(Meteor.userId(),'teacher'))
-        Meteor.subscribe('levelsOfMastery',assessment.standardIDs,null,null); //and for all students ... for copy and pasting of past comments
+        Meteor.subscribe('levelsOfMastery',standardIDs,null,null); //and for all students ... for copy and pasting of past comments
     }
   });
 });
 
 Template.assessmentPage.helpers({
-  subactivity: function() {
-    var assessment = Blocks.findOne(FlowRouter.getParam('_id'));
-    if (assessment)
-      return Activities.findOne(assessment.subActivityID);
-    return '';
-  },
   standards: function() {
-    var assessment = Blocks.findOne(FlowRouter.getParam('_id'));
-    if (!assessment)
-      return '';
-    var selectedStandardIDs = assessment.standardIDs || [];
-    var selectedStandards = Standards.find({_id:{$in:selectedStandardIDs}}).fetch();
-    selectedStandards.sort(function(sa,sb) {
-      return selectedStandardIDs.indexOf(sa._id) - selectedStandardIDs.indexOf(sb._id);
+    var assessmentID = FlowRouter.getParam('_id');
+    var standardIDs = _.pluck(AssessmentStandards.find(
+      {assessmentID:assessmentID,standardVisible:true},
+      {fields:{standardID:1}},
+      {sort:{order:1}}).fetch(),'standardID');
+    var standards = Standards.find({_id:{$in:standardIDs}}).fetch();
+    standards.sort(function(sa,sb) {
+      var asa = AssessmentStandards.findOne({assessmentID:assessmentID,standardID:sa._id});
+      var asb = AssessmentStandards.findOne({assessmentID:assessmentID,standardID:sb._id});
+      return asa.order - asb.order;
     });
-    return selectedStandards;
+    return standards;
   },
   validStudent: function() {
     var studentID = Meteor.impersonatedOrUserId();

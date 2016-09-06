@@ -2,6 +2,7 @@
 //the templates that use its global variables
 var VALID_KEYS = [
   'activeAssessmentID',
+  'addingStandards',
   'activeStandardgroupID'
 ]
 
@@ -26,6 +27,13 @@ VALID_KEYS.forEach(function(key) {
 gradesPageSession = {
   set: function(key,value) {
     validateKey(key);
+    if (key == 'addingStandards') {
+      if (!Match.test(value,Boolean))
+        value = false;
+      if (value)  //when adding standards, don't want to be editing main page at the same time
+        openlabSession.set('editingMainPage',false);
+    } 
+      
     this._set(key, value);
   },
   _set: function(key, value) {

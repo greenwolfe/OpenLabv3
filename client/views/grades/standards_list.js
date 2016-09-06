@@ -69,13 +69,27 @@ Template.categoryTitle.helpers({
       }
     });
     return standards.length*100/total;
+  },
+  roundFlat: function() {
+    var assessmentID = gradesPageSession.get('activeAssessmentID');
+    if (!assessmentID)
+      return '';
+    var selector = {
+      categoryID: this._id
+    };
+    if (!editingMainPage())
+      selector.visible = true; //show only visible activities
+    var standardIDs = _.pluck(Standards.find(selector,{sort: {order: 1}}).fetch(),'_id'); 
+    if (!standardIDs.length)
+      return 'flat';
+    var assessmentStandardsCount = AssessmentStandards.find({assessmentID:assessmentID,standardID:{$in:standardIDs}}).count();
+    return (assessmentStandardsCount) ? 'round' : 'flat';
   }
 });
 
 Template.categoryTitle.events({
   'click li > a': function(event,tmpl) {
     event.preventDefault();
-    $('#workPeriodPopoverX').modal('hide'); // fixes bug in workPeriodPopoverX ... see notes there
     if (event.ctrlKey) {
       var activeCategory2 = openlabSession.get('activeCategory2');
       var activeCategory = openlabSession.get('activeCategory');
@@ -104,7 +118,7 @@ Template.categoryTitle.events({
 })
 
   /*****************************/
- /** ACTIVITY LIST HEADER  ****/
+ /** STANDARD LIST HEADER  ****/
 /*****************************/
 
 Template.standardListHeader.helpers({
@@ -257,8 +271,41 @@ Template.standardItem.helpers({
   },
   formatDateTime: function(date) {
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';
+  },
+  roundFlat: function() {
+    var assessmentID = gradesPageSession.get('activeAssessmentID');
+    if (!assessmentID)
+      return '';
+    var assessmentStandard = AssessmentStandards.findOne({assessmentID:assessmentID,standardID:this._id});
+    return (assessmentStandard) ? 'round' : 'flat';
   }
 });
+
+Template.standardItem.events({
+  'click p.sItem.flat': function(event,tmpl) {
+    var addingStandards = gradesPageSession.get('addingStandards');
+    var assessmentID = gradesPageSession.get('activeAssessmentID'); 
+    if (!addingStandards || !assessmentID)
+      return;
+    Meteor.call('assessmentAddStandard',{
+      assessmentID: assessmentID,
+      standardID: this._id
+    },alertOnError);
+  },
+  'click p.sItem.round': function(event,tmpl) {
+    var addingStandards = gradesPageSession.get('addingStandards');
+    var assessmentID = gradesPageSession.get('activeAssessmentID'); 
+    if (!addingStandards || !assessmentID)
+      return;
+    var assessmentStandard = AssessmentStandards.findOne({
+      assessmentID: assessmentID,
+      standardID: this._id
+    });
+    if (assessmentStandard) {
+      Meteor.call('assessmentRemoveStandard',assessmentStandard._id,alertOnError);
+    }
+  }  
+})
 
   /*************************************/
  /**** LoM BADGE FOR STANDARD ITEM ****/

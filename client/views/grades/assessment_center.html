@@ -62,9 +62,29 @@
     </div>
     <div class="panel-body">
       {{#if editingAssessment}}
-        {{>summernote collection='Assessments' field='text' _id=_id enabled=editingAssessment options=summernoteOptions}}
+        <p>
+          {{>summernote collection='Assessments' field='text' _id=_id enabled=editingAssessment options=summernoteOptions}}
+        </p>
+        <p class="bg-info">
+          {{standardCountMessage}}
+        </p>
+        <p>
+          <button class="btn btn-default addStandards {{addingDone}} pull-right">
+            {{addStandardsDone}}
+          </button>
+        </p>
       {{else}}
-        {{{text}}}
+        <p>
+          {{{text}}}
+        </p>
+        <p class="bg-info">
+          {{standardCountMessage}}
+        </p>
+        <p>
+          <a  href="{{pathFor 'assessmentPage' _id=_id}}">
+            Go to assessment page.
+          </a>  
+        </p>
       {{/if}}
     </div>
     <div class="panel-footer">
@@ -78,9 +98,8 @@
       <li class="dropdown assessmentSelectUnit">
         <a class="dropdown-toggle text-grey" data-toggle="dropdown">
           {{#with unit}}
-            {{{title}}}
+            <span>Reminder placed in {{title}} <b class="caret"></b> on activity page</span>
           {{/with}}
-          <b class="caret"></b>
         </a>
         <ul class="dropdown-menu">
           {{#each units}}

@@ -20,7 +20,7 @@ Meteor.methods({
       },
       submitted: Date,
       copiedAndPasted: Match.OneOf(Date,null),
-      activityID: Match.Optional(Match.idString), // denormalized value filled in from a block on that activity page
+      activityID: Match.Optional(Match.idString), // deprecated
       visible: true
       */
     })
@@ -56,19 +56,11 @@ Meteor.methods({
     }
 
     if (LoM.assessmentID) {
-      var assessmentBlock = Blocks.findOne(LoM.assessmentID);
-      if (!assessmentBlock)
-        throw new Meteor.Error('invalidAssessmentID','Cannot post level of mastery.  Invalid assessment (block) ID.');
-      LoM.activityID = assessmentBlock.activityID; 
-      var activity = Activities.findOne(LoM.activityID); //could be null if no activity passed  
-      if (!activity)
-        throw new Meteor.Error('invalidActivityID','Cannot post level of mastery.  Invalid activity ID.');
-    } else {
-      LoM.activityID = null;
-    }
-    //review this and put in a check (maybe?) once a standards wall or block is created in the activity pages
-    //if (!activity.hasOwnProperty('standardIDs') || !_.contains(activity.standardIDs,LoM.standardID))
-    //  throw new Meteor.Error(466, "Cannot post level of mastery.  Indicated standard not assigned to indicated activity.");
+      var assessment = Assessments.findOne(LoM.assessmentID);
+      if (!assessment)
+        throw new Meteor.Error('invalidAssessmentID','Cannot post level of mastery.  Invalid assessment ID.');
+    } else 
+    LoM.activityID = null;
 
     var LoMId = LevelsOfMastery.insert(LoM, function(error,id) {
       if (error) return;

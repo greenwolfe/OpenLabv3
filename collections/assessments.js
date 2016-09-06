@@ -1,5 +1,18 @@
 Assessments = new Meteor.Collection('Assessments');
+Assessments.mutate = {};
 
+Assessments.mutate.updateStandardsCount = function(assessmentID) {
+  check(assessmentID,Match.idString);
+  var assessment = Assessments.findOne(assessmentID);
+  if (!assessment)
+    return;
+  var standardsCount = AssessmentStandards.find({assessmentID:assessmentID,visible:true,standardVisible:true}).count();
+  var hiddenStandardsCount = AssessmentStandards.find({assessmentID:assessmentID,$or:[{visible:false},{standardVisible:false}]}).count();
+  Assessments.update(assessmentID,{$set:{
+    standardsCount:standardsCount,
+    hiddenStandardsCount:hiddenStandardsCount
+  }})
+}
 /*
   pass units in to grades page, select unit to show assessment in,
   make new row at bottom of activies list for assessments
@@ -22,7 +35,10 @@ Meteor.methods({
       visible: Boolean,
       title: String, //a title to refer to the assessment as (denormalize with title of activity?)
       text: String, //any instructions or other info about the assessment
-      minTestDate: Date
+      minTestDate: Match.Optional(Date), //set in AssessmentDates
+      maxTestDate: Match.Optional(Date), //set in AssessmentDates
+      standardsCount: Match.Optional(Match.Integer), //set in AssessmentStandards
+      hiddenStandardsCount: Match.Optional(Match.Integer) //set in AssessmentStandards
     */
     /* linked objects
        assessmentStandard, linked to standard and assessment
@@ -69,7 +85,9 @@ Meteor.methods({
       title: '',
       text: '',
       minTestDate: deadline,
-      maxTestDate: deadline
+      maxTestDate: deadline,
+      standardsCount: 0,
+      hiddenStandardsCount: 0
     }
     return Assessments.insert(assessment,function(error,id) {
       if (error) {
@@ -101,6 +119,8 @@ Meteor.methods({
       visible: Match.Optional(Boolean), //set in showHideMethod.js
       minTestDate: Match.Optional(Date), //set in AssessmentDates
       maxTestDate: Match.Optional(Date), //set in AssessmentDates
+      standardsCount: Match.Optional(Match.Integer), //set in AssessmentStandards
+      hiddenStandardsCount: Match.Optional(Match.Integer) //set in AssessmentStandards
     /* linked objects
        activity, (pointsTo field) ... auto-created here
        workperiod, linked to both the assessment and the activity?
