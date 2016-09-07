@@ -31,6 +31,11 @@
 <template name = 'calendarWeek'>
   <tr>
     {{#each weekDays}}
+      {{> daysAssessments}}
+    {{/each}}
+  </tr>
+  <tr>
+    {{#each weekDays}}
       {{> daysActivities}}      
     {{/each}}
   </tr>
@@ -61,6 +66,18 @@
     {{#unless daysActivities}}
       <p>&nbsp;</p>
     {{/unless}}
+  </td>
+</template>
+
+<template name='daysAssessments'>
+  <td class='daysAssessments'>
+    {{#each daysAssessments}}
+      <p class="aItem due">
+          <a  href="{{pathFor 'grades' _id=_id}}">
+            ASSESSMENT: {{{title}}}
+          </a> 
+      </p>
+    {{/each}}
   </td>
 </template>
 
