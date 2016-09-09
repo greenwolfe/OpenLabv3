@@ -1,0 +1,21 @@
+Meteor.startup(function() {
+  var studentIDs = _.pluck(Roles.getUsersInRole('student').fetch(),'_id');
+  //group walls
+  Activities.find().forEach(function(activity) {
+    studentIDs.forEach(function(studentID) {
+      var wall = {
+        activityID: activity._id,
+        type: 'group',
+        access: {$in:[studentID]}
+      }
+
+      var currentGroupID = Meteor.currentGroupId(studentID);
+
+      if ((Walls.find(wall).count() == 0) && (currentGroupID)) { 
+        wall.createdFor = currentGroupID; 
+        delete wall.access;
+        Walls.mutate.insertWall(wall);
+      }
+    })
+  })
+})

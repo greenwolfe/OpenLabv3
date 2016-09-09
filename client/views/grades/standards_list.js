@@ -43,32 +43,10 @@ Template.categoryTitle.helpers({
     return ((this._id == activeCategory) || (this._id == activeCategory2)) ? '' : 'hidden';
   },
   percentExpected: function() { 
-    return percentExpected(Meteor.selectedSectionId());
+    return percentExpected(this._id,Meteor.selectedSectionId());
   },
   percentCompleted: function() { 
-    var studentID = Meteor.impersonatedOrUserId();
-    if (!Roles.userIsInRole(studentID,'student'))
-      return 0;
-    var selector = {
-      categoryID: this._id,
-      visible: true //only visible standards count
-    }
-    var standards = Standards.find(selector).fetch();
-    var total = standards.length;
-    if (total == 0)
-      return 0;
-    standards = standards.filter(function(standard) {
-      var LoM = LevelsOfMastery.findOne({standardID:standard._id,studentID:studentID});
-      if (!LoM) return false;
-      var level = LoM.average.schoolyear; //edit to select grading period when available
-      if (_.isArray(standard.scale)) {
-        var index = standard.scale.indexOf(level);
-        return (index == standard.scale.length - 1);
-      } else {
-        return (level*100/standard.scale > 88);
-      }
-    });
-    return standards.length*100/total;
+    return percentCompleted(this._id);
   },
   roundFlat: function() {
     var assessmentID = gradesPageSession.get('activeAssessmentID');
@@ -133,32 +111,10 @@ Template.standardListHeader.helpers({
     return openlabSession.get('activeCategory2') ? 'bgprimary' : '';
   },
   percentExpected: function() { 
-    return percentExpected(Meteor.selectedSectionId());
+    return percentExpected(this._id,Meteor.selectedSectionId());
   },
   percentCompleted: function() { 
-    var studentID = Meteor.impersonatedOrUserId();
-    if (!Roles.userIsInRole(studentID,'student'))
-      return 0;
-    var selector = {
-      categoryID: this._id,
-      visible: true //only visible standards count
-    }
-    var standards = Standards.find(selector).fetch();
-    var total = standards.length;
-    if (total == 0)
-      return 0;
-    standards = standards.filter(function(standard) {
-      var LoM = LevelsOfMastery.findOne({standardID:standard._id,studentID:studentID});
-      if (!LoM) return false;
-      var level = LoM.average.schoolyear; //edit to select grading period when available
-      if (_.isArray(standard.scale)) {
-        var index = standard.scale.indexOf(level);
-        return (index == standard.scale.length - 1);
-      } else {
-        return (level*100/standard.scale > 88);
-      }
-    });
-    return standards.length*100/total;
+    return percentCompleted(this._id);
   }
 });
 
@@ -248,7 +204,7 @@ Template.standardItem.helpers({
     });
   },
   standardDate: function() {
-    var selector = {standardID:this.standardID};
+    var selector = {standardID:this._id};
     var sectionID = Meteor.selectedSectionId();
     if (sectionID) {
       selector.sectionID = sectionID;
@@ -375,9 +331,9 @@ Template.newStandard.helpers({
  /*** UTILITIES  *******/
 /**********************/
 
-var percentExpected = function(sectionID) { 
+var percentExpected = function(categoryID,sectionID) { 
   var selector = {
-    categoryID: this._id,
+    categoryID: categoryID,
     visible: true //only visible standards count
   }
   var standardIDs = _.pluck(Standards.find(selector,{fields:{_id:1}}).fetch(),'_id'); 
@@ -401,12 +357,12 @@ var percentExpected = function(sectionID) {
   return expected*100/total;
 };
 
-var percentCompleted = function() { 
+var percentCompleted = function(categoryID) { 
   var studentID = Meteor.impersonatedOrUserId();
   if (!Roles.userIsInRole(studentID,'student'))
     return 0;
   var selector = {
-    categoryID: this._id,
+    categoryID: categoryID,
     visible: true //only visible standards count
   }
   var standards = Standards.find(selector).fetch();

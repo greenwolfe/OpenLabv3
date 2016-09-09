@@ -24,14 +24,10 @@ Template.calendar.onCreated(function() {
     var calEndDate = Session.get('calEndDate');
     if (!calStartDate || !calEndDate)
       return;
-    calStartDate = moment(calStartDate).toDate();
-    calEndDate = moment(calEndDate).day('Saturday').add(1,'day').toDate();
+    calStartDate = moment(calStartDate,dateFormat).toDate();
+    calEndDate = moment(calEndDate,dateFormat).day('Saturday').add(1,'day').toDate();
     var studentID = Meteor.impersonatedOrUserId();
     studentID = (Roles.userIsInRole(studentID,'student')) ? studentID : null;
-    console.log('assessments subscribe autorun');
-    console.log(calStartDate);
-    console.log(calEndDate);
-    console.log(studentID);
     instance.subscribe('assessments',calStartDate,calEndDate,studentID);
   })
 })
@@ -161,10 +157,8 @@ Template.calendarWeek.helpers({
 Template.daysAssessments.helpers({ 
   daysAssessments: function() {
     var weekDay = this;
-    console.log('daysAssessments');
-    console.log(weekDay);
-    var twelveAM = moment(weekDay).hour(0).minute(0).second(0);
-    var twelvePM = twelveAM.add(1,'day').toDate();
+    var twelveAM = moment(weekDay.date,'MM/DD/YYYY').hour(0).minute(0).second(0);
+    var twelvePM = twelveAM.clone().add(1,'day').toDate();
     twelveAM = twelveAM.toDate();
     var selector = {testDate:{$gte:twelveAM,$lte:twelvePM}}
     var sectionID = Meteor.currentSectionId() || Meteor.selectedSectionId() || null;
@@ -172,7 +166,6 @@ Template.daysAssessments.helpers({
       selector.sectionID = sectionID;
     var assessmentIDs = _.pluck(AssessmentDates.find(selector,{fields:{assessmentID:1}}).fetch(),'assessmentID');
     assessmentIDs = _.unique(assessmentIDs);
-    console.log(assessmentIDs);
     return Assessments.find({_id:{$in:assessmentIDs}});
   }
 });

@@ -1,8 +1,11 @@
 Template.grades.onCreated(function() {
   var instance = this;
-  gradesPageSession.set('activeAssessmentID',null);
+  var assessmentID = FlowRouter.getParam('_id');
+  assessmentID = assessmentID || null;
+  gradesPageSession.set('activeAssessmentID',assessmentID);
   gradesPageSession.set('addingStandards',false);
-  instance.showing = new ReactiveVar('none'); //assessments, standardGroups
+  var showing = (assessmentID) ? 'assessments' : 'none';
+  instance.showing = new ReactiveVar(showing); //assessments, standardGroups
 
   instance.autorun(function() {
     var studentID = Meteor.impersonatedOrUserId();

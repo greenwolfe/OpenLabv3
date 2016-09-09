@@ -8,23 +8,23 @@ percentExpected =  function() {
   var activityIDs = _.pluck(Activities.find(
     {
       unitID:this._id,
-      visible:true
+      visible:true,
+      showStatus:true
     },
     {fields:{_id:1}}).fetch(),'_id')
   var total = activityIDs.length; 
   if (total == 0) return 0;
 
+  var today = new Date();
   var endDates = _.pluck(WorkPeriods.find(
     {
-      unitID:this._id,
-      activityVisible:true,
+      activityID:{$in:activityIDs},
+      endDate:{$lte: today},
       sectionID: Meteor.selectedSectionId()
     },
     {fields:{endDate:1}}).fetch(),'endDate')
-  var today = new Date();
-  var expected = endDates.filter(function(date) {
-      return (today > date);
-    }).length
+  
+  var expected = endDates.length;
   return 100*expected/total;
 }
 percentCompleted = function() {
@@ -34,7 +34,8 @@ percentCompleted = function() {
   var activityIDs = _.pluck(Activities.find(
     {
       unitID:this._id,
-      visible:true
+      visible:true,
+      showStatus:true
     },
     {fields:{_id:1}}).fetch(),'_id')
   var total = activityIDs.length; 
@@ -43,7 +44,7 @@ percentCompleted = function() {
   var today = new Date();
   var expectedActivityIDs = activityIDs.filter(function(activityID) {
     var workPeriod = WorkPeriods.findOne({
-      activityID: activityID,
+      activityID: activityID,      
       sectionID: sectionID
     });
     return ((workPeriod) && (today > workPeriod.endDate));
