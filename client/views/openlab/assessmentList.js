@@ -91,9 +91,9 @@ Template.assessmentList.helpers({
   },
   assessmentTitle: function() {
     if (this.createdFor == Site.findOne()._id) {
-      return this.title || 'Assessment'
+      return _.str.stripTags(this.title) || 'Assessment'
     } else {
-      return (this.title.search(/reassessment/i)>0) ? this.title :  this.title + "<strong> (reassessment)</strong>"
+      return (this.title.search(/reassessment/i)>0) ? _.str.stripTags(this.title) :  _.str.stripTags(this.title) + "<strong> (reassessment)</strong>"
     }
   },
   date: function() {
