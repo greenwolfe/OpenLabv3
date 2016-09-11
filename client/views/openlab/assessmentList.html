@@ -1,0 +1,40 @@
+<template name="assessmentList">
+  <div id="assessmentList" class="row">
+    <div class='col-md-6 assessmentColumn {{bgprimary}}'>
+      <h4 class="text-center">Assessments for {{unitTitle}}</h4>
+      {{#each unitsAssessments}}
+        <p class="aItem due">
+          <a  href="{{pathFor 'grades' _id=_id}}">
+            {{{assessmentTitle}}}
+          </a> 
+          <span>: {{{date}}}</span>
+        </p>
+      {{/each}}
+    </div>
+    {{#if activeUnit2}}
+      <div class='col-md-6 assessmentColumn {{bgsuccess}}'>
+        <h4 class="text-center">Assessments for {{unit2Title}}</h4>
+        {{#each unit2sAssessments}}
+          <p class="aItem due">
+            <a  href="{{pathFor 'grades' _id=_id}}">
+              {{{assessmentTitle}}}
+            </a> 
+            <span>: {{{date}}}</span>
+          </p>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class='col-md-6 assessmentColumn'>
+        <h4 class="text-center">Other Upcoming Assessments</h4>
+        {{#each upcomingAssessments}}
+          <p class="aItem due">
+            <a  href="{{pathFor 'grades' _id=_id}}">
+              {{{assessmentTitle}}}
+            </a> 
+            <span>: {{{date}}} {{{assessmentUnitTitle}}}</span>
+          </p>
+        {{/each}}
+      </div>
+    {{/if}}
+  </div>
+</template>

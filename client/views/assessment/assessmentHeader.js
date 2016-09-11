@@ -10,6 +10,9 @@ Template.assessmentHeader.helpers({
     var title = 'Assessment: ' + subactivity.title;
     return title;
   },
+  assessmentID: function() {
+    return FlowRouter.getParam('_id');
+  },
   edit: function() {
     if (openlabSession.get('editingMainPage'))
       return 'Done';

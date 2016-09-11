@@ -122,7 +122,7 @@ li.unittitle.active2 > a {
 #activityListHeader div.activityColumn div.progress {
   margin-bottom: 4px;
 }
-#activityList p {
+#activityList p, #assesmentList p {
   background-color: #afafaf;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#afafaf));
   background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #afafaf);

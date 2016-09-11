@@ -1,0 +1,11 @@
+#assessmentList {
+  outline: 1px solid #AAA;
+  margin-bottom: 20px;
+}
+#assessmentList div.assessmentColumn.bgprimary{
+  /*background-color: #337AB7*/
+  background-color: DarkMagenta;
+}
+#assessmentList div.assessmentColumn.bgsuccess {
+  background-color: #DFF0D8;
+}

@@ -299,7 +299,6 @@ Meteor.publish('studentWalls',function(activityID,studentIDs) {
 
 /******* ASSESSMENTS *******/
 
-//now just need one publish function with a date range?
 Meteor.publish('assessments',function(pastDate,futureDate,studentID) {
   check(pastDate,Date);
   check(futureDate,Date);
@@ -351,6 +350,29 @@ Meteor.publish('assessmentWithDatesAndStandards',function(assessmentID,studentID
     AssessmentStandards.find({assessmentID:assessmentID})
   ]
 })
+
+//for activities page
+Meteor.publish('unitsAssessments',function(studentID,unitID) { 
+  check(studentID,Match.Optional(Match.OneOf(Match.idString,null))); 
+  check(unitID,Match.Optional(Match.OneOf([Match.idString],Match.idString,null)));
+  var selector = {
+    visible:true
+  }
+  if (_.isArray(unitID)) {
+    selector.unitID = {$in:unitID}
+  } else {
+    selector.unitID = unitID
+  }
+  if (Roles.userIsInRole(studentID,'student')) {
+    selector.createdFor = {$in:[Site.findOne()._id,studentID]};
+  } else {
+    selector.createdFor = Site.findOne()._id;
+  }
+  return [
+    Assessments.find(selector),
+    AssessmentDates.find(selector)
+  ]
+});
 
 /******* END ASSESSMENT ********/
 

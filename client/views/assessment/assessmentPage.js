@@ -32,19 +32,24 @@ Template.assessmentPage.onCreated(function() {
 });
 
 Template.assessmentPage.helpers({
-  standards: function() {
+  assessmentStandards: function() {
     var assessmentID = FlowRouter.getParam('_id');
-    var standardIDs = _.pluck(AssessmentStandards.find(
+    return AssessmentStandards.find(
       {assessmentID:assessmentID,standardVisible:true},
-      {fields:{standardID:1}},
-      {sort:{order:1}}).fetch(),'standardID');
-    var standards = Standards.find({_id:{$in:standardIDs}}).fetch();
-    standards.sort(function(sa,sb) {
-      var asa = AssessmentStandards.findOne({assessmentID:assessmentID,standardID:sa._id});
-      var asb = AssessmentStandards.findOne({assessmentID:assessmentID,standardID:sb._id});
-      return asa.order - asb.order;
-    });
-    return standards;
+      {sort:{order:1}});
+  },
+  sortableOpts: function() {
+    return {
+      draggable:'.assessmentStandardItem',
+      handle: '.standardSortableHandle',
+      collection: 'AssessmentStandards',
+      selectField: 'assessmentID',
+      selectValue: FlowRouter.getParam('_id'),
+      disabled: (!Roles.userIsInRole(Meteor.userId(),'teacher'))
+    }
+  },
+  standard: function() {
+    return Standards.findOne(this.standardID);
   },
   validStudent: function() {
     var studentID = Meteor.impersonatedOrUserId();

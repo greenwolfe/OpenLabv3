@@ -8,6 +8,7 @@ StandardDates.mutate.setStandardDate = function(standardID,sectionID) {
 
   if (Meteor.isServer) {
     Meteor.defer(function() {  
+      var assessmentIDs = _.pluck(AssessmentStandards.find({standardID:standardID,createdFor:Site.findOne()._id}).fetch(),'assessmentID');
       var selector =  (sectionID == 'applyToAll') ? {} : {_id:sectionID};
       Sections.find(selector).forEach(function(section) {
         var testDates = _.pluck(AssessmentDates.find({assessmentID:{$in:assessmentIDs},sectionID:section._id}).fetch(),'testDate');
