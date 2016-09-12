@@ -145,9 +145,13 @@ Meteor.methods({
           throw new Meteor.Error('levelOutOfRange', "Cannot post level of mastery. Level must be a number between 0 and " + standard.scale + ".");
 
         LevelsOfMastery.update(LoM._id,{$set: {level:LoM.level}}, function(error,num) {
-          if (error) return;
-          //if (Meteor.isClient) return;  //is this needed? ... avoids difficulty simulating mostRecent on the client ... why?
-          Meteor.updateLoMaverages(LoM._id);        
+          if (error)
+           return;
+          if (Meteor.isServer) {
+            Meteor.defer(function() {
+              Meteor.updateLoMaverages(LoM._id);  
+            });    
+          }  
         })
       }
     }
