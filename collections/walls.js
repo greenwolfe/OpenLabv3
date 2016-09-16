@@ -97,6 +97,7 @@ Meteor.methods({
     if (!Roles.userIsInRole(cU,['teacher','student']))
       throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can change the group for a group wall.");
 
+    var wall = Walls.findOne(wallID);
     var groupMemberIds = Meteor.groupMemberIds('current,final',wall.createdFor);
     if (Roles.userIsInRole(cU,'student') && !_.contains(groupMemberIds,cU))
       throw new Meteor.Error('studentNotInGroup','A student can only change the group for a wall if they are in the group to begin with.');
@@ -135,6 +136,7 @@ Meteor.methods({
       throw new Meteor.Error('notLoggedIn', "You must be logged in to change wall access.");
     if (!Roles.userIsInRole(cU,['teacher','student']))
       throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can change the wall access.");
+    var wall = Walls.findOne(wallID);
     if (wall.type == 'group') {
       var memberIds = Meteor.groupMemberIds('current,final',wall.createdFor);
       if (Roles.userIsInRole(cU,'student') && !_.contains(wall.access,cU))
@@ -191,7 +193,8 @@ Meteor.methods({
       throw new Meteor.Error('notLoggedIn', "You must be logged in to delete a wall.");
     if (!Roles.userIsInRole(cU,['teacher','student']))
       throw new Meteor.Error('onlyTeachersAndStudentsAllowed', "Only teachers or students can change delete a wall.");
-    if (wall.type == 'group') {
+   var wall = Walls.findOne(wallID);
+   if (wall.type == 'group') {
       if (Roles.userIsInRole(cU,'student') && !_.contains(wall.access,cU))
         throw new Meteor.Error('studentNotAMember','A student can only delete a wall if they already have access to it.');
     } else if (wall.type == 'section') {

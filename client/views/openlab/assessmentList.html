@@ -4,6 +4,7 @@
       <h4 class="text-center">Assessments for {{unitTitle}}</h4>
       {{#each unitsAssessments}}
         <p class="aItem due">
+          <strong>{{{studentText}}} </strong>
           <a  href="{{pathFor 'grades' _id=_id}}">
             {{{assessmentTitle}}}
           </a> 
@@ -16,6 +17,7 @@
         <h4 class="text-center">Assessments for {{unit2Title}}</h4>
         {{#each unit2sAssessments}}
           <p class="aItem due">
+            <strong>{{{studentText}}} </strong>
             <a  href="{{pathFor 'grades' _id=_id}}">
               {{{assessmentTitle}}}
             </a> 
@@ -28,6 +30,7 @@
         <h4 class="text-center">Other Upcoming Assessments</h4>
         {{#each upcomingAssessments}}
           <p class="aItem due">
+            <strong>{{{studentText}}} </strong>
             <a  href="{{pathFor 'grades' _id=_id}}">
               {{{assessmentTitle}}}
             </a> 

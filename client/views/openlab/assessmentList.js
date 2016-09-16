@@ -7,10 +7,13 @@ Template.assessmentList.onCreated(function() {
     if (unitID2)
       unitID = [unitID,unitID2];
     var studentID = Meteor.impersonatedOrUserId();
+    studentID = Roles.userIsInRole(studentID,'student') ? studentID : null;
+    var sectionID = Meteor.selectedSectionId() || null;
+    var studentOrSectionID = studentID || sectionID;
     var today = new Date();
     var twoWeeksFromNow = moment(today).add(2,'weeks').toDate();
-    Meteor.subscribe('unitsAssessments',studentID,unitID);    
-    Meteor.subscribe('assessments',today,twoWeeksFromNow,studentID);
+    Meteor.subscribe('unitsAssessments',studentOrSectionID,unitID);    
+    Meteor.subscribe('otherUpcomingAssessments',today,twoWeeksFromNow,studentOrSectionID);
   })
 });
 
@@ -25,6 +28,8 @@ Template.assessmentList.helpers({
     }
   },
   unitsAssessments: function() {
+    var cU = Meteor.userId();
+    var sectionID = Meteor.selectedSectionId();
     var unitID = openlabSession.get('activeUnit');
     var studentID = Meteor.impersonatedOrUserId();
     var selector = {
@@ -33,6 +38,12 @@ Template.assessmentList.helpers({
     }
     if (Roles.userIsInRole(studentID,'student')) {
       selector.createdFor = {$in:[Site.findOne()._id,studentID]};
+    } else if (Roles.userIsInRole(cU,'teacher')) {
+      if (sectionID) {
+        var studentIDs = Meteor.sectionMemberIds(sectionID);
+        studentIDs.push(Site.findOne()._id);
+        selector.createdFor = {$in:studentIDs};
+      } //else no filter on createdFor
     } else {
       selector.createdFor = Site.findOne()._id;
     }
@@ -53,6 +64,8 @@ Template.assessmentList.helpers({
     }    
   },
   unit2sAssessments: function() {
+    var cU = Meteor.userId();
+    var sectionID = Meteor.selectedSectionId();
     var unitID = openlabSession.get('activeUnit2');
     var studentID = Meteor.impersonatedOrUserId();
     var selector = {
@@ -61,6 +74,12 @@ Template.assessmentList.helpers({
     }
     if (Roles.userIsInRole(studentID,'student')) {
       selector.createdFor = {$in:[Site.findOne()._id,studentID]};
+    } else if (Roles.userIsInRole(cU,'teacher')) {
+      if (sectionID) {
+        var studentIDs = Meteor.sectionMemberIds(sectionID);
+        studentIDs.push(Site.findOne()._id);
+        selector.createdFor = {$in:studentIDs};
+      } //else no filter on createdFor
     } else {
       selector.createdFor = Site.findOne()._id;
     }
@@ -70,6 +89,7 @@ Template.assessmentList.helpers({
     return openlabSession.get('activeUnit2') ? 'bgsuccess' : 'bgprimary';
   },
   upcomingAssessments: function() {
+    var cU = Meteor.userId();
     var studentID = Meteor.impersonatedOrUserId();
     var sectionID = Meteor.selectedSectionId();
     var unitID = openlabSession.get('activeUnit');
@@ -78,6 +98,12 @@ Template.assessmentList.helpers({
     var selector = {testDate:{$gte:today,$lte:twoWeeksFromNow}};
     if (Roles.userIsInRole(studentID,'student')) {
       selector.createdFor = {$in:[Site.findOne()._id,studentID]};
+    } else if (Roles.userIsInRole(cU,'teacher')) {
+      if (sectionID) {
+        var studentIDs = Meteor.sectionMemberIds(sectionID);
+        studentIDs.push(Site.findOne()._id);
+        selector.createdFor = {$in:studentIDs};
+      } //else no filter on createdFor
     } else {
       selector.createdFor = Site.findOne()._id;
     }
@@ -89,12 +115,14 @@ Template.assessmentList.helpers({
     assessmentIDs = _.unique(assessmentIDs);
     return Assessments.find({_id:{$in:assessmentIDs}});
   },
-  assessmentTitle: function() {
-    if (this.createdFor == Site.findOne()._id) {
-      return _.str.stripTags(this.title) || 'Assessment'
-    } else {
-      return (this.title.search(/reassessment/i)>0) ? _.str.stripTags(this.title) :  _.str.stripTags(this.title) + "<strong> (reassessment)</strong>"
+  studentText: function() {
+    if (Roles.userIsInRole(this.createdFor,'student')) {
+      return 'Reassessment for ' + Meteor.getname(this.createdFor,'full');
     }
+    return '';
+  },
+  assessmentTitle: function() {
+    return _.str.stripTags(this.title) || 'Assessment'
   },
   date: function() {
     var assessmentDate = AssessmentDates.findOne({

@@ -189,20 +189,14 @@ Template.subActivitiesList.helpers({
     return Activities.find(selector,{sort: {suborder: 1}});
   },
   sortableOpts: function() {
-    var instance = Template.instance();
-    var activity = Activities.findOne(FlowRouter.getParam('_id'));
     return {
       draggable:'.aItem',
       handle: '.sortActivity',
-      group: '.activityColumn',
       collection: 'Activities',
       selectField: 'pointsTo',
-      selectValue: activity._id,
-      sortField: 'suborder',
-      disabled: false //(!instance.editingList.get()) 
-      //onAdd: function(evt) {
-      //  Meteor.call('denormalizeBlock',evt.data._id,alertOnError);
-      //}
+      selectValue: FlowRouter.getParam('_id'),
+      sortField: 'suborder' //,
+      //disabled: false //(!instance.editingList.get()) 
     }
   }
 })
@@ -281,10 +275,20 @@ Template.subactivityItem.helpers({
   },
   workPeriod: function () {
     //find existing workPeriod
-    return workPeriod =  WorkPeriods.findOne({
+    var activityID = (Activities.findOne(this._id)) ? this._id : null;
+    var sectionID = Meteor.selectedSectionId();
+    if (!activityID || !sectionID)
+      return null;
+    var workPeriod =  WorkPeriods.findOne({
       activityID: this._id,
       sectionID: Meteor.selectedSectionId()
     });
+    return workPeriod || {
+      activityID: activityID,
+      sectionID: sectionID,
+      startDate: null,
+      endDate: null
+    }
   },
   formatDateTime: function(date) {
     return ((Match.test(date,Date)) && !dateIsNull(date)) ? moment(date).format(dateTimeFormat) : '_____';

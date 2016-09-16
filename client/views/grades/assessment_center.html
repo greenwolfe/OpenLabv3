@@ -57,6 +57,7 @@
       {{#if editingAssessment}}
         {{>summernote collection='Assessments' field='title' _id=_id enabled=editingAssessment options=summernoteTitleOptions}}
       {{else}}
+        <span>{{{studentText}}}</span><br/>
         {{{title}}}
       {{/if}}
     </div>

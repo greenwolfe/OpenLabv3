@@ -342,6 +342,54 @@ Meteor.publish('assessments',function(pastDate,futureDate,studentID) {
   ]
 });
 
+Meteor.publish('otherUpcomingAssessments',function(pastDate,futureDate,studentOrSectionID) {
+  check(pastDate,Date);
+  check(futureDate,Date);
+  check(studentOrSectionID,Match.OneOf(Match.idString,null));
+  
+  //select assessments if even one sections test date is in range
+  var selector = {
+    maxTestDate: {$gte:pastDate},
+    minTestDate: {$lte:futureDate}
+  };
+  var studentID = ((studentOrSectionID) && Roles.userIsInRole(studentOrSectionID,'student')) ? studentOrSectionID : null;
+  var sectionID = ((studentOrSectionID) && Sections.find(studentOrSectionID).count()) ? studentOrSectionID : null;
+  var siteID = Site.findOne()._id;
+  var cU = this.userId;
+  if (Roles.userIsInRole(cU,'teacher')) {
+    if (studentID) {
+      selector.createdFor = {$in:[siteID,studentID]};
+    } else if (sectionID) {
+      var studentIDs = Meteor.sectionMemberIds(sectionID);
+      studentIDs.push(siteID);
+      selector.createdFor = {$in:studentIDs};      
+    } else {
+      //no filtering, show all student reassessment as well as assessments
+    }
+  } else { //student or parent
+    if (studentID) {
+      selector.$or = [
+        {createdFor:siteID,visible:true},
+        {createdFor:studentID}
+      ];
+    } else {
+      selector.createdFor = siteID
+      selector.visible =true;
+    }
+  }
+
+  var dSelector = _.clone(selector);
+  delete dSelector.minTestDate;
+  delete dSelector.maxTestDate;
+  dSelector.testDate = {$gte:pastDate,$lte:futureDate};
+
+  return [
+    Assessments.find(selector),
+    AssessmentStandards.find(selector),
+    AssessmentDates.find(dSelector)
+  ]
+});
+
 Meteor.publish('assessmentWithDatesAndStandards',function(assessmentID,studentID) {
   check(assessmentID,Match.idString);
   return [
@@ -351,10 +399,10 @@ Meteor.publish('assessmentWithDatesAndStandards',function(assessmentID,studentID
   ]
 })
 
-//for activities page
-Meteor.publish('unitsAssessments',function(studentID,unitID) { 
-  check(studentID,Match.Optional(Match.OneOf(Match.idString,null))); 
-  check(unitID,Match.Optional(Match.OneOf([Match.idString],Match.idString,null)));
+//for activities (openlab) page
+Meteor.publish('unitsAssessments',function(studentOrSectionID,unitID) { 
+  check(studentOrSectionID,Match.OneOf(Match.idString,null)); 
+  check(unitID,Match.OneOf([Match.idString],Match.idString,null));
   var selector = {
     visible:true
   }
@@ -363,8 +411,14 @@ Meteor.publish('unitsAssessments',function(studentID,unitID) {
   } else {
     selector.unitID = unitID
   }
-  if (Roles.userIsInRole(studentID,'student')) {
-    selector.createdFor = {$in:[Site.findOne()._id,studentID]};
+  if (Roles.userIsInRole(studentOrSectionID,'student')) {
+    selector.createdFor = {$in:[Site.findOne()._id,studentOrSectionID]};
+  } else if (Roles.userIsInRole(this.userId,'teacher')) {
+    if (Sections.find(studentOrSectionID).count()) {
+      var studentIDs = Meteor.sectionMemberIds(studentOrSectionID);
+      studentIDs.push(Site.findOne()._id);
+      selector.createdFor = {$in:studentIDs}; 
+    } //else do nothing ... viewing not as single student or section, return all    
   } else {
     selector.createdFor = Site.findOne()._id;
   }

@@ -259,7 +259,7 @@ Template.activityList.helpers({
       collection: 'Activities',
       selectField: 'unitID',
       selectValue: activeUnit2,
-      disabled: !editingMainPage() //currently not working
+      //disabled: !editingMainPage() //currently not working
       //disabled: (!Session.get('editedWall')), //!= this.wallID to apply to a single wall 
     }    
   },

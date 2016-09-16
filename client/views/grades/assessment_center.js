@@ -217,6 +217,12 @@ Template.assessment.helpers({
   units: function() {
     return Units.find({visible:true});
   },
+  studentText: function() {
+    if (Roles.userIsInRole(this.createdFor,'student')) {
+      return 'Reassessment for ' + Meteor.getname(this.createdFor,'full');
+    }
+    return 'Assessment for whole class';
+  },
   standardCountMessage: function() {
     var cU = Meteor.userId();
     var message = 'This assessment has ';

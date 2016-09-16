@@ -1,0 +1,10 @@
+i.icon-unchecked {
+  background-image: url('noStatus.png');
+} 
+i.icon-teacher-checked {
+  background-image: url('done.png');
+}
+i.icon-student-checked {
+  background-image: url('done.png');
+  background-color: green;  
+}

@@ -7,9 +7,9 @@ ActivityStatuses.mutate = {};
 //NOTE:  "status" appears to be a javascript, html, or windows reserved word
 //and its use in this function threw an error when executing the stub in the browser
 //should this type of error recur, consider switching from "status" to "actStatus" everywhere.
-ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activityID) {
+ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activityOrAssessmentID) {
   check(studentOrSectionID,Match.idString); //studentID, sectionID, or siteID
-  check(activityID,Match.idString);
+  check(activityOrAssessmentID,Match.idString);
 
   var sectionID = null;
   if (Roles.userIsInRole(studentOrSectionID,'student')) {
@@ -20,9 +20,12 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
 
   if (!sectionID)
     return; //throw error?
-  var activity = Activities.findOne(activityID);
-  if (!activity)
+  var activity = Activities.findOne(activityOrAssessmentID);
+  var assessment = Assessments.findOne(activityOrAssessmentID);
+  if (!activity && !assessment)
     return; //throw error?
+  var activityID = (activity) ? activity._id : null;
+  var assessmentID = (assessment) ? assessment._id : null;
 
   var actStatus = { 
     studentsTotal: 0,     //total students in section
@@ -42,7 +45,8 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
   actStatus.studentsNotSubmitted = sectionMemberIds.length;
   var levels = _.pluck(ActivityStatuses.find({
     studentID:{$in:sectionMemberIds},
-    activityID:activityID},
+    activityID:activityID,
+    assessmentID:assessmentID},
     {fields: {level: 1}}).fetch(),'level');
 
   if (levels.length) {
@@ -81,27 +85,42 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
     activityID:activityID,
     sectionID:sectionID
   });
-  if ((workPeriod) && (workPeriod.endDate) && (today > workPeriod.endDate) && (actStatus.studentsNotSubmitted)) {
+  var assessmentDate = AssessmentDates.findOne({
+    assessmentID:assessmentID,
+    secitonID:sectionID
+  });
+  if (  ((workPeriod) && (workPeriod.endDate) && (today > workPeriod.endDate))
+      ||((assessmentDate) && (assessmentDate.testDate) && (today > assessmentDate.testDate))
+      && (actStatus.studentsNotSubmitted)) {
     actStatus.late = true;
     var studentsOnTime = _.pluck(ActivityStatuses.find({
         studentID:{$in:sectionMemberIds},
         activityID:activityID,
+        assessmentID: assessmentID,
         level:{$ne:'nostatus'}},
       {fields: {studentID: 1}}).fetch(),'studentID');
     actStatus.lateStudents = _.difference(sectionMemberIds,studentsOnTime);
   }
 
-  var oldStatus = ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID});
+  var oldStatus = ActivityStatuses.findOne({sectionID:sectionID,activityID:activityID,assessmentID:assessmentID});
   if (oldStatus) {
     var id = ActivityStatuses.update(oldStatus._id,{$set:actStatus});
   } else { //no status exists yet, level has been displayed as 0 by default  
+    var unitID = null;
+    if (activity) {
+      unitID = activity.unitID;
+    } else if (assessment) {
+      unitID = assessment.unitID;
+    }
+    var pointsTo = (activity) ? activity.pointsTo : null;
     _.extend(actStatus,{
       sectionID: sectionID,
       siteID: null,
       studentID: null,
       activityID:activityID,
-      unitID: activity.unitID,
-      pointsTo: activity.pointsTo,
+      assessmentID:assessmentID,
+      unitID: unitID,
+      pointsTo: pointsTo,
       incrementedBy: sectionID, //in lieu of anything else because Meteor.userId() is not accessible a general helper that is not a method
       incrementedAt: today,
       increment: 0, 
@@ -109,14 +128,17 @@ ActivityStatuses.mutate.updateSectionStatus = function(studentOrSectionID,activi
     });
     var id = ActivityStatuses.insert(actStatus);
   }
-  ActivityStatuses.mutate.updateClassStatus(activityID);
+  ActivityStatuses.mutate.updateClassStatus(activityOrAssessmentID);
   return id;
 }
 
-ActivityStatuses.mutate.updateClassStatus = function(activityID) {
-  var activity = Activities.findOne(activityID);
-  if (!activity)
+ActivityStatuses.mutate.updateClassStatus = function(activityOrAssessmentID) {
+  var activity = Activities.findOne(activityOrAssessmentID);
+  var assessment = Assessments.findOne(activityOrAssessmentID);
+  if (!activity && !assessment)
     return; //throw error?
+  var activityID = (activity) ? activity._id : null;
+  var assessmentID = (assessment) ? assessment._id : null;
   var siteID = Site.findOne()._id;
 
   var actStatus = { 
@@ -132,7 +154,7 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
   }
 
   var sectionIDs = _.pluck(Sections.find().fetch(),'_id')
-  ActivityStatuses.find({activityID:activityID,sectionID:{$in:sectionIDs}}).forEach(function(sectionStatus) {
+  ActivityStatuses.find({activityID:activityID,assessmentID:assessmentID,sectionID:{$in:sectionIDs}}).forEach(function(sectionStatus) {
     actStatus.studentsTotal += sectionStatus.studentsTotal;
     actStatus.studentsDone += sectionStatus.studentsDone;
     actStatus.studentsSubmitted += sectionStatus.studentsSubmitted;
@@ -153,17 +175,24 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
   }
 
   var today = new Date();
-  var oldStatus = ActivityStatuses.findOne({siteID:siteID,activityID:activityID});
+  var oldStatus = ActivityStatuses.findOne({siteID:siteID,activityID:activityID,assessmentID:assessmentID});
   if (oldStatus) {
     var id = ActivityStatuses.update(oldStatus._id,{$set:actStatus});
   } else { //no status exists yet, level has been displayed as 0 by default  
+    var unitID = null;
+    if (activity) {
+      unitID = activity.unitID;
+    } else if (assessment) {
+      unitID = assessment.unitID;
+    }
+    var pointsTo = (activity) ? activity.pointsTo : null;
     _.extend(actStatus,{
       sectionID: null,
       siteID: siteID,
       studentID: null,
       activityID:activityID,
-      unitID: activity.unitID,
-      pointsTo: activity.pointsTo,
+      unitID: unitID,
+      pointsTo: pointsTo,
       incrementedBy: siteID, //in lieu of anything else because Meteor.userId() is not accessible a general helper that is not a method
       incrementedAt: today,
       increment: 0, 
@@ -174,17 +203,23 @@ ActivityStatuses.mutate.updateClassStatus = function(activityID) {
 }
 
 Meteor.methods({
-  incrementStatus: function(studentID,activityID) {
+  incrementStatus: function(studentID,activityOrAssessmentID) {
     check(studentID,Match.idString);
-    check(activityID,Match.idString);
+    check(activityOrAssessmentID,Match.idString);
     var student = Meteor.users.findOne(studentID);
     if (!student)
       throw new Meteor.Error('studentNotFound','Cannot increment activity status.  Student not found.');
     if (!Roles.userIsInRole(student,'student'))
       throw new Meteor.Error('notStudent','Only students have activity status.');
-    var activity = Activities.findOne(activityID);
-    if (!activity)
-      throw new Meteor.Error('activityNotFound','Cannot increment activity status.  Activity not found.');
+
+    var activity = Activities.findOne(activityOrAssessmentID);
+    var assessment = Assessments.findOne(activityOrAssessmentID);
+    if (!activity && !assessment)
+      return; //throw error?
+    var activityID = (activity) ? activity._id : null;
+    var assessmentID = (assessment) ? assessment._id : null;
+
+
     var cU = Meteor.user();
     if (!cU)
       throw new Meteor.Error('notLoggedIn','You must be logged in to increment an activity status.');
@@ -196,7 +231,7 @@ Meteor.methods({
       throw new Meteor.Error('onlyChangeOwnStatus',"Only a teacher can change someone else's activity status.")
 
     var statuses = ['nostatus','submitted','returned','donewithcomments','done','donebutresubmitted']
-    var oldStatus = ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+    var oldStatus = ActivityStatuses.findOne({studentID:studentID,activityID:activityID,assessmentID:assessmentID});
     var oneMinuteAgo = moment().subtract(1,'minute').toDate();
     var rightNow = new Date();
     if (oldStatus) {
@@ -234,11 +269,19 @@ Meteor.methods({
         }
       });
     } else { //no status exists yet, level has been displayed as 0 by default  
+      var unitID = null;
+      if (activity) {
+        unitID = activity.unitID;
+      } else if (assessment) {
+        unitID = assessment.unitID;
+      }
+      var pointsTo = (activity) ? activity.pointsTo : null;
       status = {
         studentID:studentID,
         activityID:activityID,
-        unitID: activity.unitID,
-        pointsTo: activity.pointsTo,
+        assessmentID: assessmentID,
+        unitID: unitID,
+        pointsTo: pointsTo,
         level: statuses[1], //First increment sets it to level 1 
         incrementedBy: cU._id,
         incrementedAt: rightNow,
@@ -247,68 +290,87 @@ Meteor.methods({
         tag: '',
       }
       return ActivityStatuses.insert(status,function() {
-        ActivityStatuses.mutate.updateSectionStatus(studentID,activityID);
+        ActivityStatuses.mutate.updateSectionStatus(studentID,activityOrAssessmentID);
       });
     }
   },
   //late icon appears at end of increment Status sequence
   //therefore no separate markAsLate method
   //once the late icon is present, clicking on it should call markOnTime
-  markOnTime: function(studentID,activityID) {
+  markOnTime: function(studentID,activityOrAssessmentID) {
     check(studentID,Match.idString);
-    check(activityID,Match.idString);
+    check(activityOrAssessmentID,Match.idString);
     var student = Meteor.users.findOne(studentID);
     if (!student)
       throw new Meteor.Error('studentNotFound','Cannot mark activity on time.  Student not found.');
     if (!Roles.userIsInRole(student,'student'))
       throw new Meteor.Error('notStudent','Only students have activity status.');
-    var activity = Activities.findOne(activityID);
-    if (!activity)
-      throw new Meteor.Error('activityNotFound','Cannot mark activity on time.  Activity not found.');
+
+    var activity = Activities.findOne(activityOrAssessmentID);
+    var assessment = Assessments.findOne(activityOrAssessmentID);
+    if (!activity && !assessment)
+      return; //throw error?
+    var activityID = (activity) ? activity._id : null;
+    var assessmentID = (assessment) ? assessment._id : null;
+
     var cU = Meteor.user();
     if (!cU)
       throw new Meteor.Error('notLoggedIn','You must be logged in to mark an activity on time.');
     if (!Roles.userIsInRole(cU,'teacher'))
       throw new Meteor.Error('notTeacher','You must be a teacher to mark an activity on time.');
 
-    var status = ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+    var status = ActivityStatuses.findOne({studentID:studentID,activityID:activityID,assessmentID:assessmentID});
     if (!status) 
       throw new Meteor.Error('statusNotFound','There should already be a status if you are trying to mark it as on time.'); 
     
     ActivityStatuses.update(status._id,{$set: {late:false}},function() {
       if (Meteor.isServer) {
         Meteor.defer(function() {
-          ActivityStatuses.mutate.updateSectionStatus(studentID,activityID);
+          ActivityStatuses.mutate.updateSectionStatus(studentID,activityOrAssessmentID);
         });
       }
     });
   },
-  statusSetTag: function(studentID,activityID,tag) {
+  statusSetTag: function(studentID,activityOrAssessmentID,tag) {
     check(studentID,Match.idString);
-    check(activityID,Match.idString);
+    check(activityOrAssessmentID,Match.idString);
     check(tag,String);
     var student = Meteor.users.findOne(studentID);
     if (!student)
       throw new Meteor.Error('studentNotFound','Cannot designate activity as a reassessment.  Student not found.');
     if (!Roles.userIsInRole(student,'student'))
       throw new Meteor.Error('notStudent','Only students have activity status.');
-    var activity = Activities.findOne(activityID);
-    if (!activity)
-      throw new Meteor.Error('activityNotFound','Cannot designate activity as a reassessment.  Activity not found.');
+
+
+    var activity = Activities.findOne(activityOrAssessmentID);
+    var assessment = Assessments.findOne(activityOrAssessmentID);
+    if (!activity && !assessment)
+      return; //throw error?
+    var activityID = (activity) ? activity._id : null;
+    var assessmentID = (assessment) ? assessment._id : null;
+
     var cU = Meteor.user();
     if (!cU)
       throw new Meteor.Error('notLoggedIn','You must be logged in to designate an activity as a reassessment.');
     if (!Roles.userIsInRole(cU,'teacher'))
       throw new Meteor.Error('notTeacher','You must be a teacher to designate an activity as a reassessment.');
 
-    var status = ActivityStatuses.findOne({studentID:studentID,activityID:activityID});
+    var status = ActivityStatuses.findOne({studentID:studentID,activityID:activityID,assessmentID:assessmentID});
     var rightNow = new Date();
     if (!status) {
-       status = {
+      var unitID = null;
+      if (activity) {
+        unitID = activity.unitID;
+      } else if (assessment) {
+        unitID = assessment.unitID;
+      }
+      var pointsTo = (activity) ? activity.pointsTo : null;
+      status = {
         studentID:studentID,
         activityID:activityID,
-        unitID: activity.unitID,
-        pointsTo: activity.pointsTo,
+        assessmentID: assessmentID,
+        unitID: unitID,
+        pointsTo: pointsTo,
         level: 'nostatus',  
         incrementedBy: cU._id,
         incrementedAt: rightNow,

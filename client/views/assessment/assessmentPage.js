@@ -6,7 +6,7 @@ Template.assessmentPage.onCreated(function() {
   var instance = this;
   instance.showAssessment = new ReactiveVar('this'); //or all
   instance.showTimePeriod = new ReactiveVar('mostRecent'); //or all time
-
+  var assessment = Assessments.findOne(FlowRouter.getParam('_id'));
   var assessmentSubscription = Meteor.subscribe('assessmentWithDatesAndStandards',FlowRouter.getParam('_id'));
 
   instance.autorun(function() {
@@ -15,6 +15,8 @@ Template.assessmentPage.onCreated(function() {
     var assessment = Assessments.findOne(FlowRouter.getParam('_id'));
     if (!assessment)
       return;
+    if (Roles.userIsInRole(assessment.createdFor,'student'))
+      loginButtonsSession.set('viewAs',assessment.createdFor);
     var standardIDs = _.pluck(AssessmentStandards.find({assessmentID:FlowRouter.getParam('_id'),standardVisible:true},{fields:{standardID:1}}).fetch(),'standardID');
     //first get the info that will be immediately shown
     var studentID = Meteor.impersonatedOrUserId();    
@@ -38,6 +40,18 @@ Template.assessmentPage.helpers({
       {assessmentID:assessmentID,standardVisible:true},
       {sort:{order:1}});
   },
+  studentText: function() {
+    var assessment = Assessments.findOne(FlowRouter.getParam('_id')) || {createdFor:null};
+    if (Roles.userIsInRole(assessment.createdFor,'student')) {
+      return 'Reassessment for ' + Meteor.getname(assessment.createdFor,'full');
+    }
+    return 'Assessment for whole class';
+  },
+  assessmentTitle: function() {
+    var assessment = Assessments.findOne(FlowRouter.getParam('_id'));
+    if ((assessment) && ('title' in assessment))
+      return assessment.title;
+  },
   sortableOpts: function() {
     return {
       draggable:'.assessmentStandardItem',
@@ -53,6 +67,9 @@ Template.assessmentPage.helpers({
   },
   validStudent: function() {
     var studentID = Meteor.impersonatedOrUserId();
+    var assessment = Assessments.findOne(FlowRouter.getParam('_id'));
+    if (assessment && Roles.userIsInRole(assessment.createdFor,'student'))
+      return (studentID == assessment.createdFor);
     return Roles.userIsInRole(studentID,'student');
   },
   LoMAveragecolorcode: function() {

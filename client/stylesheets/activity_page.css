@@ -39,6 +39,13 @@ body div.container {
     opacity: 1;
 }
 
+#subactivityList p.aItem, #subactivityList p.newItem {
+  width: 22%;
+  margin-right: 1%;
+  margin-left: 1%;
+  display: inline-block;
+}
+
 /* walls */
 .wall div.panel-heading div.wallSortableHandle {
     cursor: move;

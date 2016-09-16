@@ -13,7 +13,7 @@ Meteor.methods({
       unitID: Match.idString,
 
       /*set below, value not passed in
-      tag: Match.Optional(String),
+      tag: Match.Optional(String), //MOVE TAGS TO SECTION STATUS
       visible:  Match.Optional(Boolean),
       showStatus: Match.Optional(Boolean),
       order: Match.Optional(Match.Integer), //for now, new activity always placed at end of list
