@@ -52,10 +52,66 @@
 	"buffers":
 	[
 		{
-			"file": "server/init.js",
+			"file": "collections/todos.js",
 			"settings":
 			{
-				"buffer_size": 761,
+				"buffer_size": 13021,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "collections/activityStatuses.js",
+			"settings":
+			{
+				"buffer_size": 17585,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "collections/assessments.js",
+			"settings":
+			{
+				"buffer_size": 8310,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "collections/walls.js",
+			"settings":
+			{
+				"buffer_size": 14837,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "collections/projects.js",
+			"settings":
+			{
+				"buffer_size": 69,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "collections/workPeriods.js",
+			"settings":
+			{
+				"buffer_size": 3901,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "lib/routes.js",
+			"settings":
+			{
+				"buffer_size": 9532,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "server/publications.js",
+			"settings":
+			{
+				"buffer_size": 19626,
 				"line_ending": "Unix"
 			}
 		}
@@ -97,68 +153,99 @@
 	},
 	"file_history":
 	[
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
-		"/home/solargreen/meteor/OpenLabv3/server/publications.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.html",
-		"/home/solargreen/meteor/OpenLabv3/collections/memberships.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/blocks.js",
-		"/home/solargreen/meteor/OpenLabv3/helpers/blockMethods.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/groups.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/sections.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/helpers/wallHelpers.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/files.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/columns.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/assessmentDates.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/activities.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/assessments.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/assessmentTodos.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/standards.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/workPeriods.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/walls.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/groups.js",
+		"/home/solargreen/meteor/OpenLabv3/server/publications.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/assessmentStandards.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/levelsOfMastery.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/standardDates.js",
+		"/home/solargreen/meteor/OpenLabv3/server/Sept2016WorkPeriodsAddShowStatus.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/activityStatuses.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/assessmentList.html",
+		"/home/solargreen/meteor/OpenLabv3/server/createGroupWalls.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/memberships.js",
+		"/home/solargreen/meteor/OpenLabv3/helpers/groupMethods.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/blocks.js",
+		"/home/solargreen/meteor/OpenLabv3/client/helpers/showHide.js",
+		"/home/solargreen/meteor/OpenLabv3/client/helpers/showHide.html",
+		"/home/solargreen/meteor/OpenLabv3/helpers/showHideMethods.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/sections.js",
+		"/home/solargreen/meteor/OpenLabv3/server/schoolAccountsPublications.js",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/login_buttons_session.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/grades/standard_groups.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/grades/assessment_center.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/calendar/calendarEventModal.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/calendar/calendarEventModal.html",
+		"/home/solargreen/meteor/OpenLabv3/collections/todos.js",
+		"/home/solargreen/meteor/OpenLabv3/server/Aug2016StandardsRemoveMasteryExpected.js.bak",
+		"/home/solargreen/meteor/OpenLabv3/helpers/dateTimeHelpers.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/assessmentStandard.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/assessmentDate.js",
+		"/home/solargreen/meteor/OpenLabv3/server/init.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/editWorkPeriod.html",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/workPeriod.css",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/editWorkPeriod.js",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_statuses.css",
+		"/home/solargreen/meteor/OpenLabv3/server/June2016ActivityStatusForSection.js.bak",
+		"/home/solargreen/meteor/OpenLabv3/server/Aug2016workPeriodsgetTodoID.js.bak",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/columns.js",
+		"/home/solargreen/meteor/OpenLabv3/server/users.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/wall.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/block.html",
+		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.js",
+		"/home/solargreen/meteor/OpenLabv3/collections/files.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/column.html",
+		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_page.css",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.html",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.js",
+		"/home/solargreen/meteor/OpenLabv3/client/sortable1c/sortable1c.html",
+		"/home/solargreen/meteor/OpenLabv3/client/sortable1c/sortable1c.js",
+		"/home/solargreen/meteor/OpenLabv3/lib/routes.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityPage.html",
+		"/home/solargreen/meteor/OpenLabv3/helpers/blockMethods.js",
+		"/home/solargreen/meteor/OpenLabv3/client/views/activity/helpers/wallHelpers.js",
 		"/home/solargreen/meteor/OpenLabv3/helpers/sectionMethods.js",
 		"/home/solargreen/meteor/OpenLabv3/server/addWallVisibleWallType.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlabHeader.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.html",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/openlab.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activities_list.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/model_summary.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/slide_show.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/activityTagsPopoverX.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/summaries.js",
-		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/login_buttons_session.js",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/summary.css",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/openlab.css",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activities_list.css",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_page.css",
 		"/home/solargreen/meteor/OpenLabv3/client/workPeriod/workPeriodPopoverX/workPeriodPopoverX.js",
 		"/home/solargreen/meteor/OpenLabv3/client/summernote/summernote.js",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/openlab/helpers/openlabSession.js",
-		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/group_helpers.js",
-		"/home/solargreen/meteor/OpenLabv3/collections/workPeriods.js",
 		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/slideShow.css",
-		"/home/solargreen/meteor/OpenLabv3/collections/activityStatuses.js",
 		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/helpers/section_helpers.js",
-		"/home/solargreen/meteor/OpenLabv3/helpers/groupMethods.js",
 		"/home/solargreen/meteor/OpenLabv3/server/ActivityStatusForSection.js",
 		"/home/solargreen/meteor/OpenLabv3/server/activityStatusAddField.js.bak",
-		"/home/solargreen/meteor/OpenLabv3/client/views/activity/activityHeader.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/grades/grades.js",
-		"/home/solargreen/meteor/OpenLabv3/lib/routes.js",
 		"/home/solargreen/meteor/OpenLabv3/client/views/grades/grades.html",
 		"/home/solargreen/meteor/OpenLabv3/client/views/calendar/calendarPage.html",
 		"/home/solargreen/meteor/OpenLabv3/server/addAccess.js.bakJune2016",
 		"/home/solargreen/meteor/OpenLabv3/server/textBlockToFile.js",
-		"/home/solargreen/meteor/OpenLabv3/server/init.js",
 		"/home/solargreen/meteor/OpenLabv3/client/summernote/toolbars.js",
 		"/home/solargreen/meteor/OpenLabv3/server/renormalizeFiles.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/slideStars.js",
-		"/home/solargreen/meteor/OpenLabv3/client/stylesheets/activity_statuses.css",
 		"/home/solargreen/meteor/OpenLabv3/methods/MatchHelpers.js",
 		"/home/solargreen/meteor/OpenLabv3/collections/activityProgress.js",
 		"/home/solargreen/meteor/OpenLabv3/client/custom-accounts-ui/login_buttons.html",
@@ -193,38 +280,7 @@
 		"/home/solargreen/meteor/sources.list",
 		"/home/solargreen/meteor/OpenLabv2/collections/todos.js",
 		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/calendar.css",
-		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activities_list.js",
-		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/activity_statuses.css",
-		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/activities_list.css",
-		"/home/solargreen/meteor/OpenLabv2/collections/walls.js",
-		"/home/solargreen/meteor/OpenLabv2/collections/columns.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activities_list.html",
-		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodButton.js",
-		"/home/solargreen/meteor/OpenLabv2/client/workPeriod/workPeriodPopoverX/workPeriodButton.html",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/section_helpers.js",
-		"/home/solargreen/meteor/OpenLabv2/methods/sectionMethods.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/activityHeader.html",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/activityHeader.js",
-		"/home/solargreen/meteor/OpenLabv2/methods/groupMethods.js",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/login_buttons.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/block.html",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/block.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/wall.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/wall.html",
-		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/application.css",
-		"/home/solargreen/meteor/OpenLabv2/client/stylesheets/activity_page.css",
-		"/home/solargreen/meteor/OpenLabv2/server/users.js",
-		"/home/solargreen/meteor/OpenLabv2/server/init.js",
-		"/home/solargreen/meteor/OpenLabv2/server/fixtures.js",
-		"/home/solargreen/meteor/OpenLabv2/server/schoolAccountsPublications.js",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/login_buttons.html",
-		"/home/solargreen/meteor/OpenLabv2/lib/routes.js",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/login_buttons_session.js",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/groups.html",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/groups.js",
-		"/home/solargreen/meteor/OpenLabv2/client/custom-accounts-ui/helpers/group_helpers.js",
-		"/home/solargreen/meteor/OpenLabv2/collections/activities.js",
-		"/home/solargreen/meteor/OpenLabv2/client/views/activity/column.html"
+		"/home/solargreen/meteor/OpenLabv2/client/views/openlab/activities_list.js"
 	],
 	"find":
 	{
@@ -243,6 +299,21 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"cU",
+			"assessment",
+			"standards",
+			"AssessmentId",
+			"assessmentDates",
+			"$ge",
+			"fields",
+			"$or",
+			"todo",
+			"assessment",
+			"editWorkPeriod",
+			"Meteor.call('setWorkPeriod",
+			"workPeriod",
+			"defer",
+			"Header",
 			"groupMemberIDs",
 			"fields",
 			"wallType: Match",
@@ -355,22 +426,7 @@
 			"console.log",
 			"subactivityItem",
 			"assignment",
-			"standardID",
-			"subscribe",
-			"subscr",
-			"status",
-			"block",
-			"_id",
-			"date",
-			"      \n",
-			"defaultText",
-			"newu",
-			"unit",
-			"unittitle.active",
-			"cu",
-			"glyphicon",
-			"check",
-			"canEditBlock"
+			"standardID"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -392,29 +448,172 @@
 	"groups":
 	[
 		{
-			"sheets":
-			[
-			]
-		},
-		{
-			"selected": 0,
+			"selected": 5,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "server/init.js",
+					"file": "collections/todos.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 761,
+						"buffer_size": 13021,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								749,
-								749
+								7152,
+								7152
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "collections/activityStatuses.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 17585,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10074,
+								10074
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3330.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "collections/assessments.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8310,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1317,
+								1317
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 180.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "collections/walls.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14837,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4399,
+								4399
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "collections/projects.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 69,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								69,
+								69
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "collections/workPeriods.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3901,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								725,
+								725
 							]
 						],
 						"settings":
@@ -428,6 +627,72 @@
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 6,
+					"file": "lib/routes.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9532,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2012,
+								2012
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 405.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "server/publications.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 19626,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10962,
+								10962
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4770.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
@@ -513,7 +778,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},

@@ -60,20 +60,23 @@ Template.editWorkPeriod.events({
     var wP = this;
     wP.sectionID = Meteor.selectedSectionId();
     var $endDatePicker = tmpl.$('.endDatePicker').data("DateTimePicker");
-    if (event.date && !event.date.isSame(wP.startDate,'second')) {
-      if ((event.oldDate === null) && (event.date.hours() == 0))
-        event.date.hours(8);
-      wP.startDate = event.date.toDate();
-      Meteor.call('setWorkPeriod',wP,function(error,id) {
-        if (error) {
-          alert(error.reason);
-        } else {
-          tmpl.copyColor.set('blue');
-        }
-      });
-      if ($endDatePicker)
-        $endDatePicker.minDate(wP.startDate);  //link the pickers to ensure startDate < endDate
-    } else {
+    var $startDatePicker = tmpl.$('.startDatePicker').data("DateTimePicker");
+    if (event.date) {
+      if (!_.isDate(wP.startDate) || !event.date.isSame(wP.startDate,'second')) {
+        if ((event.oldDate === null) && ((event.date.hours() == 0) || (event.date.milliseconds() == 314)))
+          return $startDatePicker.date(event.date.hours(8).startOf('hour'));
+        wP.startDate = event.date.milliseconds(0).toDate();
+        Meteor.call('setWorkPeriod',wP,function(error,id) {
+          if (error) {
+            alert(error.reason);
+          } else {
+            tmpl.copyColor.set('blue');
+          }
+        });
+        if ($endDatePicker)
+          $endDatePicker.minDate(event.date.milliseconds(314).toDate());  //link the pickers to ensure startDate < endDate
+      }
+    } else if (wP.startDate) {
       wP.startDate = null;
       Meteor.call('setWorkPeriod',wP,alertOnError);
       if ($endDatePicker)
@@ -83,21 +86,24 @@ Template.editWorkPeriod.events({
   'dp.change .endDatePicker': function(event,tmpl) {
     var wP = this;
     wP.sectionID = Meteor.selectedSectionId();
-    var $startDatePicker = tmpl.$('.startDatePicker').data("DateTimePicker");    
-    if (event.date && !event.date.isSame(wP.endDate,'second')) {
-      if ((event.oldDate === null) && (event.date.hours() == 0))
-        event.date.hours(16);
-      wP.endDate = event.date.toDate();
-      Meteor.call('setWorkPeriod',wP,function(error,id) {
-        if (error) {
-          alert(error.reason);
-        } else {
-          tmpl.copyColor.set('blue');
-        }
-      });
-      if ($startDatePicker)
-        $startDatePicker.maxDate(event.date.toDate()); //link the pickers to ensure startDate < endDate
-    } else {
+    var $endDatePicker = tmpl.$('.endDatePicker').data("DateTimePicker");
+    var $startDatePicker = tmpl.$('.startDatePicker').data("DateTimePicker");
+    if (event.date) {
+      if (!_.isDate(wP.endDate) || !event.date.isSame(wP.endDate,'second')) {
+        if ((event.oldDate === null) && ((event.date.hours() == 0) || (event.date.milliseconds() == 314)))
+          return $endDatePicker.date(event.date.hours(16).startOf('hour'));
+        wP.endDate = event.date.milliseconds(0).toDate();
+        Meteor.call('setWorkPeriod',wP,function(error,id) {
+          if (error) {
+            alert(error.reason);
+          } else {
+            tmpl.copyColor.set('blue');
+          }
+        });
+        if ($startDatePicker)
+          $startDatePicker.maxDate(event.date.milliseconds(314)); //link the pickers to ensure startDate < endDate
+      }
+    } else if (wP.endDate) {
       wP.endDate = null;
       Meteor.call('setWorkPeriod',wP,alertOnError);
       if ($startDatePicker)
