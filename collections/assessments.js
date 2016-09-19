@@ -13,6 +13,16 @@ Assessments.mutate.updateStandardsCount = function(assessmentID) {
     hiddenStandardsCount:hiddenStandardsCount
   }})
 }
+Assessments.mutate.updateTodoCount = function(assessmentID) {
+  check(assessmentID,Match.idString);
+  var assessment = Assessments.findOne(assessmentID);
+  if (!assessment)
+    return;
+  var todoCount = Todos.find({assessmentID:assessmentID}).count();
+  Assessments.update(assessmentID,{$set:{
+    todoCount:todoCount
+  }})
+}
 /*
   pass units in to grades page, select unit to show assessment in,
   make new row at bottom of activies list for assessments
@@ -39,6 +49,7 @@ Meteor.methods({
       maxTestDate: Match.Optional(Date), //set in AssessmentDates
       standardsCount: Match.Optional(Match.Integer), //set in AssessmentStandards
       hiddenStandardsCount: Match.Optional(Match.Integer) //set in AssessmentStandards
+      todoCount: Match.Optional(Match.Integer), //set in Todos
     */
     /* linked objects
        assessmentStandard, linked to standard and assessment
@@ -87,7 +98,8 @@ Meteor.methods({
       minTestDate: deadline,
       maxTestDate: deadline,
       standardsCount: 0,
-      hiddenStandardsCount: 0
+      hiddenStandardsCount: 0,
+      todoCount: 0
     }
     return Assessments.insert(assessment,function(error,id) {
       if (error) {
@@ -120,7 +132,8 @@ Meteor.methods({
       minTestDate: Match.Optional(Date), //set in AssessmentDates
       maxTestDate: Match.Optional(Date), //set in AssessmentDates
       standardsCount: Match.Optional(Match.Integer), //set in AssessmentStandards
-      hiddenStandardsCount: Match.Optional(Match.Integer) //set in AssessmentStandards
+      hiddenStandardsCount: Match.Optional(Match.Integer), //set in AssessmentStandards
+      todoCount: Match.Optional(Match.Integer), //set in Todos
     /* linked objects
        activity, (pointsTo field) ... auto-created here
        workperiod, linked to both the assessment and the activity?
@@ -165,6 +178,51 @@ Meteor.methods({
     return Assessments.update(assessment._id,{$set:set});
   }
 });
+Meteor.methods({
+  deleteAssessmentIfEmpty: function(assessmentID) {
+    check(assessmentID,Match.idString);
+
+    //can't figure out how to generate an error in the mutate function and pass it back to here
+    //so duplicating these checks
+    var assessment = Assessments.findOne(assessmentID);
+    if (!assessment)
+      throw new Meteor.Error('assessmentNotFound',"Cannot delete assessment.  Assessment not found.");
+    var assessmentStandardsCount = AssessmentStandards.find({assessmentID:assessmentID}).count();
+    var todoCount = Todos.find({assessmentID:assessmentID}).count();
+    if (assessmentStandardsCount || todoCount)
+      throw new Meteor.Error('assessmentNotEmpty',"You must remove all standards and all items from the to do list before deleting an assessment.");
+    var site = Site.findOne(assessment.createdFor);
+    var student = Meteor.users.findOne(assessment.createdFor);
+    if (!site && !student)
+      throw new Meteor.Error('invalidAudience','Invalid audience for assessment.  Must be a specific student if its a reassessment or the entire class.');
+
+    //the checks that should really be in this method
+    var cU = Meteor.userId();
+    if (!cU)  
+      throw new Meteor.Error('notLoggedIn', "You must be logged in to update an assessment.");
+    if (!Roles.userIsInRole(cU,['teacher','student']))
+      throw new Meteor.Error('notTeacherOrStudent','Only teachers or students can update an assessment.');
+    if (Roles.userIsInRole(cU,'student') && (student) && (cU != assessment.createdFor))
+      throw new Meteor.Error('onlySelf','You cannot update a reassessment for another student.');
+    if ((site) && !Roles.userIsInRole(cU,'teacher'))
+      throw new Meteor.Error('onlyTeacher','Only a teacher can update an assessment for the whole class.');
+
+
+    return Assessments.mutate.deleteAssessmentIfEmpty(assessmentID);
+  }
+});
+Assessments.mutate.deleteAssessmentIfEmpty = function(assessmentID) {
+  check(assessmentID,Match.idString);
+  var assessment = Assessments.findOne(assessmentID);
+  if (!assessment)
+    return;
+  var assessmentStandardsCount = AssessmentStandards.find({assessmentID:assessmentID}).count();
+  var todoCount = Todos.find({assessmentID:assessmentID}).count();
+  if (assessmentStandardsCount || todoCount)
+    return;
+
+  return Assessments.remove(assessment._id);
+}
 
 /**** HOOKS ****/
 Assessments.after.update(function (userID, doc, fieldNames, modifier) {

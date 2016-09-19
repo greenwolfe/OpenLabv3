@@ -254,6 +254,9 @@ Template.assessment.events({
   },
   'click .addStandards.adding': function(event,tmpl) {
     gradesPageSession.set('addingStandards',true);
+  },
+  'click .deleteAssessment': function(event,tmpl) {
+    Meteor.call('deleteAssessmentIfEmpty',Template.currentData()._id);
   }
 })
 

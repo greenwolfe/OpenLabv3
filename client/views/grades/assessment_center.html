@@ -90,9 +90,15 @@
     </div>
     <div class="panel-footer">
     {{#if editingAssessment}}
-      {{#if isInRole 'teacher'}}
-        {{>showHide collection='Assessments' itemName='assessment' item=this}}
-      {{/if}}
+      {{>showHide collection='Assessments' itemName='assessment' item=this}}
+      {{#unless standardsCount}}
+        {{#unless hiddenStandardsCount}}
+          {{#unless todoCount}}
+            <a class="glyphicon glyphicon-remove deleteAssessment" title="Delete Assessment"></a>
+          {{/unless}}
+        {{/unless}}
+      {{/unless}}
+
       {{#with assessmentDate}}
         {{>editAssessmentDate}}
       {{/with}}
