@@ -102,7 +102,7 @@ Template.filterStudents.helpers({
   },
   subactivities: function() {
     var activityID = FlowRouter.getParam('_id');
-    return Activities.find({pointsTo:activityID});
+    return Activities.find({pointsTo:activityID},{sort: {suborder: 1}});
   },
   subactivityFilter: function() {
     return Activities.findOne(activityPageSession.get('subactivityFilter'));

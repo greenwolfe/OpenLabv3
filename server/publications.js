@@ -399,6 +399,13 @@ Meteor.publish('assessmentWithDatesAndStandards',function(assessmentID,studentID
   ]
 })
 
+Meteor.publish('assessmentsForStandard',function(standardID) {
+  check(standardID,Match.idString);
+  var assessmentIDs = _.pluck(AssessmentStandards.find({standardID:standardID},{fields:{assessmentID:1}}).fetch().assessmentID,'assessmendID');
+  assessmentIDs = _.unique(assessmentIDs);
+  return Assessments.find({_id:{$in:assessmentIDs}});
+})
+
 //for activities (openlab) page
 Meteor.publish('unitsAssessments',function(studentOrSectionID,unitID) { 
   check(studentOrSectionID,Match.OneOf(Match.idString,null)); 

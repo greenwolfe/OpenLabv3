@@ -12,6 +12,7 @@ Template.standardPage.onCreated(function() {
       return;
     //first get the info that will be immediately shown
     var LoMsThisStudent = Meteor.subscribe('levelsOfMastery',standardID,studentID,null);
+    var assessmentsThisStandard = Meteor.subscribe('assessmentsForStandard',standardID);
 
     if (LoMsThisStudent.ready()) { //then load the rest in the background
       if (Roles.userIsInRole(Meteor.userId(),'teacher'))
@@ -165,9 +166,16 @@ Template.LoMitem.helpers({
     return _.str.include(FlowRouter.getRouteName(),'assessment');
   },
   assessmentID: function() {
-    //should not have to do this!  But it corrects a but in
+    //should not have to do this!  But it corrects a bug in
     //the html where the assessmentID field is not recognized ... wierd
     return this.assessmentID;
+  },
+  assessmentTitle: function() {
+    var assessmentID = this.assessmentID;
+    if (!assessmentID) return 'no assessment';
+    var assessment = Assessments.findOne(assessmentID);
+    var message = (Roles.userIsInRole(assessment.createdFor,'student')) ? 'Reassessment: ' : 'Assessment: ';
+    return (assessment.title) ? message + assessment.title : message + 'untitled';
   },
   activity: function() {
     var activityPage = Activities.findOne(FlowRouter.getParam('_id'));

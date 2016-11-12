@@ -19,6 +19,20 @@ Template.assessmentList.onCreated(function() {
 
 var dateFormat = "ddd, MMM D YYYY";
 
+/* currentStatus */
+var currentStatus = function(assessmentID) {
+  var studentID = Meteor.impersonatedOrUserId();
+  var sectionID = Meteor.selectedSectionId();
+  var cU = Meteor.userId();
+  if (Roles.userIsInRole(studentID,'student')) {
+    return ActivityStatuses.findOne({studentID:studentID,assessmentID:assessmentID});
+  } else if (Roles.userIsInRole(cU,'teacher')) {
+    if (sectionID)
+      return ActivityStatuses.findOne({sectionID:sectionID,assessmentID:assessmentID});
+    return ActivityStatuses.findOne({siteID:Site.findOne()._id,assessmentID:assessmentID});
+  }
+}
+
 Template.assessmentList.helpers({
   unitTitle: function() {
     var unitID = openlabSession.get('activeUnit');
@@ -137,5 +151,63 @@ Template.assessmentList.helpers({
     var unit = Units.findOne(unitID);
     if (unit)
       return '(' + unit.title + ')';
+  },
+  status: function() {
+    var status = currentStatus(this._id);
+    if (!status)
+      return 'icon-nostatus';
+    return 'icon-' + status.level;
+  },
+  statusTitle: function() {
+    var status = currentStatus(this._id);
+    if (!status)
+      return 'Student has not yet taken assessment.';
+    if (status.studentID) {
+      var titleDict = {
+        'nostatus':'Student has not yet taken assessment.',
+        'submitted':'Assessment not yet graded, but student has taken it.',
+        'returned':'Assessment graded.  Reassessment expected.',
+        'donewithcomments':'Assessment completed.  Comments available in gradebook.',
+        'done':'Assessment completed. Student has viewed any comments.',
+        'donebutresubmitted': 'Assessment completed.'
+      };
+    } else if (status.sectionID || status.siteID) {
+      var message = status.studentsSubmitted + ' students have taken assessment. ' + status.studentsReturned + ' assessments graded and reassessment expected. ' + status.studentsDone + ' Assessments graded and returned. ' + status.studentsNotSubmitted + ' have not yet taken this assessment.';
+      var titleDict = {
+        'nostatus': message,
+        'submitted':  message,
+        'returned': message,
+        'donewithcomments': message,
+        'done': message
+      };
+    }
+    return titleDict[status.level];
+  },
+  late: function() {
+    var status = currentStatus(this._id);
+    if (!status)
+      return '';
+    return (status.late) ? 'icon-late' : '';  
+  },
+  lateHoverText: function() {
+    //needs own popup ... mark all as late?
+    var status = currentStatus(this._id);
+    if (!status || !status.late)
+      return '';
+    if (status.studentID) {
+      return 'late';
+    } else if (status.sectionID || status.siteID) {
+      var message = (status.studentsNotSubmitted > 1) ? ' students have' : ' student has';
+      message = 'The deadline has passed and ' + status.lateStudents.length + message + ' not yet taken this assessment. ';
+      status.lateStudents.forEach(function(studentID,i) {
+        message += Meteor.getname(studentID,'full');
+        if (i == status.studentsNotSubmitted - 2) {
+          message += ' and ';
+        } else if (i < status.studentsNotSubmitted - 2) {
+          message += ', ';
+        }
+      })
+      return message;
+    }
   }
 });
